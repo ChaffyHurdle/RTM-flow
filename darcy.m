@@ -3,7 +3,8 @@ classdef darcy
     %% Darcy class to Darcy's law and important material properties:
     % The darcy class serves to store the domain material properties:
     % viscosity, porosity, thickness (2d -> 3d scaling). Each variable is
-    % a matlab function which inputs a point coordinate and time.
+    % a matlab function which inputs an arg structure containing the 
+    % necessary information.
     % 
     % viscosity is ....
     % porosity is ...
@@ -33,6 +34,5 @@ classdef darcy
 
 
     end
-
 
 end
