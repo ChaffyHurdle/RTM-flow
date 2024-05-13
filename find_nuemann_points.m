@@ -12,3 +12,5 @@ for i = 1 : nbnd_node
     end
 end
 neumann_flag = sparse(neumann_flag);
+
+end

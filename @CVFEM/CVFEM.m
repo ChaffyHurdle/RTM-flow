@@ -20,8 +20,6 @@ classdef CVFEM
     %% CVFEM class methods:
         % A constructor that takes and stores prebuilt classes of the mesh,
         % pressure, volum, darcy, visualisation and extras classes.
-        %
-        % 
 
         function obj = CVFEM(mesh_class,pressure_class,volume_class,darcy_class,visualise_class,options_class)
 
