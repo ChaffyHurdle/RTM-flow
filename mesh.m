@@ -64,14 +64,15 @@ classdef mesh
 
                 %% storing important mesh details
                 obj.nodes = p';
-                obj.elements = t(1:3)';
+                obj.elements = t(1:3,:)';
                 obj.boundary_nodes = unique([e(1,:) e(2, :)])';
                 obj.num_nodes = size(obj.nodes,1);
                 obj.num_elements = size(obj.elements,1);
-                obj.boundary_nodes = length(obj.boundary_nodes);
+                obj.num_boundary_nodes = length(obj.boundary_nodes);
                 
                 %% Additional mesh properties
-                obj.compute_element_areas();
+                obj = obj.compute_element_areas();
+                obj = obj.compute_element_centroids();
 
         end% end constructor
 
@@ -81,13 +82,24 @@ classdef mesh
 
             for i = 1:obj.num_elements
                 
-                % vectors of x,y coordinates of element nodes
-                x = local_nodes(obj.elements(i,:),1);
-                y = local_nodes(obj.elements(i,:),2);
+                %% vectors of x,y coordinates of element nodes
+                x = obj.nodes(obj.elements(i,:),1);
+                y = obj.nodes(obj.elements(i,:),2);
                 
-                % area formula for a polygon
+                %% area formula for a polygon
                 area = 0.5*abs(x'*circshift(y,-1) - circshift(x,-1)'*y);
                 obj.element_areas(i) = area;
+            end
+
+        end
+
+        function obj = compute_element_centroids(obj)
+
+            obj.centroids = zeros(obj.num_elements,2);
+
+            for i =1:obj.num_elements
+
+                obj.centroids(i,:) = mean(obj.nodes(obj.elements,:));
             end
 
         end
