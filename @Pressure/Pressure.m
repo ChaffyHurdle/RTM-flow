@@ -28,8 +28,8 @@ classdef Pressure
         function obj = Pressure(mesh_class,inlet_script,outlet_script,p_D)
 
             obj.mesh_class = mesh_class;
-            obj.inlet_script = str2func(inlet_script);
-            obj.outlet_script = str2func(outlet_script);
+            obj.inlet_func = str2func(inlet_script);
+            obj.vent_func = str2func(outlet_script);
             obj.p_D = str2func(p_D);
 
             num_dofs = mesh_class.num_nodes;

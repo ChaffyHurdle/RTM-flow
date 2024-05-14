@@ -26,12 +26,6 @@ classdef Volume
         bndry_nodes;
         nb_nodes;
 
-        inlet_flag;
-        inlet_pos;
-        Dirichlet;
-        vent_flag;
-        vent_idx;
-
 
     end % end properties
 
@@ -48,17 +42,17 @@ classdef Volume
             obj = obj.compute_connectivity();
 
             inlet_location = pressure_class.inlet_script;
-            vent_location = pressure_class.outlet_script;
+            outlet_location = pre
 
 
             [obj.inlet_flag, obj.inlet_pos, obj.Dirichlet] ...
-                    = inlet_location(obj.mesh_class.nodes, obj.mesh_class.boundary_nodes);
-            [obj.vent_flag] ...
-                    = vent_location(obj.mesh_class.nodes, obj.mesh_class.boundary_nodes);
-            obj.vent_idx = find(obj.vent_flag);
+                    = inlet_location(opt.mesh.node, opt.mesh.bndry_nodes);
+            [opt.bndry.vent_flag] ...
+                    = vent_location(opt.mesh.node,opt.mesh.bndry_nodes);
+            opt.bndry.vent_idx = find(opt.bndry.vent_flag);
 
-            %% Nuemann boundary condition
-            opt.bndry.neumann_flag = find_nuemann_points(opt.mesh.bndry_nodes,opt.bndry.inlet_flag, opt.bndry.vent_flag);
+% Nuemann boundary condition
+opt.bndry.neumann_flag = find_nuemann_points(opt.mesh.bndry_nodes,opt.bndry.inlet_flag, opt.bndry.vent_flag);
 
         end
 
