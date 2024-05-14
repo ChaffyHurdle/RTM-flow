@@ -34,7 +34,7 @@ classdef Pressure
 
             num_dofs = mesh_class.num_nodes;
             obj.pressure = zeros(num_dofs,1);
-            obj.pressure_gradient = zeros(mesh_class.num_elem,2);
+            obj.pressure_gradient = zeros(mesh_class.num_elements,2);
 
             obj.stiffness_matrix = spalloc(num_dofs,num_dofs,10*num_dofs);
             obj.load_vector = zeros(num_dofs,1);

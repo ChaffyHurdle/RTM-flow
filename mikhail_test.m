@@ -5,14 +5,15 @@ my_mesh = Mesh(p,e,t);
 % Darcy rules set
 my_darcy = Darcy(0.1, 0.35, 0.2, @permeability);
 
+my_pressure = Pressure(my_mesh,'inlet_location','outlet_location','g_D');
+my_volume = Volume(my_pressure);
+%my_visuals = Visualisation();
+%my_options = Optionals();
 
-% Boundary conditions set
-bndry.gd_filename   = 'g_D';
-bndry.gn_filename   = '';
-bndry.pvent         = 0;
-bndry.pinlet        = 1.5e5;
-bndry.inlet_location_fname = 'inlet_location';
-bndry.vent_location_fname = 'vent_location';
+%% compile CVFEM method
+%my_cvfem = CVFEM(my_mesh,my_pressure,my_volume,my_darcy,my_visuals,my_options);
+
+%my_cvfem.solve()
 
 % First set up routine
 opt = cvfem_setup(mesh,bndry,darcy,@permeability);
@@ -24,19 +25,6 @@ opt = cvfem2d(opt);
 function K = permeability(x)
     
     K = [1e-10 0; 0 1e-10];
-end
-
-function pressure_class = boundary_pressure(mesh_class,pressure_class)
-
-    nodes = mesh_class.nodes; time = pressure_class.time;
-    inlet_nodes = pressure_class.inlet_nodes;
-
-    pressure_class.pressure(:) = 0;
-
-    for i = inlet_nodes
-        pressure_class.pressure(i) = 1.5e5;
-    end
-
 end
     
     
