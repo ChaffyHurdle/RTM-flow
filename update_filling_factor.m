@@ -7,7 +7,6 @@ V = opt.cvfem.V;
 %% increase volume fill factor for any inflow elements
 pos_q_idx = find(Q>0);
 
-
 fFactor_new = min(ones(length(pos_q_idx),1),fFactor(pos_q_idx)+ dt*Q(pos_q_idx)./V(pos_q_idx));
 
 fFactor_new(1-fFactor_new<1e+3*eps) = 1;

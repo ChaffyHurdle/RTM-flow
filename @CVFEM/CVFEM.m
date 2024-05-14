@@ -14,6 +14,8 @@ classdef CVFEM
         visualise_class;
         options_class;
 
+        time;
+
     end % end properties
 
     methods
@@ -29,6 +31,8 @@ classdef CVFEM
             obj.darcy_class = darcy_class;
             obj.visualise_class = visualise_class;
             obj.options_class = options_class;
+
+            obj.time = 0.0;
 
         end
 
