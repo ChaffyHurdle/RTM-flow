@@ -3,8 +3,8 @@ classdef Pressure
     properties
     
         mesh_class;
-        inlet_script;
-        outlet_script;
+        inlet_func;
+        outlet_func;
         p_D;
 
         %% FEM system of equations
