@@ -10,7 +10,6 @@ classdef Volume
 
         %% Control volume outward facing normals (scaled by edge length)
         volume_outflow_vectors;
-        
 
         %% inlet, outlet, and Nuemann boundary node lists
         inlet_nodes;
@@ -19,7 +18,6 @@ classdef Volume
         %% connectivity features of the Volume elements
         node_connectivity;
         element_connectivity;
-
 
         %% legacy code
         has_node_i;
@@ -31,7 +29,7 @@ classdef Volume
         Dirichlet;
         vent_flag;
         vent_idx;
-
+        Neumann_flag;
 
     end % end properties
 
@@ -47,9 +45,8 @@ classdef Volume
             obj = obj.compute_volume_outflow_vectors();
             obj = obj.compute_connectivity();
 
-            inlet_location = pressure_class.inlet_script;
-            vent_location = pressure_class.outlet_script;
-
+            inlet_location = pressure_class.inlet_func;
+            vent_location = pressure_class.vent_func;
 
             [obj.inlet_flag, obj.inlet_pos, obj.Dirichlet] ...
                     = inlet_location(obj.mesh_class.nodes, obj.mesh_class.boundary_nodes);
@@ -58,7 +55,7 @@ classdef Volume
             obj.vent_idx = find(obj.vent_flag);
 
             %% Nuemann boundary condition
-            opt.bndry.neumann_flag = find_nuemann_points(opt.mesh.bndry_nodes,opt.bndry.inlet_flag, opt.bndry.vent_flag);
+            obj.Neumann_flag = find_nuemann_points(opt.mesh.bndry_nodes,obj.inlet_flag, obj.vent_flag);
 
         end
 

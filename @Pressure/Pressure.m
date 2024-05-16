@@ -4,7 +4,7 @@ classdef Pressure
     
         mesh_class;
         inlet_func;
-        outlet_func;
+        vent_func;
         p_D;
 
         %% FEM system of equations
