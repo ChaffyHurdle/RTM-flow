@@ -30,10 +30,10 @@ classdef Pressure
             obj.mesh_class = mesh_class;
             obj.inlet_func = str2func(inlet_script);
             obj.vent_func = str2func(outlet_script);
-            obj.p_D = str2func(p_D);
+            obj.p_D = p_D;
 
             num_dofs = mesh_class.num_nodes;
-            obj.pressure = zeros(num_dofs,1);
+            obj.pressure = obj.p_D(mesh_class.nodes,[],[]);
             obj.pressure_gradient = zeros(mesh_class.num_elements,2);
 
             obj.stiffness_matrix = spalloc(num_dofs,num_dofs,10*num_dofs);

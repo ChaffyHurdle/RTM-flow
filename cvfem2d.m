@@ -110,10 +110,11 @@ end
 opt.mesh.elem_including_inlet_edge = sparse(opt.cvfem.activeElement==0.5);
 
 %% filling time and filling factor
+%{
 opt.cvfem.fTime = 0;                         % The filling time
 opt.cvfem.fFactor = zeros(opt.mesh.nnode,1); % the filling factor
 
 %% allocate a sparse matrix 
 opt.cvfem.A = spalloc(opt.mesh.nnode,opt.mesh.nnode,opt.mesh.nnode*10);
-
+%}
 end

@@ -14,7 +14,9 @@ classdef CVFEM
         visualise_class;
         options_class;
 
+
         time;
+        time_step;
 
     end % end properties
 
@@ -33,6 +35,7 @@ classdef CVFEM
             obj.options_class = options_class;
 
             obj.time = 0.0;
+            obj.time_step = 0.0;
 
         end
 

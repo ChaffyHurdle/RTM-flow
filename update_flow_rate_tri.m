@@ -30,7 +30,6 @@ candidate_elem = find(candidate_elem);
 inlet_elem = candidate_elem(opt.mesh.elem_including_inlet_edge(candidate_elem)==1);
 other_elem = candidate_elem(opt.mesh.elem_including_inlet_edge(candidate_elem)==0);
 
-
 %% Computes volume fluxes across elements connected to the inlet boundary
 for i = 1 : length(inlet_elem)
     elem_i = opt.mesh.elem(inlet_elem(i),:);
@@ -48,14 +47,6 @@ for i = 1 : length(other_elem)
     velocity(elem_idx,:) = vi;
     Q(elem_i) = Q(elem_i) + local_flux_tri(normal_vec(elem_idx,:),vi,darcy);
 end
-
-figure(3)
-pdeplot(opt.mesh.node',opt.mesh.elem',XYData=Q,ZData=Q,ColorMap="jet")
-title('Q plot')
-
-figure(4)
-pdeplot(opt.mesh.node',opt.mesh.elem(fFactor>0,:)',"flowdata",velocity(fFactor>0,:),Mesh="on")
-title('u(x,t)')
 end
 
 function velocity = velocity_centre_tri(p,tri_nodes,K,darcy_para, phi)
@@ -146,51 +137,6 @@ elseif sum(inlet_flag) == 1 % At this moment, we ignore elements having single i
         qn(1) = -(n1-n3)*v;
         qn(2) = -(n2-n1)*v;
         qn(3) = -(n3-n2)*v;
-%     else
-%         if inlet_flag(1) == 1
-%             if sum(bnd_flag) == 1
-%                 n4 = fliplr(.5*x(1,:)-.5*x(2,:)).*[1 -1];
-%                 n5 = fliplr(.5*x(3,:)-.5*x(1,:)).*[1 -1];
-%                 qn(1) = max((n4+n5)*v,0);
-%             else % sum(bnd_flag) == 2
-%                 if bnd_flag(2)
-%                     n5 = fliplr(.5*x(3,:)-.5*x(1,:)).*[1 -1];
-%                     qn(1) = max(n5*v,0);
-%                 else %bnd_flag(3) is 1 
-%                     n4 = fliplr(.5*x(1,:)-.5*x(2,:)).*[1 -1];
-%                     qn(1) = max((n4)*v,0);
-%                 end
-%            
-%             end
-%         elseif inlet_flag(2) == 1
-%             if sum(bnd_flag) == 1
-%                 n4 = fliplr(.5*x(1,:)-.5*x(2,:)).*[1 -1];
-%                 n5 = fliplr(.5*x(2,:)-.5*x(3,:)).*[1 -1];
-%                 qn(2) = max((n4+n5)*v,0);
-%             else % sum(bnd_flag) == 2
-%                 if bnd_flag(1)
-%                     n5 = fliplr(.5*x(2,:)-.5*x(3,:)).*[1 -1];
-%                     qn(2) = max(n5*v,0);
-%                 else %bnd_flag(1) is 1 
-%                     n4 = fliplr(.5*x(1,:)-.5*x(2,:)).*[1 -1];
-%                     qn(2) = max((n4)*v,0);
-%                 end
-%             end
-%         elseif inlet_flag(3) == 1
-%             if sum(bnd_flag) == 1
-%                 n4 = fliplr(.5*x(2,:)-.5*x(3,:)).*[1 -1];
-%                 n5 = fliplr(.5*x(3,:)-.5*x(1,:)).*[1 -1];
-%                 qn(3) = max((n4+n5)*v,0);
-%             else %sum(bnd_flag) == 2
-%                 if bnd_flag(2)
-%                     n5 = fliplr(.5*x(3,:)-.5*x(1,:)).*[1 -1];
-%                     qn(3) = max(n5*v,0);
-%                 else %bnd_flag(1) is 1 
-%                     n4 = fliplr(.5*x(2,:)-.5*x(3,:)).*[1 -1];
-%                     qn(3) = max((n4)*v,0);
-%                 end
-%             end
-%         end
     end
 else
     error('The triangular element must have at most two nodes on the inlet boundary.');
