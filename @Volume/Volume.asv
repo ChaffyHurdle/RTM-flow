@@ -36,6 +36,11 @@ classdef Volume
         nb_nodes;
 
         inlet_flag;
+        inlet_pos;
+        Dirichlet;
+        vent_flag;
+        vent_idx;
+        Neumann_flag;
 
 
 
@@ -56,6 +61,12 @@ classdef Volume
             obj = obj.compute_volume_measures();
             obj = obj.compute_volume_outflow_vectors();
             obj = obj.compute_connectivity();
+
+            %% Legacy way to compute inlets and outlets
+            inlet_location = pressure_class.inlet_func;
+            vent_location = pressure_class.vent_func;
+
+    
 
             %% Setting up active nodes/elements
             obj.inlet_flag = pressure_class.inlet_flag;
