@@ -22,6 +22,7 @@ classdef Volume
         %% Tracking volumes filled
         volume_fill_percentage;
         volume_filling_times;
+        volume_rates_of_flow;
 
         %% Legacy code
         has_node_i;
