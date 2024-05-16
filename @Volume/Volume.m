@@ -8,18 +8,22 @@ classdef Volume
         %% Measure of control volumes in 3D (using thickness approximation)
         volume_measures;
 
-        %% Control volume outward facing normals (scaled by edge length)
+        %% Control volume outward facing normals(multiplied by edge length)
         volume_outflow_vectors;
 
-        %% inlet, outlet, and Nuemann boundary node lists
+        %% Inlet, outlet, and Nuemann boundary node lists
         inlet_nodes;
         outlet_nodes;
 
-        %% connectivity features of the Volume elements
+        %% Connectivity features of the Volume elements
         node_connectivity;
         element_connectivity;
 
-        %% legacy code
+        %% Tracking volumes filled
+        volume_fill_percentage;
+        volume_filling_times;
+
+        %% Legacy code
         has_node_i;
         bndry_nodes;
         nb_nodes;
@@ -41,10 +45,15 @@ classdef Volume
             obj.mesh_class = pressure_class.mesh_class;
             obj.darcy_class = darcy_class;
 
+            %% Set initial fill times and percentages
+            obj.volume_filling_times = zeros(obj.mesh_class.num_elements,1);
+            obj.volume_fill_percentage = zeros(obj.mesh_class.num_elements,1);
+
             obj = obj.compute_volume_measures();
             obj = obj.compute_volume_outflow_vectors();
             obj = obj.compute_connectivity();
 
+            %% Legacy way to compute inlets and outlets
             inlet_location = pressure_class.inlet_func;
             vent_location = pressure_class.vent_func;
 
@@ -55,7 +64,7 @@ classdef Volume
             obj.vent_idx = find(obj.vent_flag);
 
             %% Nuemann boundary condition
-            obj.Neumann_flag = find_nuemann_points(opt.mesh.bndry_nodes,obj.inlet_flag, obj.vent_flag);
+            obj.Neumann_flag = find_nuemann_points(obj.mesh_class.boundary_nodes,obj.inlet_flag, obj.vent_flag);
 
         end
 

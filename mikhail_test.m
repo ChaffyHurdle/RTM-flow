@@ -11,12 +11,11 @@ my_volume = Volume(my_pressure,my_darcy);
 %my_options = Optionals();
 
 %% compile CVFEM method
-%my_cvfem = CVFEM(my_mesh,my_pressure,my_volume,my_darcy,my_visuals,my_options);
+my_cvfem = CVFEM(my_mesh,my_pressure,my_volume,my_darcy,[],[]);
 
 %my_cvfem.solve()
 
 % First set up routine
-opt = cvfem_setup(mesh,bndry,darcy,@permeability);
 
 % Execute code
 opt = cvfem2d(opt);
