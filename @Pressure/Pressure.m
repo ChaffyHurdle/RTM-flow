@@ -68,6 +68,31 @@ classdef Pressure
 
 end
 
+function obj = compute_inlets_outlets(obj)
+
+%% Extract needed mesh information
+nodes = obj.mesh_class.nodes;
+num_nodes = obj.mesh_class.num_nodes;
+boundary_nodes = obj.mesh_class.boundary_nodes;
+
+%% Legacy code inlet/vent flags
+obj.inlet_flag = false(num_nodes,1);
+obj.vent_flag = false(num_nodes,1);
+
+for node_index = boundary_nodes
+
+    boundary_point = nodes(node_index,:);
+
+    obj.inlet_flag(node_index) = is_inlet(boundary_point);
+    obj.vent_flag(node_index) = is_vent(boundary_point);
+    
+    
+
+
+
+end
+
+end
 
 function neumann_flag = find_nuemann_points(bnd_nodes,inlet_flag, vent_flag)
 

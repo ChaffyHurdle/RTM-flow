@@ -83,11 +83,14 @@ for node_index = boundary_nodes
 
     boundary_point = nodes(node_index,:);
 
-    obj.inlet_flag = is_inlet(boundary_point);
-    obj.vent_flag = is_vent(boundary_point);
+    obj.inlet_flag(node_index) = is_inlet(boundary_point);
+    obj.vent_flag(node_index) = is_vent(boundary_point);
+    
+    
 
 
 
+end
 
 end
 

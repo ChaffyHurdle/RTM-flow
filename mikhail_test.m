@@ -1,10 +1,6 @@
- close all
-% Import mesh files
+%% Problem set up
 my_mesh = Mesh(p,e,t);
-
-% Darcy rules set
 my_darcy = Darcy(0.1, 0.35, 0.2, @permeability);
-
 my_pressure = Pressure(my_mesh,@is_inlet,@is_vent,@p_D);
 my_volume = Volume(my_pressure,my_darcy);
 %my_visuals = Visualisation();
