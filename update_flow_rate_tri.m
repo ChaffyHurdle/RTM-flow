@@ -60,7 +60,7 @@ area = 0.5*abs(x'*circshift(y,-1) - circshift(x,-1)'*y);
 grad_phi = [y(2)-y(3) y(3)-y(1) y(1)-y(2); x(3)-x(2) x(1)-x(3) x(2)-x(1)]/2/area;
 pressure_gradient = grad_phi * p;
 
-%% Apply Darcy's Law (-K/(mu*phi) * grad (p)
+%% Apply Darcy's Law u = -K/(mu*phi) * grad(p)
 visocity = darcy_para.mu;
 porosity = phi;
 velocity = -K(centroid)*pressure_gradient/(visocity*porosity);

@@ -96,37 +96,3 @@ end
 function u = solve(A,u,b,freeNode)
 u(freeNode) = A(freeNode,freeNode)\b(freeNode);
 end
-
-function A = assembling_stiffness_tri(node, elem, K, A, newElement)
-%% This function constructs the stiffness matrix required to solve for the 
-%% pressure field.
-
-newAE = find(newElement);
-
-for i = 1 : length(newAE)
-    new_elem = newAE(i);
-    tri_nodes = elem(new_elem,1:3);
-    
-    %% local FEM stiffness matrix
-    A_local = local_stiffness_tri(node(tri_nodes,:),K);
-
-    %% local to global mapping
-    A(tri_nodes,tri_nodes) = A(tri_nodes,tri_nodes) + A_local;
-end
-end
-
-%% function to compute local stiffness matrix
-function A_local = local_stiffness_tri(tri_points,K)
-
-%% Element geometric properties
-x = tri_points(:,1); y = tri_points(:,2);
-centroid = mean(tri_points);
-area = 0.5*abs(x'*circshift(y,-1) - circshift(x,-1)'*y);
-
-%% Gradinet operator for linear FEM functions
-grad_phi = [y(2)-y(3) y(3)-y(1) y(1)-y(2); x(3)-x(2) x(1)-x(3) x(2)-x(1)]/2/area;
-
-%% Local stiffness matrix
-A_local = (K(centroid)*grad_phi)'*grad_phi*area;
-
-end

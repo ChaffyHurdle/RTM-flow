@@ -3,6 +3,7 @@ classdef Pressure
     properties
     
         mesh_class;
+        darcy_class;
         inlet_func;
         vent_func;
         p_D;
@@ -13,7 +14,9 @@ classdef Pressure
 
         %% FEM solution of pressure problem
         pressure;
+        shape_fun_gradients;
         pressure_gradient;
+        
 
         %% inlet, outlet, and Nuemann boundary node lists
         inlet_nodes;
@@ -37,22 +40,27 @@ classdef Pressure
 
     methods
 
-        function obj = Pressure(mesh_class,inlet_func,vent_func,p_D)
+        function obj = Pressure(mesh_class,darcy_class,inlet_func,vent_func,p_D)
 
             obj.mesh_class = mesh_class;
+            obj.darcy_class = darcy_class;
             obj.inlet_func = inlet_func;
             obj.vent_func = vent_func;
             obj.p_D = p_D;
 
-            num_dofs = mesh_class.num_nodes;
+            %% Allocating pressure and pressure gradient
             obj.pressure = obj.p_D(mesh_class.nodes,[],[],[]);
-            obj.pressure_gradient = zeros(mesh_class.num_elements,2);
+            obj = obj.compute_shape_fun_gradients();
+            obj = obj.compute_pressure_gradient();
 
             %% Allocating FEM system of equations
+            num_dofs = mesh_class.num_nodes;
             obj.stiffness_matrix = spalloc(num_dofs,num_dofs,10*num_dofs);
             obj.load_vector = zeros(num_dofs,1);
 
+            %% Computing information for boundary conditions
             obj = obj.compute_inlets_outlets();
+            
 
         end
 

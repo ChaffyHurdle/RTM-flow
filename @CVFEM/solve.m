@@ -1,5 +1,11 @@
 function obj = solve(obj)
 
+%% Unpacking all classses
+mesh_class = obj.mesh_class;
+pressure_class = obj.pressure_class;
+volume_class = obj.volume_class;
+darcy_class = obj.darcy_class;
+
 %% Find initial flows out of elements
 obj = obj.compute_flow_rates();
 %update_flow_rate_tri(opt);
@@ -23,14 +29,7 @@ while ~isFilled(opt.cvfem.fFactor,opt.mesh.nnode,opt.bndry.vent_idx)
     
     %% Compute new time step
     dt = compute_time_increment(Q,opt.cvfem.fFactor,opt.cvfem.V);
-    
-    %% If nothing to be filled end function
-    %{
-    if dt == 0
-        disp('ending due to no boundary motion')
-        break;
-    end
-    %}
+
     %% New time level
     opt.cvfem.fTime = opt.cvfem.fTime + dt;
 
@@ -38,11 +37,6 @@ while ~isFilled(opt.cvfem.fFactor,opt.mesh.nnode,opt.bndry.vent_idx)
     opt = update_filling_factor(opt,Q,dt);
 
     %% Drawing
-    cvFEM_plot(opt)
-end
-
-if isFilled(opt.cvfem.fFactor,opt.mesh.nnode,opt.bndry.vent_idx)
-    disp('ending due to filled mold')
     cvFEM_plot(opt)
 end
 
