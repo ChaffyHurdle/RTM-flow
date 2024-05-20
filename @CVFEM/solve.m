@@ -1,7 +1,8 @@
 function obj = solve(obj)
 
 %% Find initial flows out of elements
-Q   = update_flow_rate_tri(opt);
+obj = obj.compute_flow_rates();
+%update_flow_rate_tri(opt);
 
 %% First numerical time step 
 dt  = compute_time_increment(Q,opt.cvfem.fFactor,opt.cvfem.V);
