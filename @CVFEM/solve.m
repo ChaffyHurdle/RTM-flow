@@ -15,6 +15,7 @@ obj = obj.update_filling_percentage();
 while ~isFilled(opt.cvfem.fFactor,opt.mesh.nnode,opt.bndry.vent_idx)
 
     %% Solve Pressure Problem
+    [cvfem, bndry] = update_comp_domain(cvfem,mesh,bndry);
     [opt.cvfem, opt.bndry] = still_solver(opt.cvfem,opt.mesh,opt.bndry);
     
     %% Solve flow problem
