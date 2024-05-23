@@ -1,28 +1,33 @@
 function obj = compute_flow_rates(obj)
 
-%% Sets up flow rates if needed
-if isempty(obj.flow_rates)
-    obj.flow_rates = zeros(obj.mesh_class.num_nodes,1);
-end
-
-candidate_elem = zeros(opt.mesh.nelem,1);
+%% Extract needed information
+fFactor = obj.volume_fill_percentage;
 pressure = obj.pressure_class.pressure;
 K = obj.darcy_class.permeability;
+normal_vec = obj.volume_class.volume_outflow_vectors;
 
-fFactor = opt.cvfem.fFactor;
-normal_vec = opt.mesh.normal_vec;
+%% Sets up flow rates if needed
+if isempty(obj.volume_rates_of_flow)
+    obj.volume_rates_of_flow = zeros(obj.mesh_class.num_nodes,1);
+end
+
+%% construct a list of possible nodes/elements to be added
+candidate_elem = zeros(obj.mesh_class.num_elements,1);
+
+is_moving_boundary = ~xor(obj.active_nodes==1,1-obj.volume_fill_percentage > 1e-15);
+candidate_node = find(is_moving_boundary);
+
+
 
 %% Allocating velocity field
-velocity = zeros(opt.mesh.nelem,2);
-
-candidate_node = find(~xor(opt.cvfem.activeNode==1,1-fFactor > 1e-15));
+velocity = zeros(obj.mesh_class.num_elements,2);
 
 for i = 1 : length(candidate_node)
     candidate = candidate_node(i);
-    for j = 2 : opt.mesh.has_node_i(candidate,1)+1
-        elem = opt.mesh.has_node_i(candidate,j);
+    for j = 2 : obj.volume_class.has_node_i(candidate,1)+1
+        elem = obj.volume_class.has_node_i(candidate,j);
         if opt.cvfem.activeElement(elem) >= 0.5
-            candidate_elem(opt.mesh.has_node_i(candidate,j)) = 1;
+            candidate_elem(obj.volume_class.has_node_i(candidate,j)) = 1;
         end
     end
 end
@@ -31,25 +36,25 @@ candidate_elem = find(candidate_elem);
 
 %% partitions elements into inlet-lying and non inlet lying elements 
 % H.W: could be simplified here
-inlet_elem = candidate_elem(opt.mesh.elem_including_inlet_edge(candidate_elem)==1);
-other_elem = candidate_elem(opt.mesh.elem_including_inlet_edge(candidate_elem)==0);
+inlet_elem = candidate_elem(obj.mesh_class.elem_including_inlet_edge(candidate_elem)==1);
+other_elem = candidate_elem(obj.mesh_class.elem_including_inlet_edge(candidate_elem)==0);
 
 %% Computes volume fluxes across elements connected to the inlet boundary
 for i = 1 : length(inlet_elem)
-    elem_i = opt.mesh.elem(inlet_elem(i),:);
-    node_i = opt.mesh.node(elem_i,:);
+    elem_i = obj.mesh_class.elem(inlet_elem(i),:);
+    node_i = obj.mesh_class.node(elem_i,:);
     vi = velocity_centre_tri(pressure(elem_i),node_i,K,darcy, darcy.phi(inlet_elem(i)));
     velocity(inlet_elem(i),:) = vi;
-    obj.flow_rates(elem_i) = obj.flow_rates(elem_i) + local_flux_tri_inlet(node_i,vi,fFactor(elem_i),opt.bndry.inlet_flag(elem_i),opt.mesh.bndry_nodes(elem_i),darcy);
+    obj.volume_rates_of_flow(elem_i) = obj.volume_rates_of_flow(elem_i) + local_flux_tri_inlet(node_i,vi,fFactor(elem_i),opt.bndry.inlet_flag(elem_i),obj.mesh_class.bndry_nodes(elem_i),darcy);
 end
 
 %% Computes volume fluxes across all remaining elements
 for i = 1 : length(other_elem)
     elem_idx = other_elem(i);
-    elem_i = opt.mesh.elem(elem_idx,:);
-    vi = velocity_centre_tri(pressure(elem_i),opt.mesh.node(elem_i,:),K,darcy, darcy.phi(elem_idx));
+    elem_i = obj.mesh_class.elem(elem_idx,:);
+    vi = velocity_centre_tri(pressure(elem_i),obj.mesh_class.node(elem_i,:),K,darcy, darcy.phi(elem_idx));
     velocity(elem_idx,:) = vi;
-    obj.flow_rates(elem_i) = obj.flow_rates(elem_i) + local_flux_tri(normal_vec(elem_idx,:),vi,darcy);
+    obj.volume_rates_of_flow(elem_i) = obj.volume_rates_of_flow(elem_i) + local_flux_tri(normal_vec(elem_idx,:),vi,darcy);
 end
 end
 

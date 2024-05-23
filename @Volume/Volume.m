@@ -55,36 +55,6 @@ classdef Volume
             obj = obj.compute_volume_outflow_vectors();
             obj = obj.compute_connectivity();
 
-            %% Setting up active nodes/elements
-            obj.inlet_flag = pressure_class.inlet_flag;
-
-            active_nodes = zeros(obj.mesh_class.num_nodes,1);
-            active_nodes(obj.inlet_flag==1) = 1;
-            
-            active_elements = zeros(obj.mesh_class.num_elements,1);
-            inlet_idx = find(obj.inlet_flag);
-            % At the begining, there are no active elements because no flow moves into
-            % the domain through the inlet yet. But in the flux calculation, elements
-            % involving inlet nodes needs to be highlighted somehow. 
-            % We assigned 0.5 to these elements to distinguish them from finite elements.
-            candidate = zeros(obj.mesh_class.num_elements,1);
-            for i = 1 : nnz(obj.inlet_flag)
-                ival = inlet_idx(i);
-                for j = 2 : obj.has_node_i(ival,1)+1
-                    candidate(obj.has_node_i(ival,j))= 1;
-                end
-            end
-            candidate_idx = find(candidate);
-            for i = 1 : length(candidate_idx)
-                if sum(obj.inlet_flag(obj.mesh_class.elements(candidate_idx(i),:)))==2
-                    active_elements(candidate_idx(i)) = 0.5;
-                end
-            end
-            
-            obj.inlet_connected_elements = sparse(active_elements==0.5);
-            obj.active_nodes = active_nodes;
-            obj.active_elements = active_elements;
-
         end    
 
     end % end methods

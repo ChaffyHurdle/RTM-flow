@@ -1,21 +1,23 @@
-classdef CVFEM
-
-    %% Method class to store algorithms, steps and properties of the CVFEM:
-    % The cvfem class store the components of the control volume finite
-    % element method. This includes classes for the mesh, pressure FEM
-    % solver, volume FV solver, darcy flow, visualisation & extra options.
+classdef Velocity
 
     properties
-
+    
         mesh_class;
-        pressure_class;
-        volume_class;
         darcy_class;
-        visualise_class;
-        options_class;
 
-        time;
-        time_step;
+        %% Measure of control volumes in 3D (using thickness approximation)
+        volume_measures;
+
+        %% Control volume outward facing normals(multiplied by edge length)
+        volume_outflow_vectors;
+
+        %% Inlet, outlet, and Nuemann boundary node lists
+        inlet_nodes;
+        outlet_nodes;
+
+        %% Connectivity features of the Volume elements
+        node_connectivity;
+        element_connectivity;
 
         %% Tracking volumes filled
         volume_fill_percentage;
@@ -38,25 +40,22 @@ classdef CVFEM
     end % end properties
 
     methods
-    %% CVFEM class methods:
-        % A constructor that takes and stores prebuilt classes of the mesh,
-        % pressure, volum, darcy, visualisation and extras classes.
+        %% Methods of the Volume class
 
-        function obj = CVFEM(mesh_class,pressure_class,volume_class,darcy_class,visualise_class,options_class)
+        function obj = Velocity(pressure_class,darcy_class)
 
-            obj.mesh_class = mesh_class;
-            obj.pressure_class = pressure_class;
-            obj.volume_class = volume_class;
+            obj.mesh_class = pressure_class.mesh_class;
             obj.darcy_class = darcy_class;
-            obj.visualise_class = visualise_class;
-            obj.options_class = options_class;
 
-            obj.time = 0.0;
-            obj.time_step = 0.0;
-            
-            obj.volume_rates_of_flow = obj.compute_flow_rates();
+            %% Set initial fill times and percentages
+            obj.volume_filling_times = zeros(obj.mesh_class.num_elements,1);
+            obj.volume_fill_percentage = zeros(obj.mesh_class.num_elements,1);
 
-             %% Setting up active nodes/elements
+            obj = obj.compute_volume_measures();
+            obj = obj.compute_volume_outflow_vectors();
+            obj = obj.compute_connectivity();
+
+            %% Setting up active nodes/elements
             obj.inlet_flag = pressure_class.inlet_flag;
 
             active_nodes = zeros(obj.mesh_class.num_nodes,1);
@@ -86,7 +85,8 @@ classdef CVFEM
             obj.active_nodes = active_nodes;
             obj.active_elements = active_elements;
 
-        end
+        end    
 
     end % end methods
+
 end
