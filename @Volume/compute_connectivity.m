@@ -26,8 +26,9 @@ for i = 1 : nelem
 end
 has_node_i = [has_node_i_size has_node_i];
 
-% Cnode is a sparse matrix and nonzero entries represent the connectivity between two nodes. 
-% The matrix entries are the element that contains edge between two nodes. 
+% Cnode is a sparse matrix and nonzero entries represent the connectivity 
+% between two nodes. The matrix entries are the element that contains edge
+% between two nodes. 
 Cnode = sparse(totalEdge(:,1),totalEdge(:,2),[1:nelem 1:nelem 1:nelem]',nnode,nnode);
 
 nb_nodes = cell(nnode,1);

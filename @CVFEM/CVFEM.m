@@ -32,7 +32,6 @@ classdef CVFEM
         has_node_i;
         bndry_nodes;
         nb_nodes;
-
         inlet_flag;
 
     end % end properties
@@ -51,10 +50,15 @@ classdef CVFEM
             obj.visualise_class = visualise_class;
             obj.options_class = options_class;
 
+            %% Setting up time and time stepping
             obj.time = 0.0;
             obj.time_step = 0.0;
-            
+
+            %% Setting up volume tracking properties
             obj.volume_rates_of_flow = obj.compute_flow_rates();
+            obj.volume_filling_times = zeros(obj.mesh_class.num_elements,1);
+            obj.volume_fill_percentage = zeros(obj.mesh_class.num_elements,1);
+            obj.new_filled_volume = [];
 
              %% Setting up active nodes/elements
             obj.inlet_flag = pressure_class.inlet_flag;

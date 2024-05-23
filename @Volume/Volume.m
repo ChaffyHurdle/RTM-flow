@@ -19,17 +19,6 @@ classdef Volume
         node_connectivity;
         element_connectivity;
 
-        %% Tracking volumes filled
-        volume_fill_percentage;
-        volume_filling_times;
-        volume_rates_of_flow;
-        new_filled_volume;
-
-        %% Features for the FEM pressure solver
-        inlet_connected_elements;
-        active_nodes;
-        active_elements;
-
         %% Legacy code
         has_node_i;
         bndry_nodes;
@@ -46,10 +35,6 @@ classdef Volume
 
             obj.mesh_class = pressure_class.mesh_class;
             obj.darcy_class = darcy_class;
-
-            %% Set initial fill times and percentages
-            obj.volume_filling_times = zeros(obj.mesh_class.num_elements,1);
-            obj.volume_fill_percentage = zeros(obj.mesh_class.num_elements,1);
 
             obj = obj.compute_volume_measures();
             obj = obj.compute_volume_outflow_vectors();
