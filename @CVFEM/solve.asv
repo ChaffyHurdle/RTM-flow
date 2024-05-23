@@ -1,47 +1,23 @@
 function obj = solve(obj)
 
-%% Unpacking all classses
-%{
-mesh_class = obj.mesh_class;
-pressure_class = obj.pressure_class;
-volume_class = obj.volume_class;
-darcy_class = obj.darcy_class;
-%}
-
-%% Find initial flows out of elements
-obj = obj.compute_flow_rates();
-
-%% First numerical time step 
-obj = obj.compute_time_increment();
-opt.cvfem.fTime = opt.cvfem.fTime+dt;
-
-%% Compute new flow volumes and moving boundaries
-obj = obj.update_filling_percentage();
-
- 
-while ~isFilled(opt.cvfem.fFactor,opt.mesh.nnode,opt.bndry.vent_idx)
+while ~obj.is_fully_saturated()
 
     %% Solve Pressure Problem
     [opt.cvfem, opt.bndry] = still_solver(opt.cvfem,opt.mesh,opt.bndry);
     
     %% Solve flow problem
-    Q = update_flow_rate_tri(opt);
+    obj = obj.compute_flow_rates();
     
     %% Increment to new time
     obj = obj.compute_time_increment();
-
-    %% New time level
-    opt.cvfem.fTime = opt.cvfem.fTime + dt;
+    obj.time = obj.time + obj.time_step;
 
     %% Update flow volumes and moving boundaries
-    opt = update_filling_factor(opt,Q,dt);
+    obj = obj.update_filling_percentage();
+    [cvfem, bndry] = update_comp_domain(cvfem,mesh,bndry);
 
 end
 
 disp("end")
 
-end
-
-function flag = isFilled(fFactor,N,vent_idx)
-flag = all(abs(fFactor(vent_idx)-1) < eps);
 end

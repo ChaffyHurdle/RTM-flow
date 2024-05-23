@@ -1,4 +1,4 @@
-function [cvfem , bndry]= still_solver(cvfem,mesh,bndry)
+function obj = still_solver(obj)
 
 %% build/update FEM stiffness matrix
 cvfem.A = assembling_stiffness_tri(mesh.node, mesh.elem, cvfem.K, cvfem.A, cvfem.newActiveElement);
@@ -8,7 +8,7 @@ cvfem.A = assembling_stiffness_tri(mesh.node, mesh.elem, cvfem.K, cvfem.A, cvfem
 b = modify_rhs(cvfem.A,u,b);
 
 %% solve matrix equation for pressure
-cvfem.u = solve(cvfem.A,u,b,freeNode);
+cvfem.u(freeNode) = A(freeNode,freeNode)\b(freeNode);
 end
 
 function [u, b, freeNode, bdNode] = bcond_dirichlet(A,Dirichlet,activeNode, node, bndry)
@@ -27,8 +27,4 @@ end
 
 function b = modify_rhs(A,u,b)
 b = b - A*u;
-end
-
-function u = solve(A,u,b,freeNode)
-u(freeNode) = A(freeNode,freeNode)\b(freeNode);
 end

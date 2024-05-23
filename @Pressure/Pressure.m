@@ -8,6 +8,9 @@ classdef Pressure
         vent_func;
         p_D;
 
+        %% time stored for reference
+        time;
+
         %% FEM system of equations
         stiffness_matrix;
         load_vector;
@@ -17,17 +20,7 @@ classdef Pressure
         shape_fun_gradients;
         pressure_gradient;
         
-
         %% inlet, outlet, and Nuemann boundary node lists
-        inlet_nodes;
-        outlet_nodes;
-        Neumann_nodes;
-        free_nodes;
-
-        %% Legacy code
-        bndry_nodes;
-        nb_nodes;
-
         inlet_flag;
         inlet_pos;
         Dirichlet;
@@ -48,13 +41,16 @@ classdef Pressure
             obj.vent_func = vent_func;
             obj.p_D = p_D;
 
+            %% set time to zero
+            obj.time = 0.0;
+
             %% Allocating pressure and pressure gradient
-            obj.pressure = obj.p_D(mesh_class.nodes,[],[],[]);
+            num_dofs = mesh_class.num_nodes;
+            obj.pressure = zeros(num_dofs,1);
             obj = obj.compute_shape_fun_gradients();
             obj = obj.compute_pressure_gradient();
 
             %% Allocating FEM system of equations
-            num_dofs = mesh_class.num_nodes;
             obj.stiffness_matrix = spalloc(num_dofs,num_dofs,10*num_dofs);
             obj.load_vector = zeros(num_dofs,1);
 

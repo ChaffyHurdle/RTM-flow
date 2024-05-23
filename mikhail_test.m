@@ -17,10 +17,10 @@ function K = permeability(x)
     K = [1e-10 0; 0 1e-10];
 end
 
-function p = p_D(points,inlet_nodes,outlet_nodes,time)
+function p = p_D(pressure_class)
 
-p = zeros(size(points,1),1);
-p(inlet_nodes) = 1.5e5;
+p = pressure_class.pressure;
+p(pressure_class.inlet_nodes) = 1.5e5;
 
 end
 

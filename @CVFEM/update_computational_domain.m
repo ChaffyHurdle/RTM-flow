@@ -1,14 +1,14 @@
-function [cvfem, bndry] = update_comp_domain(cvfem,mesh,bndry)
+function obj = update_computational_domain(obj)
 
 %% unpacking
-activeElement = cvfem.activeElement;
-activeNode = cvfem.activeNode;
-elem = mesh.elem;
-nnode = mesh.nnode;
-new_filled_volume = cvfem.new_filled_volume;
-has_node_i = mesh.has_node_i;
-neumann_flag = bndry.neumann_flag;
-fFactor = cvfem.fFactor;
+activeElement = obj.active_element;
+activeNode = obj.active_node;
+elem = obj.mesh_class.elements;
+nnode = mesh_class.num_nodes;
+new_filled_volume = obj.new_filled_volume;
+has_node_i = obj.volume_class.has_node_i;
+neumann_flag = obj.pressure_class.neumann_flag;
+fFactor = obj.volume_fill_percentage;
 
 nelem = size(elem,1);
 newActiveElement = zeros(nelem,1);
@@ -53,9 +53,9 @@ end
 Dirichlet(fFactor>0&fFactor<1) = 1;
 
 %% Repacking
-cvfem.activeElement = activeElement;
-cvfem.activeNode = activeNode;
-cvfem.newActiveElement = newActiveElement;
-bndry.Dirichlet = Dirichlet;
+obj.active_nodes = activeNode;
+obj.active_elements = activeElement;
+obj.new_active_elements = newActiveElement;
+obj.dirichlet = Dirichlet;
 
 end
