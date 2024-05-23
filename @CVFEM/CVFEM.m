@@ -29,9 +29,6 @@ classdef CVFEM
         active_elements;
 
         %% Legacy code
-        has_node_i;
-        bndry_nodes;
-        nb_nodes;
         inlet_flag;
 
     end % end properties
@@ -54,34 +51,28 @@ classdef CVFEM
             obj.time = 0.0;
             obj.time_step = 0.0;
 
-            %% Setting up volume tracking properties
-            obj.volume_rates_of_flow = obj.compute_flow_rates();
-            obj.volume_filling_times = zeros(obj.mesh_class.num_elements,1);
-            obj.volume_fill_percentage = zeros(obj.mesh_class.num_elements,1);
-            obj.new_filled_volume = [];
-
              %% Setting up active nodes/elements
             obj.inlet_flag = pressure_class.inlet_flag;
 
-            active_nodes = zeros(obj.mesh_class.num_nodes,1);
+            active_nodes = zeros(mesh_class.num_nodes,1);
             active_nodes(obj.inlet_flag==1) = 1;
             
-            active_elements = zeros(obj.mesh_class.num_elements,1);
+            active_elements = zeros(mesh_class.num_elements,1);
             inlet_idx = find(obj.inlet_flag);
             % At the begining, there are no active elements because no flow moves into
             % the domain through the inlet yet. But in the flux calculation, elements
             % involving inlet nodes needs to be highlighted somehow. 
             % We assigned 0.5 to these elements to distinguish them from finite elements.
-            candidate = zeros(obj.mesh_class.num_elements,1);
+            candidate = zeros(mesh_class.num_elements,1);
             for i = 1 : nnz(obj.inlet_flag)
                 ival = inlet_idx(i);
-                for j = 2 : obj.has_node_i(ival,1)+1
-                    candidate(obj.has_node_i(ival,j))= 1;
+                for j = 2 : volume_class.has_node_i(ival,1)+1
+                    candidate(volume_class.has_node_i(ival,j))= 1;
                 end
             end
             candidate_idx = find(candidate);
             for i = 1 : length(candidate_idx)
-                if sum(obj.inlet_flag(obj.mesh_class.elements(candidate_idx(i),:)))==2
+                if sum(obj.inlet_flag(mesh_class.elements(candidate_idx(i),:)))==2
                     active_elements(candidate_idx(i)) = 0.5;
                 end
             end
@@ -89,6 +80,12 @@ classdef CVFEM
             obj.inlet_connected_elements = sparse(active_elements==0.5);
             obj.active_nodes = active_nodes;
             obj.active_elements = active_elements;
+
+            %% Setting up volume tracking properties
+            obj.volume_filling_times = zeros(mesh_class.num_nodes,1);
+            obj.volume_fill_percentage = zeros(mesh_class.num_nodes,1);
+            obj.new_filled_volume = [];
+            obj = obj.compute_flow_rates();
 
         end
 
