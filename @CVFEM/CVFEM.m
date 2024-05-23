@@ -14,9 +14,10 @@ classdef CVFEM
         visualise_class;
         options_class;
 
-
         time;
         time_step;
+
+        flow_rates;
 
     end % end properties
 
@@ -36,6 +37,7 @@ classdef CVFEM
 
             obj.time = 0.0;
             obj.time_step = 0.0;
+            obj.flow_rate = obj.compute_flow_rates();
 
         end
 
