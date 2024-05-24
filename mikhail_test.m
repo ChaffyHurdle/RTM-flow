@@ -20,7 +20,7 @@ end
 
 function p = p_D(pressure_class)
 
-p = pressure_class.pressure;
+p = 0*pressure_class.pressure + 1e5;
 p(pressure_class.inlet_flag) = 1.5e5;
 
 end

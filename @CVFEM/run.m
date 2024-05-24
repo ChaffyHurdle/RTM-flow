@@ -11,7 +11,7 @@ while ~obj.is_fully_saturated()
 
     %% Visualise
     obj.visualise_class.plot(obj);
-    %obj.visualise_class.annimate();
+    obj.visualise_class.annimate(obj);
     
     %% Increment to new time
     obj = obj.update_time_level();
