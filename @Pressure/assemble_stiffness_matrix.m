@@ -10,11 +10,11 @@ for i = 1 : length(new_elements)
 
     %% element geometry
     tri_nodes = obj.mesh_class.elements(new_elements(i),:);
-    centroid = obj.mesh_class.centroids(i,:);
-    area = obj.mesh_class.element_areas(i);
+    centroid = obj.mesh_class.centroids(new_elements(i),:);
+    area = obj.mesh_class.element_areas(new_elements(i));
     
     %% local FEM stiffness matrix
-    grad_phi = obj.shape_fun_gradients{i};
+    grad_phi = obj.shape_fun_gradients{new_elements(i)};
     A_local = (K(centroid)*grad_phi)'*grad_phi*area;
     
     %% local to global mapping

@@ -21,7 +21,7 @@ classdef Visualisation
         function obj = Visualisation()
             
             %% default is only plot the volume
-            obj.is_plotting_pressure = false;
+            obj.is_plotting_pressure = true;
             obj.is_plotting_velocity = false;
             obj.is_plotting_volume = true;
     
@@ -46,6 +46,22 @@ classdef Visualisation
                 axis equal
                 caxis([0 1]);
                 title(["plot of fluid position at time = " ...
+                                                num2str(cvfem_class.time)])
+            end
+
+            if obj.is_plotting_pressure
+                figure(2)
+                clf
+                
+                pressure = cvfem_class.pressure_class.pressure;
+
+                axis equal
+                axis auto
+                pdeplot(cvfem_class.mesh_class.nodes',...
+                        cvfem_class.mesh_class.elements', ...
+                        XYData=pressure,ZData = pressure,...
+                        ColorMap="jet")
+                title(["plot of pressure at time = " ...
                                                 num2str(cvfem_class.time)])
             end
 

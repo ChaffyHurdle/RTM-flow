@@ -15,12 +15,16 @@ my_cvfem.run()
 %% Argument set up
 function K = permeability(x)
     
-    K = [1e-10 0; 0 1e-10];
+    K = 1e-10 * eye(2);
+
+    if norm(x-[0.5 0.5]) < 0.25
+        K = 1e-14 * eye(2);
+    end
 end
 
 function p = p_D(pressure_class)
 
-p = 0*pressure_class.pressure + 1e5;
+p = 0*pressure_class.pressure;
 p(pressure_class.inlet_flag) = 1.5e5;
 
 end
