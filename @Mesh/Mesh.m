@@ -1,6 +1,6 @@
-classdef Mesh
+classdef DelaunayMesh
 
-    %% Mesh class to store finite element mesh & properties:
+    %% DelaunayMesh class to store finite element mesh & properties:
     % The mesh class serves to store the finite element mesh, properties of 
     % the mesh and properties of the elements within it.
     % 
@@ -36,7 +36,7 @@ classdef Mesh
         %
         % A method called compute_element_area stores the area of element
 
-        function obj = Mesh(arg1, arg2, arg3)
+        function obj = DelaunayMesh(arg1, arg2, arg3)
                 
                 %% mesh(<.mat file containing points p and triangles t>)
                 if nargin == 1
