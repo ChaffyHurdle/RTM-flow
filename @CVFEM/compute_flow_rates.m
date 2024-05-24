@@ -69,7 +69,7 @@ function qn = local_flux_tri_inlet(x,v,fFactor,inlet_flag, bnd_flag,darcy_class)
 %% function to compute inflow/outflow of boundary-lying elements
 
 if sum(bnd_flag)==3
-    error('This code does not support an triangular element with three boundary nodes.');
+    %error('This code does not support an triangular element with three boundary nodes.');
 end
 qn = zeros(3,1);
 
