@@ -2,8 +2,11 @@ classdef Pressure
 
     properties
     
+        %% mesh and darcy classes stored for easy access
         mesh_class;
         darcy_class;
+
+        %% functions to determine inlet/vent pressures
         inlet_func;
         vent_func;
         p_D;

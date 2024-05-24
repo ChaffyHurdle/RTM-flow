@@ -1,4 +1,4 @@
-classdef Volume
+classdef VoronoiMesh
 
     properties
     
@@ -22,7 +22,7 @@ classdef Volume
     methods
         %% constructor of the Volume class
 
-        function obj = Volume(mesh_class,darcy_class)
+        function obj = VoronoiMesh(mesh_class,darcy_class)
 
             obj.mesh_class = mesh_class;
 

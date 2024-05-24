@@ -1,8 +1,8 @@
 %% Problem set up
-my_mesh = Mesh(p,e,t);
+my_mesh = DelaunayMesh(p,e,t);
 my_darcy = Darcy(0.1, 0.35, 0.2, @permeability);
 my_pressure = Pressure(my_mesh,my_darcy,@is_inlet,@is_vent,@p_D);
-my_volume = Volume(my_mesh,my_darcy);
+my_volume = VoronoiMesh(my_mesh,my_darcy);
 my_velocity = Velocity(my_volume,my_darcy);
 my_visuals = Visualisation();
 
@@ -17,9 +17,6 @@ function K = permeability(x)
     
     K = 1e-10 * eye(2);
 
-    if norm(x-[0.5 0.5]) < 0.25
-        K = 1e-14 * eye(2);
-    end
 end
 
 function p = p_D(pressure_class)
