@@ -11,8 +11,7 @@ if isempty(candidates)
     warning('No positive flux found.')
     dt = 0;
 else
-    dt = min(empty_percentage(candidates)....
-                                        *Vol(candidates)./Q(candidates));
+    dt = min(empty_percentage(candidates).*Vol(candidates)./Q(candidates));
 end
 
 obj.time_step = dt;

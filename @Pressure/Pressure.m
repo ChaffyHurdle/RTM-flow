@@ -29,6 +29,11 @@ classdef Pressure
         vent_elem;
         Neumann_flag;
 
+        %% degrees of freedom in the FEM system
+        active_nodes;
+        new_active_elements;
+
+
     end % end properties
 
     methods

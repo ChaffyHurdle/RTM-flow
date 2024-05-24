@@ -27,4 +27,5 @@ obj.vent_idx = find(obj.vent_flag);
 obj.Neumann_flag = false(num_nodes,1);
 obj.Neumann_flag(boundary_nodes) = true;
 obj.Neumann_flag(obj.inlet_flag | obj.vent_flag) = false;
+obj.active_nodes = obj.inlet_flag;
 end

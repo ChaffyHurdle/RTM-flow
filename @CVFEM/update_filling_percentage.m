@@ -2,9 +2,9 @@ function obj = update_filling_percentage(obj)
 
 %% Unpack variables for ease of reading
 f = obj.volume_fill_percentage;
-V = obj.volume_measures;
+V = obj.volume_class.volume_measures;
 Q = obj.volume_rates_of_flow;
-dt = obj.next_volume_fill_timestep;
+dt = obj.time_step;
 
 %% increase volume fill factor for any inflow elements
 positive_flow_volumes = find(Q>0);
@@ -23,6 +23,6 @@ new_filled_volume = positive_flow_volumes(f_new>f(positive_flow_volumes)...
                                           & f_new == 1);
 
 %% Repacking final outputs
-obj.volume_fill_percentage = f_new;
+obj.volume_fill_percentage(positive_flow_volumes) = f_new;
 obj.new_filled_volume = new_filled_volume;
 end

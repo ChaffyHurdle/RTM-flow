@@ -28,12 +28,9 @@ for i = 1:length(candidate_elem)
     %% extract local element properties
     element = obj.mesh_class.elements(candidate_elem(i),:);
     nodes = obj.mesh_class.nodes(element,:);
-    centroid = obj.mesh_class.centroids(candidate_elem(i),:);
 
-    %% compute velocity in element centre
-    grad_p = obj.pressure_class.pressure_gradient(candidate_elem(i),:)';
-
-    vi = -K(centroid)*grad_p/(obj.darcy_class.viscosity*obj.darcy_class.porosity);
+    %% extract velocity in element centre
+    vi = obj.velocity_class.velocity(candidate_elem(i),:)';
 
     is_inlet_connected = ~(sum(obj.inlet_flag(element)) == 0);
 
@@ -45,7 +42,7 @@ for i = 1:length(candidate_elem)
         local_flow_rate = local_flux_tri_inlet(nodes,vi,fFactor(element),obj.inlet_flag(element),bnd_flag(element),obj.darcy_class);
     else
 
-        local_flow_rate = local_flux_tri(normal_vec(elem_idx,:),vi,obj.darcy_class);
+        local_flow_rate = local_flux_tri(normal_vec(candidate_elem(i),:),vi,obj.darcy_class);
     end
 
     obj.volume_rates_of_flow(element) = obj.volume_rates_of_flow(element)...

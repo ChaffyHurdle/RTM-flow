@@ -10,6 +10,7 @@ classdef CVFEM
         mesh_class;
         pressure_class;
         volume_class;
+        velocity_class;
         darcy_class;
         visualise_class;
         options_class;
@@ -22,14 +23,12 @@ classdef CVFEM
         volume_filling_times;
         volume_rates_of_flow;
         new_filled_volume;
-        new_active_elements;
 
         %% Features for the FEM pressure solver
         inlet_connected_elements;
         inlet_flag;
         active_nodes;
         active_elements;
-        dirichlet;
 
     end % end properties
 
@@ -38,11 +37,15 @@ classdef CVFEM
         % A constructor that takes and stores prebuilt classes of the mesh,
         % pressure, volum, darcy, visualisation and extras classes.
 
-        function obj = CVFEM(mesh_class,pressure_class,volume_class,darcy_class,visualise_class,options_class)
+        function obj = CVFEM(mesh_class,pressure_class,...
+                             volume_class,velocity_class,...
+                             darcy_class,...
+                             visualise_class,options_class)
 
             obj.mesh_class = mesh_class;
             obj.pressure_class = pressure_class;
             obj.volume_class = volume_class;
+            obj.velocity_class = velocity_class;
             obj.darcy_class = darcy_class;
             obj.visualise_class = visualise_class;
             obj.options_class = options_class;
@@ -59,9 +62,6 @@ classdef CVFEM
             
             active_elements = zeros(mesh_class.num_elements,1);
             inlet_idx = find(inlet_flag);
-            % At the begining, there are no active elements because no flow moves into
-            % the domain through the inlet yet. But in the flux calculation, elements
-            % involving inlet nodes needs to be highlighted somehow. 
             % We assigned 0.5 to these elements to distinguish them from finite elements.
             candidate = zeros(mesh_class.num_elements,1);
             for i = 1 : nnz(inlet_flag)

@@ -1,10 +1,10 @@
-function obj = assemble_stiffness_matrix(obj, newElement)
+function obj = assemble_stiffness_matrix(obj)
 %% This function constructs the stiffness matrix required to solve for the 
 %% pressure field.
 
-new_elements = find(newElement);
+new_elements = find(obj.new_active_elements);
 
-K = obj.darcxy_class.permeability;
+K = obj.darcy_class.permeability;
 
 for i = 1 : length(new_elements)
 

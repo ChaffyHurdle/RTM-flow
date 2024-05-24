@@ -20,7 +20,7 @@ classdef Volume
     end % end properties
 
     methods
-        %% Methods of the Volume class
+        %% constructor of the Volume class
 
         function obj = Volume(mesh_class,darcy_class)
 
