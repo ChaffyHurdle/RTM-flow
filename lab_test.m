@@ -29,10 +29,10 @@ end
 function bool = is_inlet(node)
 
 %% inlets on central circles (eps neeeded for rounding error)
-is_north_inlet = norm(node-[0.209, 0.3135]) < 0.0025+eps;
-is_south_inlet = norm(node-[0.209, 0.1045]) < 0.0025+eps;
-is_east_inlet = norm(node-[0.3135, 0.209]) < 0.0025+eps;
-is_west_inlet = norm(node-[0.1045, 0.209]) < 0.0025+eps;
+is_north_inlet = norm(node-[0.209, 0.3135]) < 0.0025;
+is_south_inlet = norm(node-[0.209, 0.1045]) < 0.0025;
+is_east_inlet = norm(node-[0.3135, 0.209]) < 0.0025;
+is_west_inlet = norm(node-[0.1045, 0.209]) < 0.0025;
 
 bool = is_north_inlet || is_south_inlet || is_east_inlet || is_west_inlet;
 
