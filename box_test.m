@@ -15,7 +15,11 @@ my_cvfem.run()
 %% Argument set up
 function K = permeability(x)
     
-    K = 1e-10 * eye(2);
+    if norm(x - [0.5 0.5])<0.25
+        K = 1e-10 * eye(2);
+    else
+        K = 1e-8 * eye(2);
+    end
 
 end
 
