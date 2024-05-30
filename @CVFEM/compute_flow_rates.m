@@ -2,7 +2,6 @@ function obj = compute_flow_rates(obj)
 
 %% Extract needed information
 fFactor = obj.volume_fill_percentage;
-K = obj.darcy_class.permeability;
 normal_vec = obj.volume_class.volume_outflow_vectors;
 
 %% Sets up flow rates if needed
@@ -32,7 +31,7 @@ for i = 1:length(candidate_elem)
     %% extract velocity in element centre
     vi = obj.velocity_class.velocity(candidate_elem(i),:)';
 
-    is_inlet_connected = ~(sum(obj.inlet_flag(element)) == 0);
+    is_inlet_connected = sum(obj.inlet_flag(element)) ~= 0;
 
     if is_inlet_connected
         
