@@ -96,7 +96,7 @@ classdef CVFEM
 
             %% Setting up void tracking properties
             obj.void_volume = zeros(mesh_class.num_nodes,2);
-            obj.is_volume_void = ones(mesh_class.num_nodes,1);
+            obj.voidID = ones(opt.mesh.nnode,1);
 
         end
 

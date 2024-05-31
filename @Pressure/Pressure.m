@@ -55,6 +55,7 @@ classdef Pressure
             %% Allocating pressure and pressure gradient
             num_dofs = mesh_class.num_nodes;
             obj.pressure = zeros(num_dofs,1);
+            obj.pressure = obj.p_D(obj);
             obj = obj.compute_shape_fun_gradients();
             obj = obj.compute_pressure_gradient();
 
