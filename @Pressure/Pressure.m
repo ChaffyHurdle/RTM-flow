@@ -52,6 +52,9 @@ classdef Pressure
             %% set time to zero
             obj.time = 0.0;
 
+            %% Computing information for boundary conditions
+            obj = obj.compute_inlets_outlets();
+
             %% Allocating pressure and pressure gradient
             num_dofs = mesh_class.num_nodes;
             obj.pressure = zeros(num_dofs,1);
@@ -62,10 +65,6 @@ classdef Pressure
             %% Allocating FEM system of equations
             obj.stiffness_matrix = spalloc(num_dofs,num_dofs,10*num_dofs);
             obj.load_vector = zeros(num_dofs,1);
-
-            %% Computing information for boundary conditions
-            obj = obj.compute_inlets_outlets();
-            
 
         end
 

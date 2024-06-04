@@ -3,8 +3,8 @@ function obj = solve(obj)
 %% build/update FEM stiffness matrix
 obj = obj.assemble_stiffness_matrix();
 
-%% set Dirichlet BC values
-obj.pressure = obj.p_D(obj);
+%% set Dirichlet BCs
+%obj.pressure = obj.p_D(obj);
 
 %% impose dirichlet boundary conditions
 free = obj.active_nodes & ~obj.Dirichlet; fixed = ~free;

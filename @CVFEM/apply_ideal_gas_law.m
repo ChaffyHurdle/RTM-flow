@@ -9,7 +9,7 @@ num_voids = obj.num_voids;
 
 %% boundary conditions
 free = obj.pressure_class.active_nodes & ~obj.pressure_class.Dirichlet; 
-fixed = ~free;
+fixed = find(~free);
 
 %% computing void-free pressure boundary conditions
 vent_flag = obj.pressure_class.vent_flag;

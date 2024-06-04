@@ -59,4 +59,7 @@ obj.active_elements = activeElement;
 obj.pressure_class.new_active_elements = newActiveElement;
 obj.pressure_class.Dirichlet = Dirichlet;
 
+%% set Dirichlet BC values
+obj.pressure_class.pressure = obj.pressure_class.p_D(obj.pressure_class);
+
 end
