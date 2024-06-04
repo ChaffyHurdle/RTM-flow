@@ -46,7 +46,7 @@ classdef DelaunayMesh
                                               ' requires matlab filename'])
                     end
                     
-                    % unpacking pdetool objects
+                    %% unpacking pdetool objects
                     data = load(arg1);
                     struct_name = fieldnames(data);
                     mesh_struct = data.(struct_name{1});
