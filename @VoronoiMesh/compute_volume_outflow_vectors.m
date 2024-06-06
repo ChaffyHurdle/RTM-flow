@@ -1,8 +1,8 @@
 function obj = compute_volume_outflow_vectors(obj)
 
-nodes = obj.mesh_class.nodes;
-elements = obj.mesh_class.elements;
-centroids = obj.mesh_class.centroids;
+nodes = obj.Delaunay_mesh_class.nodes;
+elements = obj.Delaunay_mesh_class.elements;
+centroids = obj.Delaunay_mesh_class.centroids;
 
 %% compute midpoints on triangular elements
 a = (nodes(elements(:,1),:) + nodes(elements(:,2),:))/2;

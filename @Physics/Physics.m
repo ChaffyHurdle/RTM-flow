@@ -1,7 +1,7 @@
-classdef Darcy
+classdef Physics
     
-    %% Darcy class to Darcy's law and important material properties:
-    % The darcy class serves to store the domain material properties:
+    %% Physics class to store Darcy's law and important material properties:
+    % The physics class serves to store the domain material properties:
     % viscosity, porosity, thickness (2d -> 3d scaling). Each variable is
     % a matlab function which inputs an arg structure containing the 
     % necessary information.
@@ -21,7 +21,7 @@ classdef Darcy
         % properties. These must be defined within matlab before entering
         % into the constructor function.
 
-        function obj = Darcy(viscosity, porosity, thickness, permeability)
+        function obj = Physics(viscosity, porosity, thickness, permeability)
 
             obj.viscosity = viscosity;
             obj.porosity = porosity;

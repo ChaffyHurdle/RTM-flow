@@ -4,7 +4,7 @@ function obj = assemble_stiffness_matrix(obj)
 
 new_elements = find(obj.new_active_elements);
 
-K = obj.darcy_class.permeability;
+K = obj.physics_class.permeability;
 
 for i = 1 : length(new_elements)
 

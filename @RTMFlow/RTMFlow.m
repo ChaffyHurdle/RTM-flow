@@ -1,7 +1,7 @@
-classdef CVFEM
+classdef RTMFlow
 
     %% Method class to store algorithms, steps and properties of the CVFEM:
-    % The cvfem class store the components of the control volume finite
+    % The RTM-flow class store the components of the control volume finite
     % element method. This includes classes for the mesh, pressure FEM
     % solver, volume FV solver, darcy flow, visualisation & extra options.
 
@@ -43,10 +43,10 @@ classdef CVFEM
         % A constructor that takes and stores prebuilt classes of the mesh,
         % pressure, volum, darcy, visualisation and extras classes.
 
-        function obj = CVFEM(mesh_class,pressure_class,...
-                             volume_class,velocity_class,...
-                             darcy_class,...
-                             visualise_class,options_class)
+        function obj = RTMFlow(mesh_class,pressure_class,...
+                               volume_class,velocity_class,...
+                               darcy_class,...
+                               visualise_class)
 
             obj.mesh_class = mesh_class;
             obj.pressure_class = pressure_class;
@@ -54,7 +54,6 @@ classdef CVFEM
             obj.velocity_class = velocity_class;
             obj.darcy_class = darcy_class;
             obj.visualise_class = visualise_class;
-            obj.options_class = options_class;
 
             %% Setting up time and time stepping
             obj.time = 0.0;

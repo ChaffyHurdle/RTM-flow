@@ -2,9 +2,9 @@ classdef Pressure
 
     properties
     
-        %% mesh and darcy classes stored for easy access
+        %% mesh and physics classes stored for easy access
         mesh_class;
-        darcy_class;
+        physics_class;
 
         %% functions to determine inlet/vent pressures
         inlet_func;
@@ -41,10 +41,10 @@ classdef Pressure
 
     methods
 
-        function obj = Pressure(mesh_class,darcy_class,inlet_func,vent_func,p_D)
+        function obj = Pressure(mesh_class,physics_class,inlet_func,vent_func,p_D)
 
             obj.mesh_class = mesh_class;
-            obj.darcy_class = darcy_class;
+            obj.physics_class = physics_class;
             obj.inlet_func = inlet_func;
             obj.vent_func = vent_func;
             obj.p_D = p_D;
