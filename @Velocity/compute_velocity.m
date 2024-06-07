@@ -6,9 +6,9 @@ grad_p = pressure_class.pressure_gradient;
 centroids = pressure_class.mesh_class.centroids;
 
 %% Darcy's law applied
-K = obj.darcy_class.permeability;
-phi = obj.darcy_class.porosity;
-mu = obj.darcy_class.viscosity;
+K = obj.physics_class.permeability;
+phi = obj.physics_class.porosity;
+mu = obj.physics_class.viscosity;
 
 for i=1:size(centroids,1)
 
