@@ -2,9 +2,7 @@ classdef Physics
     
     %% Physics class to store Darcy's law and important material properties:
     % The physics class serves to store the domain material properties:
-    % viscosity, porosity, thickness (2d -> 3d scaling). Each variable is
-    % a matlab function which inputs an arg structure containing the 
-    % necessary information.
+    % viscosity, porosity, thickness (2d -> 3d scaling).
 
     properties
         %% Material properties
