@@ -2,7 +2,7 @@ function obj = find_dryspots(obj)
 
 %% unpacking variables
 fFactor = obj.volume_fill_percentage;
-vent_idx = obj.pressure_class.vent_idx;
+vent_nodes = find(obj.pressure_class.is_vent);
 nb_nodes = obj.volume_class.connected_polygons;
 
 nnode = length(fFactor);
@@ -14,8 +14,8 @@ is_volume_void(fFactor == 1) = 0.5; % Filled volume
 
 lastIdx = 0;
 
-for i = 1 : length(vent_idx)
-    vi = vent_idx(i);
+for i = 1 : length(vent_nodes)
+    vi = vent_nodes(i);
     if fFactor(vi) < 1
         lastIdx = lastIdx + 1;
         queue(lastIdx) = vi;

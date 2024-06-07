@@ -8,12 +8,12 @@ fFactor = obj.volume_fill_percentage;
 num_voids = obj.num_voids;
 
 %% boundary conditions
-free = obj.pressure_class.active_nodes & ~obj.pressure_class.Dirichlet; 
+free = obj.pressure_class.is_node_active & ~obj.pressure_class.is_Dirichlet; 
 fixed = find(~free);
 
 %% computing void-free pressure boundary conditions
-vent_flag = obj.pressure_class.vent_flag;
-vent_idx = obj.pressure_class.vent_idx;
+is_vent = obj.pressure_class.is_vent;
+vent_nodes = find(is_vent);
 pressure = obj.pressure_class.p_D(obj.pressure_class);
 
 %% Do nothing if no voids present
@@ -23,7 +23,7 @@ if num_voids == 0
 end
 
 %% This method requires constant vent pressure
-pvent = pressure(vent_idx(1));
+pvent = pressure(vent_nodes(1));
 
 volume_of_voids = zeros(size(V));
 
@@ -40,7 +40,7 @@ end
 %% apply the ideal gas law 
 for i = 1 : length(fixed)
     bdn_i = fixed(i);
-    if void_volume(bdn_i)>0&&~vent_flag(bdn_i)&&volume_of_voids(bdn_i)>0
+    if void_volume(bdn_i)>0&&~is_vent(bdn_i)&&volume_of_voids(bdn_i)>0
         pressure(bdn_i) = pvent*void_volume(bdn_i)/volume_of_voids(bdn_i);
     end
 end

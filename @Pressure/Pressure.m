@@ -24,16 +24,13 @@ classdef Pressure
         pressure_gradient;
         
         %% inlet, outlet, and Nuemann boundary node lists
-        inlet_flag;
-        inlet_pos;
-        Dirichlet;
-        vent_flag;
-        vent_idx;
-        vent_elem;
-        Neumann_flag;
+        is_inlet;
+        is_Dirichlet;
+        is_vent;
+        is_Neumann;
 
         %% degrees of freedom in the FEM system
-        active_nodes;
+        is_node_active;
         new_active_elements;
 
 

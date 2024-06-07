@@ -27,7 +27,7 @@ classdef RTMFlow
         %% Features for the FEM pressure solver
         inlet_connected_elements;
         inlet_flag;
-        active_nodes;
+        is_node_active;
         active_elements;
 
         %% Void tracking featrues
@@ -47,7 +47,8 @@ classdef RTMFlow
                                volume_class,velocity_class,...
                                darcy_class,...
                                visualise_class)
-
+            
+            %% store other classes
             obj.mesh_class = mesh_class;
             obj.pressure_class = pressure_class;
             obj.volume_class = volume_class;
@@ -60,17 +61,15 @@ classdef RTMFlow
             obj.time_step = 0.0;
 
              %% Setting up active nodes/elements
-            inlet_flag = pressure_class.inlet_flag;
-
-            active_nodes = zeros(mesh_class.num_nodes,1);
-            active_nodes(inlet_flag==1) = 1;
+            inlet_flag = pressure_class.is_inlet;
+            active_nodes = pressure_class.is_node_active;
             
             active_elements = zeros(mesh_class.num_elements,1);
-            inlet_idx = find(inlet_flag);
+            inlet_nodes = find(inlet_flag);
             % We assigned 0.5 to these elements to distinguish them from finite elements.
             candidate = zeros(mesh_class.num_elements,1);
-            for i = 1 : nnz(inlet_flag)
-                ival = inlet_idx(i);
+            for i = 1 : length(inlet_nodes)
+                ival = inlet_nodes(i);
                 for j = 2 : volume_class.has_node_i(ival,1)+1
                     candidate(volume_class.has_node_i(ival,j))= 1;
                 end
@@ -83,7 +82,7 @@ classdef RTMFlow
             end
             
             obj.inlet_connected_elements = sparse(active_elements==0.5);
-            obj.active_nodes = active_nodes;
+            obj.is_node_active = active_nodes;
             obj.active_elements = active_elements;
             obj.inlet_flag = inlet_flag;
 

@@ -1,10 +1,9 @@
 function bool = is_fully_saturated(obj)
-% function returns a boolean to determine if the domain is fully saturated 
-% or not 
-
+%% function returns a boolean to determine if the domain is fully saturated 
+%% or not 
 
 %% check for all vent elements saturated
-vent_flag = obj.pressure_class.vent_flag;
+vent_flag = obj.pressure_class.is_vent;
 bool = all(abs(obj.volume_fill_percentage(vent_flag)-1) < eps);
 
 end

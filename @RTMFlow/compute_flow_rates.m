@@ -9,7 +9,7 @@ obj.volume_rates_of_flow = zeros(obj.mesh_class.num_nodes,1);
 
 %% construct a list of possible nodes/elements to be added
 candidate_elem = zeros(obj.mesh_class.num_elements,1);
-candidate_node = find(~xor(obj.active_nodes==1,1-obj.volume_fill_percentage > 1e-15));
+candidate_node = find(~xor(obj.is_node_active==1,1-obj.volume_fill_percentage > 1e-15));
 
 for i = 1 : length(candidate_node)
     candidate = candidate_node(i);

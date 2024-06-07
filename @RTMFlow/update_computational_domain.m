@@ -2,12 +2,12 @@ function obj = update_computational_domain(obj)
 
 %% unpacking
 activeElement = obj.active_elements;
-activeNode = obj.active_nodes;
+activeNode = obj.is_node_active;
 elem = obj.mesh_class.elements;
 nnode = obj.mesh_class.num_nodes;
 new_filled_volume = obj.new_filled_volume;
 has_node_i = obj.volume_class.has_node_i;
-neumann_flag = obj.pressure_class.Neumann_flag;
+neumann_flag = obj.pressure_class.is_Neumann;
 fFactor = obj.volume_fill_percentage;
 
 nelem = size(elem,1);
@@ -53,11 +53,11 @@ end
 Dirichlet(fFactor>0&fFactor<1) = 1;
 
 %% Repacking
-obj.active_nodes = activeNode; 
-obj.pressure_class.active_nodes = activeNode;
+obj.is_node_active = activeNode; 
+obj.pressure_class.is_node_active = activeNode;
 obj.active_elements = activeElement;
 obj.pressure_class.new_active_elements = newActiveElement;
-obj.pressure_class.Dirichlet = Dirichlet;
+obj.pressure_class.is_Dirichlet = Dirichlet;
 
 %% set Dirichlet BC values
 obj.pressure_class.pressure = obj.pressure_class.p_D(obj.pressure_class);
