@@ -23,6 +23,7 @@ classdef Visualisation
             %% default is only plot the volume
             obj.is_plotting_pressure = true;
             obj.is_plotting_velocity = false;
+            obj.is_plotting_volume_flow = false;
             obj.is_plotting_volume = true;
     
             %% no animations by default (heavy on cpu)
