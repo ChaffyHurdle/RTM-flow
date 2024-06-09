@@ -64,7 +64,7 @@ if obj.is_plotting_volume_flow
 end
 
 %% plots velocity field
-if obj.is_plotting_volume_flow
+if obj.is_plotting_velocity
     figure(4)
     clf
     
