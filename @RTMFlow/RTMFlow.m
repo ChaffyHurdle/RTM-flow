@@ -30,12 +30,6 @@ classdef RTMFlow
         is_node_active;
         active_elements;
 
-        %% Void tracking featrues
-        num_voids = 0;
-        void_volume;
-        is_volume_void;
-        is_dryspots; 
-
     end % end properties
 
     methods
@@ -91,10 +85,6 @@ classdef RTMFlow
             obj.volume_fill_percentage = zeros(mesh_class.num_nodes,1);
             obj.new_filled_volume = [];
             obj = obj.compute_flow_rates();
-
-            %% Setting up void tracking properties
-            obj.void_volume = zeros(mesh_class.num_nodes,2);
-            obj.is_volume_void = ones(mesh_class.num_nodes,1);
 
         end
 

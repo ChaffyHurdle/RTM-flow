@@ -19,11 +19,6 @@ while ~obj.is_fully_saturated()
     obj = obj.update_filling_percentage();
     obj = obj.update_computational_domain();
 
-    %% Compute any voids/vacuum
-    obj = obj.find_dryspots();
-    obj = obj.void_partition();
-    obj = obj.apply_ideal_gas_law();
-
 end
 
 disp("end")
