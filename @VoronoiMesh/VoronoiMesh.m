@@ -22,11 +22,11 @@ classdef VoronoiMesh
     methods
         %% constructor of the Volume class
 
-        function obj = VoronoiMesh(Delaunay_mesh_class,darcy_class)
+        function obj = VoronoiMesh(Delaunay_mesh_class,physics_class)
 
             obj.Delaunay_mesh_class = Delaunay_mesh_class;
 
-            obj = obj.compute_volume_measures(darcy_class.thickness);
+            obj = obj.compute_volume_measures(physics_class.thickness);
             obj = obj.compute_volume_outflow_vectors();
             obj = obj.compute_connectivity();
 

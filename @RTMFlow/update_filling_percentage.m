@@ -2,7 +2,7 @@ function obj = update_filling_percentage(obj)
 
 %% Unpack variables for ease of reading
 f = obj.volume_fill_percentage;
-V = obj.volume_class.volume_measures;
+V = obj.Voronoi_mesh_class.volume_measures;
 Q = obj.volume_rates_of_flow;
 dt = obj.time_step;
 

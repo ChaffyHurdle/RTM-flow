@@ -2,12 +2,10 @@
 my_mesh = DelaunayMesh(p,e,t);
 my_physics = Physics(0.1, 0.35, 0.2, @permeability);
 my_pressure = Pressure(my_mesh,my_physics,@is_inlet,@is_vent,@p_D);
-my_volume = VoronoiMesh(my_mesh,my_physics);
-my_velocity = Velocity(my_volume,my_physics);
-my_visuals = Visualisation();
+%my_visuals = Visualisation();
 
 %% compile CVFEM method
-my_RTMFlow = RTMFlow(my_mesh,my_pressure,my_volume,my_velocity,my_physics,my_visuals);
+my_RTMFlow = RTMFlow(my_mesh,my_physics,my_pressure);
 
 %% Execute solver
 my_RTMFlow.run()
@@ -21,8 +19,7 @@ end
 
 function p = p_D(pressure_class)
 
-p = 0*pressure_class.pressure;
-p = p + 1e5;
+p = 0*pressure_class.pressure + 1e5;
 p(pressure_class.is_inlet) = 1.5e5;
 
 end

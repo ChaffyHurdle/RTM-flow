@@ -1,12 +1,12 @@
 function obj = update_computational_domain(obj)
 
 %% unpacking
-activeElement = obj.active_elements;
-activeNode = obj.is_node_active;
-elem = obj.mesh_class.elements;
-nnode = obj.mesh_class.num_nodes;
+active_elements = obj.active_elements;
+is_node_active = obj.pressure_class.is_node_active;
+elem = obj.Delaunay_mesh_class.elements;
+nnode = obj.Delaunay_mesh_class.num_nodes;
 new_filled_volume = obj.new_filled_volume;
-has_node_i = obj.volume_class.has_node_i;
+has_node_i = obj.Voronoi_mesh_class.has_node_i;
 neumann_flag = obj.pressure_class.is_Neumann;
 fFactor = obj.volume_fill_percentage;
 
@@ -23,13 +23,12 @@ for i = 1 : length(new_filled_volume)
         candidate_elem(has_node_i(ni,j)) = 1;
     end
 end
-newActiveElement(activeElement<1 & candidate_elem ==1) = 1;
+newActiveElement(active_elements<1 & candidate_elem ==1) = 1;
 elems = elem(newActiveElement==1,:);
-activeNode(elems(:))=1;
-activeElement = min(ones(nelem,1),activeElement + newActiveElement);
+is_node_active(elems(:))=1;
+active_elements = min(ones(nelem,1),active_elements + newActiveElement);
 
-% aelem_idx = find(activeElement==1);
-aelem = elem(activeElement==1,:);
+aelem = elem(active_elements==1,:);
 
 total_edge = [aelem(:,[2 3]); aelem(:,[3,1]); aelem(:,[1,2])];
 
@@ -45,7 +44,7 @@ for i = 1:length(bnd_idx)
     if ~neumann_flag(bnd_idx_i)
         Dirichlet(bnd_idx_i)=1;
     else % We make the intersection between flow front and wall Dirichelt
-        if sum(activeElement(has_node_i(bnd_idx_i,2:has_node_i(bnd_idx_i,1)+1)))<has_node_i(bnd_idx_i,1)
+        if sum(active_elements(has_node_i(bnd_idx_i,2:has_node_i(bnd_idx_i,1)+1)))<has_node_i(bnd_idx_i,1)
             Dirichlet(bnd_idx_i) = 1;
         end
     end
@@ -53,9 +52,8 @@ end
 Dirichlet(fFactor>0&fFactor<1) = 1;
 
 %% Repacking
-obj.is_node_active = activeNode; 
-obj.pressure_class.is_node_active = activeNode;
-obj.active_elements = activeElement;
+obj.pressure_class.is_node_active = is_node_active;
+obj.active_elements = active_elements;
 obj.pressure_class.new_active_elements = newActiveElement;
 obj.pressure_class.is_Dirichlet = Dirichlet;
 

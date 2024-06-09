@@ -7,13 +7,12 @@ classdef RTMFlow
 
     properties
 
-        mesh_class;
+        Delaunay_mesh_class;
         pressure_class;
-        volume_class;
+        Voronoi_mesh_class;
         velocity_class;
-        darcy_class;
+        physics_class;
         visualise_class;
-        options_class;
 
         time;
         time_step;
@@ -23,32 +22,30 @@ classdef RTMFlow
         volume_filling_times;
         volume_rates_of_flow;
         new_filled_volume;
-
-        %% Features for the FEM pressure solver
-        inlet_connected_elements;
-        inlet_flag;
-        is_node_active;
         active_elements;
 
     end % end properties
 
     methods
-    %% CVFEM class methods:
-        % A constructor that takes and stores prebuilt classes of the mesh,
-        % pressure, volum, darcy, visualisation and extras classes.
+    %% CVFEM class methods
 
-        function obj = RTMFlow(mesh_class,pressure_class,...
-                               volume_class,velocity_class,...
-                               darcy_class,...
-                               visualise_class)
+    function obj = RTMFlow(Delaunay_mesh_class,physics_class,...
+                           pressure_class,...
+                           visualise_class)
             
             %% store other classes
-            obj.mesh_class = mesh_class;
+            obj.Delaunay_mesh_class = Delaunay_mesh_class;
             obj.pressure_class = pressure_class;
-            obj.volume_class = volume_class;
-            obj.velocity_class = velocity_class;
-            obj.darcy_class = darcy_class;
-            obj.visualise_class = visualise_class;
+            obj.physics_class = physics_class;
+            obj.Voronoi_mesh_class = VoronoiMesh(Delaunay_mesh_class,physics_class);
+            obj.velocity_class = Velocity(obj.Voronoi_mesh_class,physics_class);
+            
+            %% Default to no visuals unless provided in constructor
+            obj.visualise_class = Visualisation();
+
+            if nargin == 4
+                obj.visualise_class = visualise_class;
+            end
 
             %% Setting up time and time stepping
             obj.time = 0.0;
@@ -56,33 +53,29 @@ classdef RTMFlow
 
              %% Setting up active nodes/elements
             inlet_flag = pressure_class.is_inlet;
-            active_nodes = pressure_class.is_node_active;
             
-            active_elements = zeros(mesh_class.num_elements,1);
+            active_elements = zeros(Delaunay_mesh_class.num_elements,1);
             inlet_nodes = find(inlet_flag);
             % We assigned 0.5 to these elements to distinguish them from finite elements.
-            candidate = zeros(mesh_class.num_elements,1);
+            candidate = zeros(Delaunay_mesh_class.num_elements,1);
             for i = 1 : length(inlet_nodes)
                 ival = inlet_nodes(i);
-                for j = 2 : volume_class.has_node_i(ival,1)+1
-                    candidate(volume_class.has_node_i(ival,j))= 1;
+                for j = 2 : obj.Voronoi_mesh_class.has_node_i(ival,1)+1
+                    candidate(obj.Voronoi_mesh_class.has_node_i(ival,j))= 1;
                 end
             end
             candidate_idx = find(candidate);
             for i = 1 : length(candidate_idx)
-                if sum(inlet_flag(mesh_class.elements(candidate_idx(i),:)))==2
+                if sum(inlet_flag(Delaunay_mesh_class.elements(candidate_idx(i),:)))==2
                     active_elements(candidate_idx(i)) = 0.5;
                 end
             end
             
-            obj.inlet_connected_elements = sparse(active_elements==0.5);
-            obj.is_node_active = active_nodes;
             obj.active_elements = active_elements;
-            obj.inlet_flag = inlet_flag;
 
             %% Setting up volume tracking properties
-            obj.volume_filling_times = zeros(mesh_class.num_nodes,1);
-            obj.volume_fill_percentage = zeros(mesh_class.num_nodes,1);
+            obj.volume_filling_times = zeros(Delaunay_mesh_class.num_nodes,1);
+            obj.volume_fill_percentage = zeros(Delaunay_mesh_class.num_nodes,1);
             obj.new_filled_volume = [];
             obj = obj.compute_flow_rates();
 

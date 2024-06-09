@@ -2,21 +2,22 @@ function obj = compute_flow_rates(obj)
 
 %% Extract needed information
 fFactor = obj.volume_fill_percentage;
-normal_vec = obj.volume_class.volume_outflow_vectors;
+normal_vec = obj.Voronoi_mesh_class.volume_outflow_vectors;
 
 %% Sets up flow rates if needed
-obj.volume_rates_of_flow = zeros(obj.mesh_class.num_nodes,1);
+obj.volume_rates_of_flow = zeros(obj.Delaunay_mesh_class.num_nodes,1);
 
 %% construct a list of possible nodes/elements to be added
-candidate_elem = zeros(obj.mesh_class.num_elements,1);
-candidate_node = find(~xor(obj.is_node_active==1,1-obj.volume_fill_percentage > 1e-15));
+candidate_elem = zeros(obj.Delaunay_mesh_class.num_elements,1);
+is_node_active = obj.pressure_class.is_node_active;
+candidate_node = find(~xor(is_node_active==1,1-obj.volume_fill_percentage > 1e-15));
 
 for i = 1 : length(candidate_node)
     candidate = candidate_node(i);
-    for j = 2 : obj.volume_class.has_node_i(candidate,1)+1
-        elem = obj.volume_class.has_node_i(candidate,j);
+    for j = 2 : obj.Voronoi_mesh_class.has_node_i(candidate,1)+1
+        elem = obj.Voronoi_mesh_class.has_node_i(candidate,j);
         if obj.active_elements(elem) >= 0.5
-            candidate_elem(obj.volume_class.has_node_i(candidate,j)) = 1;
+            candidate_elem(obj.Voronoi_mesh_class.has_node_i(candidate,j)) = 1;
         end
     end
 end
@@ -25,23 +26,26 @@ candidate_elem = find(candidate_elem);
 for i = 1:length(candidate_elem)
 
     %% extract local element properties
-    element = obj.mesh_class.elements(candidate_elem(i),:);
-    nodes = obj.mesh_class.nodes(element,:);
+    element = obj.Delaunay_mesh_class.elements(candidate_elem(i),:);
+    nodes = obj.Delaunay_mesh_class.nodes(element,:);
 
     %% extract velocity in element centre
     vi = obj.velocity_class.velocity(candidate_elem(i),:)';
 
-    is_inlet_connected = sum(obj.inlet_flag(element)) ~= 0;
+    %% Determine inlet-lying elements
+    inlet_flag = obj.pressure_class.is_inlet;
+
+    is_inlet_connected = sum(inlet_flag(element)) ~= 0;
 
     if is_inlet_connected
         
-        bnd_flag = obj.inlet_flag;
-        bnd_flag(obj.mesh_class.boundary_nodes) = 1;
+        bnd_flag = inlet_flag;
+        bnd_flag(obj.Delaunay_mesh_class.boundary_nodes) = 1;
         
-        local_flow_rate = local_flux_tri_inlet(nodes,vi,fFactor(element),obj.inlet_flag(element),bnd_flag(element),obj.darcy_class);
+        local_flow_rate = local_flux_tri_inlet(nodes,vi,fFactor(element),inlet_flag(element),bnd_flag(element),obj.physics_class);
     else
 
-        local_flow_rate = local_flux_tri(normal_vec(candidate_elem(i),:),vi,obj.darcy_class);
+        local_flow_rate = local_flux_tri(normal_vec(candidate_elem(i),:),vi,obj.physics_class);
     end
 
     obj.volume_rates_of_flow(element) = obj.volume_rates_of_flow(element)...
