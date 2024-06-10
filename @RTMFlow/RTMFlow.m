@@ -29,9 +29,7 @@ classdef RTMFlow
     methods
     %% CVFEM class methods
 
-    function obj = RTMFlow(Delaunay_mesh_class,physics_class,...
-                           pressure_class,...
-                           visualise_class)
+    function obj = RTMFlow(Delaunay_mesh_class,physics_class,pressure_class)
             
             %% store other classes
             obj.Delaunay_mesh_class = Delaunay_mesh_class;
@@ -40,12 +38,8 @@ classdef RTMFlow
             obj.Voronoi_mesh_class = VoronoiMesh(Delaunay_mesh_class,physics_class);
             obj.velocity_class = Velocity(obj.Voronoi_mesh_class,physics_class);
             
-            %% Default to no visuals unless provided in constructor
+            %% Default to no visuals
             obj.visualise_class = Visualisation();
-
-            if nargin == 4
-                obj.visualise_class = visualise_class;
-            end
 
             %% Setting up time and time stepping
             obj.time = 0.0;

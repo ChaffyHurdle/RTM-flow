@@ -1,6 +1,4 @@
 function obj = compute_time_increment(obj)
-%% This function returns true when each volume is sufficiently full
-
 empty_percentage = 1 - obj.volume_fill_percentage;
 Q = obj.volume_rates_of_flow;
 Vol = obj.Voronoi_mesh_class.volume_measures;

@@ -6,7 +6,7 @@ classdef Visualisation
         is_plotting_pressure=false;
         is_plotting_velocity=false;
         is_plotting_volume_flow=false;
-        is_plotting_volume=true;
+        is_plotting_volume=false;
 
         %% booleans to decide what to annimate
         is_animate_pressure=false;

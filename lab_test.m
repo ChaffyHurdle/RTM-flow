@@ -2,7 +2,6 @@
 my_mesh = DelaunayMesh(p,e,t);
 my_physics = Physics(0.1, 0.35, 0.2, @permeability);
 my_pressure = Pressure(my_mesh,my_physics,@is_inlet,@is_vent,@p_D);
-%my_visuals = Visualisation();
 
 %% compile CVFEM method
 my_RTMFlow = RTMFlow(my_mesh,my_physics,my_pressure);
