@@ -2,6 +2,9 @@
 my_mesh = DelaunayMesh(p,e,t);
 my_darcy = Darcy(0.1, 0.35, 0.2, @permeability);
 my_pressure = Pressure(my_mesh,my_darcy,@is_inlet,@is_vent,@p_D);
+my_volume = VoronoiMesh(my_mesh,my_darcy);
+my_velocity = Velocity(my_volume,my_darcy);
+my_visuals = Visualisation();
 
 %% compile CVFEM method
 my_cvfem = CVFEM(my_mesh,my_pressure,my_volume,my_velocity,my_darcy,my_visuals,[]);
