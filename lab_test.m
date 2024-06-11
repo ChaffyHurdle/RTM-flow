@@ -11,9 +11,7 @@ my_RTMFlow.run()
 
 %% Argument set up
 function K = permeability(x)
-    
     K = 1e-10 * eye(2);
-
 end
 
 function p = p_D(pressure_class)

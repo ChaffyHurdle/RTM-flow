@@ -1,17 +1,39 @@
 %% Problem set up
-my_mesh = DelaunayMesh(p,e,t);
-my_darcy = Physics(0.1, 0.35, 1, @permeability);
-my_pressure = Pressure(my_mesh,my_darcy,@is_inlet,@is_vent,@p_D);
+darcy_rules = Physics(0.1, 0.35, 1, @permeability);
 
-%% compile RTM-flow method
-my_RTMflow = RTMFlowConvergence(my_mesh,my_darcy,my_pressure);
-my_RTMflow.visualise_class.is_plotting_volume = true;
+%% Error set up
 
-%% Execute solver
-[mid_RTMflow, final_RTMflow] = my_RTMflow.run(0.5);
+%% Test mesh strings
+mesh_files = ["unit_sqr_mesh_177.mat",...
+              "unit_sqr_mesh_665.mat",...
+              "unit_sqr_mesh_2577.mat",...
+              "unit_sqr_mesh_10145.mat"];
+num_dofs = [177, 665, 2577, 10145]';
 
-filling_errors(1) = compute_filling_error(final_RTMflow);
-[pressure_errors(1), boundary_errors(1)] = compute_flow_error(mid_RTMflow); 
+filling_errors = zeros(4,1);
+pressure_errors = zeros(4,1);
+boundary_errors = zeros(4,1);
+
+%% Run test
+for i = 1:4
+
+    mesh = DelaunayMesh(mesh_files(i));
+    pressure = Pressure(mesh,darcy_rules,@is_inlet,@is_vent,@p_D);
+    %% compile RTM-flow method
+    RTM = RTMFlowConvergence(mesh,darcy_rules,pressure);
+    RTM.visualise_class.is_plotting_volume = true;
+
+    %% run simulation
+    [mid_RTMflow, final_RTMflow] = RTM.run(50);
+
+    %% compute errors
+    filling_errors(i) = compute_filling_error(final_RTMflow);
+    [pressure_errors(i), boundary_errors(i)] = compute_flow_error(mid_RTMflow);
+
+end
+
+T = table(num_dofs,filling_errors,pressure_errors,boundary_errors)
+writetable(T,'unit_sqr_error.csv')
 
 %% Analytical solutions
 function error = compute_filling_error(RTMflow_class)
@@ -28,9 +50,8 @@ phi = physics_class.porosity;
 p_0 = max(pressure_class.pressure);
 
 %% compute filling time error
-filling_time = (phi*mu)/(2*K*p_0);
+filling_time = (phi*mu)/(2*K*p_0)
 error = abs(filling_time - time)/filling_time;
-disp(['filling time error = ' num2str(error)])
 
 end
 
@@ -55,21 +76,20 @@ boundary_positions = pressure_class.mesh_class.nodes(is_moving_boundary,:);
 x_front_h = boundary_positions(:,1);
 x_front_diff = abs(x_front_h - x_front);
 x_error = mean(x_front_diff);
-disp(['boundary error = ' num2str(x_error)])
 
 %% compute pressure error
 x_vec = RTMflow_class.Delaunay_mesh_class.nodes(:,1);
 p_true = 0*x_vec;
 p_true(x_vec <= x_front) = (p_0 * (1 - x_vec(x_vec <= x_front)./x_front));
 p_error = mean(abs(p_true - pressure_class.pressure))/p_0;
-disp(['pressure error = ' num2str(p_error)])
 
 end
 
 %% Argument set up
 function K = permeability(x)
-    
-    K = 10e-10 * eye(2);
+
+    theta = atan2(x(2), x(1));
+    K = 10e-10* [cos(theta) -sin(theta); sin(theta) cos(theta)];
 
 end
 

@@ -20,6 +20,11 @@ classdef RTMFlowConvergence < RTMFlow
             
              %% Visualise
              obj.visualise_class.plot(obj);
+
+             %% save simulation at first instance over time point
+             if obj.pressure_class.time >= sample_time && isempty(sample_obj)
+                 sample_obj = obj;
+             end
             
              %% Increment to new time
              obj = obj.update_time_level();
@@ -28,10 +33,7 @@ classdef RTMFlowConvergence < RTMFlow
              obj = obj.update_filling_percentage();
              obj = obj.update_computational_domain();
 
-             %% save simulation at first instance over time point
-             if obj.pressure_class.time >= sample_time && isempty(sample_obj)
-                 sample_obj = obj;
-             end
+             
           end
 
           disp("end")
