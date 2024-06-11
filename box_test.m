@@ -1,16 +1,14 @@
 %% Problem set up
 my_mesh = DelaunayMesh(p,e,t);
-my_darcy = Darcy(0.1, 0.35, 0.2, @permeability);
+my_darcy = Physics(0.1, 0.35, 1, @permeability);
 my_pressure = Pressure(my_mesh,my_darcy,@is_inlet,@is_vent,@p_D);
-my_volume = VoronoiMesh(my_mesh,my_darcy);
-my_velocity = Velocity(my_volume,my_darcy);
-my_visuals = Visualisation();
 
-%% compile CVFEM method
-my_cvfem = CVFEM(my_mesh,my_pressure,my_volume,my_velocity,my_darcy,my_visuals,[]);
+%% compile RTM-flow method
+my_RTMflow = RTMFlowDryspot(my_mesh,my_darcy,my_pressure);
+my_RTMflow.visualise_class.is_plotting_volume = true;
 
 %% Execute solver
-my_cvfem.run()
+my_RTMflow = my_RTMflow.run();
 
 %% Argument set up
 function K = permeability(x)
@@ -26,7 +24,7 @@ end
 function p = p_D(pressure_class)
 
 p = 0*pressure_class.pressure;
-p(pressure_class.inlet_flag) = 1.5e5;
+p(pressure_class.is_inlet) = 1.5e5;
 
 end
 

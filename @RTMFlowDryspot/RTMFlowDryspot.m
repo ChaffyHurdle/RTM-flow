@@ -1,4 +1,4 @@
-classdef RTMFlowDryspot
+classdef RTMFlowDryspot < RTMFlow
 
 
     properties
@@ -16,11 +16,13 @@ classdef RTMFlowDryspot
 
     methods
         
-        function obj = RTMFlowDryspot()
+        function obj = RTMFlowDryspot(Delaunay_mesh_class,physics_class,pressure_class)
+
+            obj@RTMFlow(Delaunay_mesh_class,physics_class,pressure_class);
     
             %% Setting up void tracking properties
-            obj.void_volume = zeros(mesh_class.num_nodes,2);
-            obj.is_volume_void = ones(mesh_class.num_nodes,1);
+            obj.void_volume = zeros(obj.Delaunay_mesh_class.num_nodes,2);
+            obj.is_volume_void = ones(obj.Delaunay_mesh_class.num_nodes,1);
 
         end
 
@@ -28,10 +30,3 @@ classdef RTMFlowDryspot
     end
 
 end
-
-
-%% Compute any voids/vacuum
-    obj = obj.find_dryspots();
-    obj = obj.void_partition();
-    obj = obj.apply_ideal_gas_law();
-

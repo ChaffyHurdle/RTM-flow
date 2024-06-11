@@ -9,8 +9,8 @@ end
 num_voids = obj.num_voids;
 void_volume = obj.void_volume;
 fFactor = obj.volume_fill_percentage;
-volume_measures = obj.volume_class.volume_measures;
-Cnode = obj.volume_class.node_connectivity;
+volume_measures = obj.Voronoi_mesh_class.volume_measures;
+Cnode = obj.Voronoi_mesh_class.node_connectivity;
 is_volume_void = obj.is_volume_void;
 
 

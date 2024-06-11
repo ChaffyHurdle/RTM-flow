@@ -3,7 +3,7 @@ function obj = find_dryspots(obj)
 %% unpacking variables
 fFactor = obj.volume_fill_percentage;
 vent_nodes = find(obj.pressure_class.is_vent);
-nb_nodes = obj.volume_class.connected_polygons;
+nb_nodes = obj.Voronoi_mesh_class.connected_polygons;
 
 nnode = length(fFactor);
 queue   = zeros(nnode,1);

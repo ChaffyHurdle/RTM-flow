@@ -3,7 +3,7 @@ function obj = apply_ideal_gas_law(obj)
 
 %% Unpacking properties
 void_volume = obj.void_volume;
-V = obj.volume_class.volume_measures; 
+V = obj.Voronoi_mesh_class.volume_measures; 
 fFactor = obj.volume_fill_percentage;
 num_voids = obj.num_voids;
 
