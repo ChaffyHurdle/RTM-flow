@@ -49,7 +49,7 @@ phi = physics_class.porosity;
 p_0 = max(pressure_class.pressure);
 
 %% compute filling time error
-filling_time = (phi*mu)/(2*K*p_0)
+filling_time = (phi*mu)/(2*K*p_0);
 error = abs(filling_time - time)/filling_time;
 
 end
