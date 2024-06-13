@@ -21,6 +21,7 @@ for i = 1:2
     pressure = Pressure(mesh,darcy_rules,@is_inlet,@is_vent,@p_D);
     %% compile RTM-flow method
     RTM = RTMFlowConvergence(mesh,darcy_rules,pressure);
+    RTM.visualise_class.is_plotting_volume
 
     %% run simulation
     [mid_RTMflow, final_RTMflow] = RTM.run(20);

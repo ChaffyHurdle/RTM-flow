@@ -1,6 +1,4 @@
 classdef RTMFlowConvergence < RTMFlow
-
-
     methods
 
         function [sample_obj, obj] = run(obj,sample_time)
@@ -38,11 +36,6 @@ classdef RTMFlowConvergence < RTMFlow
 
           disp("end")
 
- 
-
         end
-
-
     end
-
 end
