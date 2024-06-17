@@ -21,10 +21,10 @@ for i = 1:2
     pressure = Pressure(mesh,darcy_rules,@is_inlet,@is_vent,@p_D);
     %% compile RTM-flow method
     RTM = RTMFlowConvergence(mesh,darcy_rules,pressure);
-    RTM.visualise_class.is_plotting_volume=true;
+    %RTM.visualise_class.is_plotting_volume=true;
 
     %% run simulation
-    [mid_RTMflow, final_RTMflow] = RTM.run(20);
+    [mid_RTMflow, final_RTMflow] = RTM.run(100);
 
     %% compute errors
     filling_errors(i) = compute_filling_error(final_RTMflow);
@@ -43,13 +43,14 @@ time = RTMflow_class.time
 physics_class = RTMflow_class.physics_class;
 pressure_class = RTMflow_class.pressure_class;
 
-K = 1e-10;
+K = physics_class.permeability([0 0]);
+K = K(1,1);
 mu = physics_class.viscosity;
 phi = physics_class.porosity;
 p_0 = max(pressure_class.pressure);
 
 %% compute filling time error
-filling_time = (phi*mu*0.25)/(2*K*p_0)
+filling_time = (phi*mu*0.5^2)/(2*K*p_0)
 error = abs(filling_time - time)/filling_time;
 
 end
@@ -60,25 +61,25 @@ time = RTMflow_class.time;
 physics_class = RTMflow_class.physics_class;
 pressure_class = RTMflow_class.pressure_class;
 
-K = 10e-10;
+K = 1e-10;
 mu = physics_class.viscosity;
 phi = physics_class.porosity;
 p_0 = max(pressure_class.pressure);
 
 %% compute boundary error
-r_front = sqrt((2*K*p_0*time)/(phi*mu));
+r_front = sqrt((2*K*p_0*time)/(phi*mu)) + 0.5;
 is_moving_boundary = pressure_class.is_Dirichlet...
                    & pressure_class.is_node_active...
                    & ~pressure_class.is_inlet;
 boundary_positions = pressure_class.mesh_class.nodes(is_moving_boundary,:);
-r_front_h = vecnorm(boundary_positions,2,2)-0.5;
+r_front_h = vecnorm(boundary_positions,2,2);
 r_front_diff = abs(r_front_h - r_front);
 r_error = mean(r_front_diff);
 
 %% compute pressure error
-r_vec = vecnorm(RTMflow_class.Delaunay_mesh_class.nodes,2,2) - 0.5;
+r_vec = vecnorm(RTMflow_class.Delaunay_mesh_class.nodes,2,2);
 p_true = 0*r_vec;
-p_true(r_vec <= r_front) = (p_0 * (1 - r_vec(r_vec <= r_front)./r_front));
+p_true(r_vec <= r_front) = (p_0 * (1 - (r_vec(r_vec <= r_front)-0.5)./(r_front-0.5)));
 p_error = mean(abs(p_true - pressure_class.pressure))/p_0;
 
 end
@@ -86,9 +87,7 @@ end
 %% Argument set up
 function K = permeability(x)
 
-    theta = atan2(x(2), x(1));
-    R = [cos(theta) -sin(theta); sin(theta) cos(theta)];
-    K = 10e-10*(R*R');
+    K = 1e-10*eye(2);
 
 end
 
