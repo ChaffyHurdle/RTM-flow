@@ -17,11 +17,11 @@ run_time_with_plot = zeros(4,1);
 memory_used_with_plot = zeros(4,1);
 
 %% Run test
-for i = 1:2
+for i = 1:4
 
     %% set up
-    initial_memory = memory;
-    initial_RAM_used = initial_memory.MemUsedMATLAB;
+    ram = whos;
+    initial_RAM_used = sum([ram.bytes])/1000000;
     tic
 
     mesh = DelaunayMesh(mesh_files(i));
@@ -35,8 +35,8 @@ for i = 1:2
 
     %% store results
     run_time(i) = toc;
-    final_memory = memory;
-    final_RAM_used = final_memory.MemUsedMATLAB;
+    ram = whos;
+    final_RAM_used = sum([ram.bytes])/1000000;
     memory_used(i) = final_RAM_used - initial_RAM_used;
 
     clear RTM
@@ -46,8 +46,43 @@ for i = 1:2
 
 end
 
-T = table(num_dofs,run_time,memory_used)
-writetable(T,'unit_sqr_performance.csv')
+T_1 = table(num_dofs,run_time,memory_used)
+writetable(T_1,'unit_sqr_performance.csv')
+
+%% Run test
+for i = 1:4
+
+    %% set up
+    ram = whos;
+    initial_RAM_used = sum([ram.bytes])/1000000;
+    tic
+
+    mesh = DelaunayMesh(mesh_files(i));
+    pressure = Pressure(mesh,darcy_rules,@is_inlet,@is_vent,@p_D);
+
+    %% compile RTM-flow method
+    RTM = RTMFlow(mesh,darcy_rules,pressure);
+    RTM.visualise_class.is_plotting_volume = true;
+
+    %% run simulation
+    RTM = RTM.run();
+
+    %% store results
+    run_time(i) = toc;
+    ram = whos;
+    final_RAM_used = sum([ram.bytes])/1000000;
+    memory_used(i) = final_RAM_used - initial_RAM_used;
+
+    clear RTM
+    clear mesh
+    clear pressure
+
+
+end
+
+T_2 = table(num_dofs,run_time,memory_used)
+writetable(T_2,'unit_sqr_plot_performance.csv')
+
 
 
 %% Argument set up
