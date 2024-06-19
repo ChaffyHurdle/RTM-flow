@@ -5,8 +5,6 @@ my_pressure = Pressure(my_mesh,my_physics,@is_inlet,@is_vent,@p_D);
 
 %% compile CVFEM method
 my_RTMFlow = RTMFlowDryspot(my_mesh,my_physics,my_pressure);
-my_RTMFlow.visualise_class.is_plotting_volume = true;
-my_RTMFlow.visualise_class.is_animate_volume = true;
 
 %% Execute solver
 my_RTMFlow.run()
