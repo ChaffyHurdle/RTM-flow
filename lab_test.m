@@ -4,14 +4,27 @@ my_physics = Physics(0.1, 0.35, 0.2, @permeability);
 my_pressure = Pressure(my_mesh,my_physics,@is_inlet,@is_vent,@p_D);
 
 %% compile CVFEM method
-my_RTMFlow = RTMFlow(my_mesh,my_physics,my_pressure);
+my_RTMFlow = RTMFlowDryspot(my_mesh,my_physics,my_pressure);
+my_RTMFlow.visualise_class.is_plotting_volume = true;
 
 %% Execute solver
 my_RTMFlow.run()
 
 %% Argument set up
 function K = permeability(x)
-    K = 1e-10 * eye(2);
+
+    K = 1e-14 * eye(2);
+
+    %% is point in channels
+    is_left_channel = abs(x(1)-0.1045)<= 0.002;
+    is_right_channel = abs(x(1)-0.3135)<= 0.002;
+    is_lower_channel = abs(x(2)-0.1045)<= 0.002;
+    is_upper_channel = abs(x(2)-0.3135)<= 0.002;
+
+    if  is_left_channel || is_right_channel || is_upper_channel || is_lower_channel
+
+        K = 1e-10*eye(2);
+    end
 end
 
 function p = p_D(pressure_class)
