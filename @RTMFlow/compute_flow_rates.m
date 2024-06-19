@@ -70,10 +70,6 @@ end
 
 function qn = local_flux_tri_inlet(x,v,fFactor,inlet_flag, bnd_flag,darcy_class)
 %% function to compute inflow/outflow of boundary-lying elements
-
-if sum(bnd_flag)==3
-    error('This code does not support an triangular element with three boundary nodes.');
-end
 qn = zeros(3,1);
 
 o = sum(x)/3;
@@ -123,15 +119,13 @@ if sum(inlet_flag) == 2
     qn(2) = temp2*v;
     qn(3) = temp3*v;
       
-    %% At this moment, we ignore elements having single inlet node.
+    %% we ignore elements having single inlet node.
 elseif sum(inlet_flag) == 1 
     if sum(1-fFactor < eps)>= 1
         qn(1) = -(n1-n3)*v;
         qn(2) = -(n2-n1)*v;
         qn(3) = -(n3-n2)*v;
     end
-else
-    error('The triangular element must have at most two nodes on the inlet boundary.');
 end
 
 qn = qn*darcy_class.thickness;
