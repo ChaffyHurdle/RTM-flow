@@ -12,8 +12,6 @@ classdef RTMFlowDryspot < RTMFlow
 
     end
 
-
-
     methods
         
         function obj = RTMFlowDryspot(Delaunay_mesh_class,physics_class,pressure_class)
