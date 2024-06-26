@@ -8,7 +8,7 @@ classdef Pressure
 
         %% functions to determine inlet/vent pressures
         inlet_func;
-        vent_func;
+        vent_func; 
         p_D;
 
         %% time stored for reference
