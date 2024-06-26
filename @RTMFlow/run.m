@@ -1,4 +1,4 @@
-function obj = run(obj)
+  function obj = run(obj)
 
 while ~obj.is_fully_saturated()
 

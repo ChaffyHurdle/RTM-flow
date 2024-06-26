@@ -48,3 +48,4 @@ geom2 = model.geometryFromMesh(nodes,elements);
 figure(1); pdeplot3D(model,'FaceAlpha',0.5)                     %Mesh Plot
 figure(2); pdegplot(model,'CellLabels','on','FaceAlpha',0.5)    %Geometry
 figure(3); pdegplot(model,'FaceLabels','on','FaceAlpha',0.5)    %Geometry
+
