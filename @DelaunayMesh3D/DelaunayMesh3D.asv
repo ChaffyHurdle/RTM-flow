@@ -51,7 +51,6 @@ classdef DelaunayMesh3D
             obj = obj.compute_element_faces();
             obj = obj.compute_element_volumes_and_centroids();
             obj = obj.compute_face_areas_and_normals(); 
-            obj = obj.compute_boundary();
 
         end
 
@@ -148,9 +147,7 @@ classdef DelaunayMesh3D
           obj.boundary_faces = find(ismember(sorted_faces,sorted_exteriorF,'rows'));
           obj.num_boundary_faces = length(obj.boundary_faces);
 
-          boundary_nodes = element_faces(obj.boundary_faces,:);
-          obj.boundary_nodes = unique(boundary_nodes(:));
-          obj.num_boundary_nodes = length(obj.boundary_nodes);
+          obj.bo
         end
 
     end
