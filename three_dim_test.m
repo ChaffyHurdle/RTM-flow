@@ -3,13 +3,15 @@ clear all; close all; clc;
 %% 3D testing
 
 %% set up mesh, physics and pressure
-my_mesh = DelaunayMesh3D("one_body.m",1);
-my_mesh.plot_mesh();
+my_mesh = DelaunayMesh3D("one_body.m",20);
+%my_mesh.plot_mesh();
 my_physics = Physics(0.1, 0.35, 1, @permeability);
 my_pressure = Pressure3D(my_mesh,my_physics,@is_inlet,@is_vent,@p_D);
 
 %% compile solver
 my_RTM = RTMFlow3D(my_mesh,my_physics,my_pressure);
+my_RTM.visualise_class.is_plotting_pressure=true;
+my_RTM.visualise_class.is_plotting_volume=true;
 
 %% Execute solver
 my_RTM.run()
@@ -28,7 +30,7 @@ end
 
 function bool = is_inlet(node)
 
-bool = (node(2) >= 49.5);
+bool = (node(2) >= 49.5-eps);
 
 end
 

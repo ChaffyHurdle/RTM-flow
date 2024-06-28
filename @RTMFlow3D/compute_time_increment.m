@@ -1,7 +1,7 @@
 function obj = compute_time_increment(obj)
 empty_percentage = 1 - obj.volume_fill_percentage;
 Q = obj.volume_rates_of_flow;
-Vol = obj.Voronoi_mesh_class.volume_measures;
+Vol = obj.Delaunay_mesh_class.element_measures;
 
 candidates = find((Q>eps)&(empty_percentage>eps));
 

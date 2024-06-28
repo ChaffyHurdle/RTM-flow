@@ -14,6 +14,7 @@ classdef DelaunayMesh3D
         element_faces;
         face_areas;
         face_normals;
+        face_connectivity;
 
         %% Mesh Counting Properties
         num_nodes;
@@ -52,6 +53,7 @@ classdef DelaunayMesh3D
             obj = obj.compute_element_volumes_and_centroids();
             obj = obj.compute_face_areas_and_normals(); 
             obj = obj.compute_boundary();
+            obj = obj.compute_face_connectivity();
 
         end
 
@@ -151,6 +153,37 @@ classdef DelaunayMesh3D
           boundary_nodes = element_faces(obj.boundary_faces,:);
           obj.boundary_nodes = unique(boundary_nodes(:));
           obj.num_boundary_nodes = length(obj.boundary_nodes);
+        end
+
+        function obj = compute_face_connectivity(obj)
+
+            obj.face_connectivity = zeros(obj.num_faces,1);
+
+
+            
+            faces = obj.element_faces;
+            ordered_faces = sort(faces,2);
+
+            [~,~,ic] = unique(ordered_faces,'rows');
+
+
+            for i = 1:length(ic)
+
+                if obj.face_connectivity(i) > 0
+                    continue
+                end
+
+                idx = ic(i);
+                pair = find(ic == idx);
+
+                if length(pair) ~= 2
+                    continue
+                end
+
+                obj.face_connectivity(pair) = [pair(2); pair(1)];
+
+            end
+
         end
 
     end

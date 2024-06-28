@@ -1,0 +1,102 @@
+function obj = update_computational_domain(obj)
+
+%% unpacking
+active_elements = obj.active_elements;
+is_node_active = obj.pressure_class.is_node_active;
+new_filled_volume = obj.new_filled_volume;
+Dirichlet = obj.pressure_class.is_Dirichlet;
+
+%% add new element to the volume
+active_elements(new_filled_volume) = 1;
+newActiveElement = new_filled_volume;
+new_active_nodes = obj.Delaunay_mesh_class.elements(newActiveElement,:);
+new_active_nodes = new_active_nodes(:);
+is_node_active(new_active_nodes) = true;
+
+%% update Dirichlet boundary conditions on moving front
+
+Dirichlet(new_active_nodes) = true;
+
+ %% extract faces
+active_element_faces = obj.element_faces(active_elements,:);
+
+          %% determine uniqueness of faces
+          sorted_faces = sort(active_element_faces,2);
+          [u,~,n] = unique(sorted_faces,'rows');
+          
+
+
+          %% determine counts for each unique face
+          counts = accumarray(n(:), 1);
+          %% extract faces that only occurred once
+          sorted_exteriorF = u(counts == 1,:);
+          %% find in original faces so that ordering of indices is correct
+          obj.boundary_faces = find(ismember(sorted_faces,sorted_exteriorF,'rows'));
+          obj.num_boundary_faces = length(obj.boundary_faces);
+
+          boundary_nodes = active_element_faces(obj.boundary_faces,:);
+          boundary_nodes = unique(boundary_nodes(:));
+          
+
+
+
+active_elements_list = elem(active_elements==1,:);
+
+total_edge = [active_elements_list(:,[2 3]); active_elements_list(:,[3,1]); active_elements_list(:,[1,2])];
+
+
+Cnode = sparse(total_edge(:,1), total_edge(:,2),1,nnode,nnode);
+[r,c] = find(Cnode-Cnode');
+bnd_node([r;c]) = 1;
+
+bnd_idx = find(bnd_node>0);
+
+for i = 1:length(bnd_idx)
+    bnd_idx_i = bnd_idx(i);
+    if ~neumann_flag(bnd_idx_i)
+        Dirichlet(bnd_idx_i)=1;
+    else % We make the intersection between flow front and wall Dirichelt
+        if sum(active_elements(has_node_i(bnd_idx_i,2:has_node_i(bnd_idx_i,1)+1)))<has_node_i(bnd_idx_i,1)
+            Dirichlet(bnd_idx_i) = 1;
+        end
+    end
+end
+Dirichlet(fFactor>0&fFactor<1) = 1;
+
+
+
+%{
+aelem = elem(active_elements==1,:);
+
+total_edge = [aelem(:,[2 3]); aelem(:,[3,1]); aelem(:,[1,2])];
+
+
+Cnode = sparse(total_edge(:,1), total_edge(:,2),1,nnode,nnode);
+[r,c] = find(Cnode-Cnode');
+bnd_node([r;c]) = 1;
+
+bnd_idx = find(bnd_node>0);
+
+for i = 1:length(bnd_idx)
+    bnd_idx_i = bnd_idx(i);
+    if ~neumann_flag(bnd_idx_i)
+        Dirichlet(bnd_idx_i)=1;
+    else % We make the intersection between flow front and wall Dirichelt
+        if sum(active_elements(has_node_i(bnd_idx_i,2:has_node_i(bnd_idx_i,1)+1)))<has_node_i(bnd_idx_i,1)
+            Dirichlet(bnd_idx_i) = 1;
+        end
+    end
+end
+Dirichlet(fFactor>0&fFactor<1) = 1;
+%}
+
+%% Repacking
+obj.pressure_class.is_node_active = is_node_active;
+obj.active_elements = active_elements;
+obj.pressure_class.new_active_elements = newActiveElement;
+obj.pressure_class.is_Dirichlet = Dirichlet;
+
+%% set Dirichlet BC values
+obj.pressure_class.pressure = obj.pressure_class.p_D(obj.pressure_class);
+
+end
