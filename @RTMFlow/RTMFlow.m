@@ -45,7 +45,7 @@ classdef RTMFlow
             obj.time = 0.0;
             obj.time_step = 0.0;
 
-             %% Setting up active nodes/elements
+            %% Setting up active nodes/elements
             inlet_flag = pressure_class.is_inlet;
             
             active_elements = zeros(Delaunay_mesh_class.num_elements,1);

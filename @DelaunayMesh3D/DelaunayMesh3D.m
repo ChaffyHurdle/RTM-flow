@@ -10,7 +10,7 @@ classdef DelaunayMesh3D
         centroids;
 
         %% Element properties
-        element_volumes;
+        element_measures;
         element_faces;
         face_areas;
         face_normals;
@@ -70,7 +70,7 @@ classdef DelaunayMesh3D
 
         function obj = compute_element_volumes_and_centroids(obj)
 
-            obj.element_volumes = zeros(obj.num_elements,1);
+            obj.element_measures = zeros(obj.num_elements,1);
             obj.centroids = zeros(obj.num_elements,3);
 
             for i =1:obj.num_elements
@@ -80,7 +80,7 @@ classdef DelaunayMesh3D
                 c = local_nodes(3,:); d = local_nodes(4,:);
 
                 product = dot((b-a),cross(c-a,d-a));
-                obj.element_volumes(i) = product/6;
+                obj.element_measures(i) = product/6;
 
                 obj.centroids(i,:) = [mean(local_nodes(:,1)) mean(local_nodes(:,2)) mean(local_nodes(:,3))];
 

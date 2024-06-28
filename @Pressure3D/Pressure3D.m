@@ -1,4 +1,40 @@
-classdef Pressure3D < Pressure
+classdef Pressure3D
+
+
+    properties
+
+        %% mesh and physics classes stored for easy access
+        mesh_class;
+        physics_class;
+
+        %% functions to determine inlet/vent pressures
+        inlet_func;
+        vent_func; 
+        p_D;
+
+        %% time stored for reference
+        time;
+
+        %% FEM system of equations
+        stiffness_matrix;
+        load_vector;
+
+        %% FEM solution of pressure problem
+        pressure;
+        shape_fun_gradients;
+        pressure_gradient;
+        
+        %% inlet, outlet, and Nuemann boundary node lists
+        is_inlet;
+        is_Dirichlet;
+        is_vent;
+        is_Neumann;
+
+        %% degrees of freedom in the FEM system
+        is_node_active;
+        new_active_elements;
+
+    end
 
 % A derived class Pressure3D from Pressure which extends the 2D FEM solver
 % for the pressure field to 3D tetrahedral meshes using linear finite
@@ -34,5 +70,5 @@ classdef Pressure3D < Pressure
 
 
         end
-    end
+    end 
 end
