@@ -3,7 +3,7 @@ clear all; close all; clc;
 %% 3D testing
 
 %% set up mesh, physics and pressure
-my_mesh = DelaunayMesh3D("one_body.m",10);
+my_mesh = DelaunayMesh3D("one_body.m",1);
 my_mesh.plot_mesh();
 my_physics = Physics(0.1, 0.35, 1, @permeability);
 my_pressure = Pressure3D(my_mesh,my_physics,@is_inlet,@is_vent,@p_D);

@@ -1,7 +1,6 @@
 classdef RTMFlow3D
 
     %% 3D version of RTM flow
-
     properties
 
         Delaunay_mesh_class;
