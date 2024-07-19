@@ -17,7 +17,8 @@ my_pressure = Pressure(my_mesh,my_darcy);
 % spaced between [0.1,0.9] (inclusive).
 observation_times = linspace(0.1,0.9,7).^2*mu*phi/(2*(p_I-p_0));
 sensor_locs_x = [0.2,0.4,0.6,0.8];
-[sensor_locs_x,sensor_locs_y] = meshgrid(sensor_locs_x,sensor_locs_x);
+sensor_locs_y = [0.2,0.4,0.6,0.8];
+[sensor_locs_x,sensor_locs_y] = meshgrid(sensor_locs_x,sensor_locs_y);
 sensor_locs_x = reshape(sensor_locs_x,[],1);
 sensor_locs_y = reshape(sensor_locs_y,[],1);
 sensor_locs = [sensor_locs_x sensor_locs_y];
@@ -75,60 +76,3 @@ my_lmap = LMAP(my_RTMflow, my_inverse);
 % end
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-%% Argument set up
-% function K = permeability(x)
-%     
-%     if norm(x - [0.5 0.5])<0.25
-%         K = 40e-10 * eye(2);
-%     else
-%         K = 40e-10 * eye(2);
-%     end
-% 
-% end
-% 
-% function p = p_D(pressure_class)
-% 
-% p = 1.0e5*pressure_class.pressure;
-% p(pressure_class.is_inlet) = 6.0e5;
-% 
-% end
-
-% function bool = is_inlet(node)
-% 
-% bool = (node(1) == 0);
-% 
-% end
-
-% function bool = is_vent(node)
-% 
-% bool = (node(1) == 1);
-% 
-% end
