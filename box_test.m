@@ -1,5 +1,5 @@
 %% Forward problem set up
-my_mesh = DelaunayMesh(p,e,t);
+my_mesh = DelaunayMesh(p_ref,e_ref,t_ref);
 
 %% Inverse problem set up
 matern_args = [0.25,0.1,1.5];
@@ -25,10 +25,12 @@ sensor_locs = [sensor_locs_x sensor_locs_y];
 
 %% RTM set up
 my_RTMflow = RTMFlow(my_mesh,my_darcy,my_pressure,observation_times,sensor_locs);
-my_RTMflow.visualise_class.is_plotting_volume = true;
+my_RTMflow.visualise_class.is_plotting_volume = false;
 
 figure(2)
-imagesc(my_inverse.u_highdim);
+pdeplot(my_inverse.DelaunayMesh.nodes',...
+        my_inverse.DelaunayMesh.elements', ...
+        XYData=my_inverse.u_meshcenters,XYStyle="flat",ColorMap="jet",Mesh="off")
 colormap jet;
 set(gca, 'YDir', 'normal');
 colorbar;
@@ -40,6 +42,7 @@ my_RTMflow = my_RTMflow.run();
 toc
 
 %% Perform LMAP
+my_inverse = my_inverse.generate_data(my_RTMflow.pressure_data,0.01);
 my_lmap = LMAP(my_RTMflow, my_inverse);
 
 %% Execute solver

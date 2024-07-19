@@ -1,12 +1,13 @@
 function obj = compute_matern_covariance(obj)
 
 % Define the number of points on highly refined structured 2D grid
-x = linspace(0,1,obj.high_ref);
-y = x;
-[xx,yy] = meshgrid(x,y);
-xx = reshape(xx,[],1);
-yy = reshape(yy,[],1);
-xxyy = [xx yy];
+% x = linspace(0,1,obj.high_ref);
+% y = x;
+% [xx,yy] = meshgrid(x,y);
+% xx = reshape(xx,[],1);
+% yy = reshape(yy,[],1);
+% xxyy = [xx yy];
+xxyy = obj.DelaunayMesh.centroids;
 N = length(xxyy);
 
 % Define the covariance function (Squared Exponential/RBF Kernel)

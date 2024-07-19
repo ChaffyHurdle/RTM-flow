@@ -31,7 +31,7 @@ while ~obj.is_fully_saturated()
     obj.flow_rates = [obj.flow_rates Q_new];
 
     %% Visualise
-    obj.visualise_class.plot(obj);
+    % obj.visualise_class.plot(obj);
     
     %% Increment to new time
     obj = obj.update_time_level();
@@ -54,7 +54,7 @@ while ~obj.is_fully_saturated()
             obj.pressure_data(:,t_index) ...
                 = p_old(sensor_inds_mesh) + ((observation_time - t_old)/dt)*(p_new(sensor_inds_mesh) - p_old(sensor_inds_mesh));
             t_index = t_index + 1;
-            %obj.visualise_class.plot(obj);
+            obj.visualise_class.plot(obj);
         end
 
     %else

@@ -14,6 +14,10 @@ classdef Inversion
         cholesky_L;
         u_highdim;
         u_meshcenters;
+
+        pressure_noiseless;
+        Sigma;
+        data;
         
     end
 
