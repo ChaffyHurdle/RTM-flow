@@ -15,7 +15,7 @@ obj.flow_rates = [obj.flow_rates Q_old];
 obj.filling_factors = [obj.filling_factors filling_facs_old];
 it = 2;
 
-while ~obj.is_fully_saturated()
+while ~obj.is_fully_saturated() && obj.time <= obj.T
 
     %% Solve pressure & velocity problem
     obj.pressure_class = obj.pressure_class.solve();
@@ -35,16 +35,15 @@ while ~obj.is_fully_saturated()
     
     %% Increment to new time
     obj = obj.update_time_level();
+    t_new = obj.time;
+    obj.times = [obj.times t_new];
+    dt = obj.time_step;
  
     %% Update flow volumes and moving boundaries
     obj = obj.update_filling_percentage();
     filling_facs_new = obj.volume_fill_percentage;
     obj.filling_factors = [obj.filling_factors filling_facs_new];
     obj = obj.update_computational_domain();
-
-    t_new = obj.time;
-    obj.times = [obj.times t_new];
-    dt = obj.time_step;
     
     % Save pressure at sensors
     if t_index <= length(observation_times)
