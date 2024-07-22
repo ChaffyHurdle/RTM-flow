@@ -6,14 +6,16 @@ meshes = {'p_ref.mat', 'e_ref.mat', 't_ref.mat', ...
 for i = 1:numel(meshes)
     load(meshes{i})
 end
+parpool('IdleTimeout', 120);
 
 %% Forward problem set up
-my_refined_mesh = DelaunayMesh(p_ref,e_ref,t_ref);
+my_refined_mesh = DelaunayMesh(p,e,t);
 
 %% Inverse problem set up
 matern_args = [0.25,0.1,1.5];
 my_inverse = Inversion(my_refined_mesh,matern_args);
 my_inverse = my_inverse.generate_u();
+my_inverse.plot_u_true();
 
 %% Physics and pressure set up
 mu = 0.1; phi = 1; thickness = 1; p_I = 6.0e5; p_0 = 1.0e5;
@@ -37,25 +39,15 @@ sensor_locs = [sensor_locs_x sensor_locs_y];
 %% RTM set up
 true_RTMflow = RTMFlow(my_refined_mesh,my_darcy, ...
     my_pressure,observation_times,sensor_locs,T);
-true_RTMflow.visualise_class.is_plotting_volume = true;
+true_RTMflow.visualise_class.is_plotting_volume = false;
 
-figure(2)
-pdeplot(my_inverse.DelaunayMesh.nodes',...
-        my_inverse.DelaunayMesh.elements', ...
-        XYData=my_inverse.u_meshcenters,XYStyle="flat",ColorMap="jet",Mesh="off")
-colormap jet;
-set(gca, 'YDir', 'normal');
-colorbar;
-title('Heatmap of GP Sample');
-xlabel('x');
-ylabel('y');
-tic
 true_RTMflow = true_RTMflow.run();
-toc
+%true_RTMflow.flow_plots();
 
 %% Perform LMAP
 my_inverse = my_inverse.generate_data(true_RTMflow.pressure_data,0.01);
-my_lmap = LMAP(my_RTMflow, my_inverse);
+my_lmap = LMAP(true_RTMflow, my_inverse);
+my_lmap = my_lmap.compute_all_lambdas();
 
 %% Execute solver
 % parallel_pressure = cell(1,3);
@@ -69,25 +61,16 @@ my_lmap = LMAP(my_RTMflow, my_inverse);
 %     parallel_pressure{i} = my_RTMflow.pressure_data;
 % end
 % toc
-% for i = 1:length(my_RTMflow.pressures)
-%     figure(1)
-%     pdeplot(my_RTMflow.Delaunay_mesh_class.nodes',...
-%                 my_RTMflow.Delaunay_mesh_class.elements', ...
-%                 XYData=my_RTMflow.pressures(:,i),ColorMap="jet",Mesh="on")
-%     hold on
-%     scatter(my_RTMflow.sensor_locs_on_mesh(:,1),my_RTMflow.sensor_locs_on_mesh(:,2),'wo','filled')
-%     title("time elapsed: " + num2str(my_RTMflow.times(i)))
-%     hold off
-% end
-% for i = 1:length(my_RTMflow.times)
-%     figure(3)
-%     pdeplot(my_RTMflow.Delaunay_mesh_class.nodes',...
-%                 my_RTMflow.Delaunay_mesh_class.elements', ...
-%                 XYData=my_RTMflow.filling_factors(:,i),ColorMap="jet",Mesh="on")
-%     hold on
-%     scatter(my_inverse.sensor_locs_on_mesh(:,1),my_inverse.sensor_locs_on_mesh(:,2),'wo','filled')
-%     title("time elapsed: " + num2str(my_RTMflow.times(i)))
-%     hold off
-% end
+k = 4;
+for i = 1:width(my_lmap.lambdas(:,:,k))
+    figure(1)
+    pdeplot(true_RTMflow.Delaunay_mesh_class.nodes',...
+                true_RTMflow.Delaunay_mesh_class.elements', ...
+                XYData=my_lmap.lambdas(:,end-1,k),ColorMap="jet",Mesh="on")
+    hold on
+    scatter(true_RTMflow.sensor_locs_on_mesh(:,1),true_RTMflow.sensor_locs_on_mesh(:,2),'wo','filled')
+    title("time elapsed: " + num2str(true_RTMflow.times(i)))
+    hold off
+end
 
 

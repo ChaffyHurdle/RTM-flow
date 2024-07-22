@@ -4,31 +4,30 @@ observation_times = obj.observation_times;
 sensor_inds_mesh = obj.sensor_inds_on_mesh;
 t_index = 1;
 p_old = obj.pressure_class.pressure;
+p_gradients = obj.pressure_class.pressure_gradient;
 Q_old = obj.volume_rates_of_flow;
 filling_facs_old = obj.volume_fill_percentage;
+stiffness = obj.pressure_class.stiffness_matrix;
+Dirichlets = obj.pressure_class.is_Dirichlet;
+actives = obj.pressure_class.is_node_active;
 t_old = obj.time;
+it = 1;
 
-obj.times = [obj.times t_old];
-obj.pressures = [obj.pressures p_old];
-obj.pressure_gradients{1} = obj.pressure_class.pressure_gradient;
-obj.flow_rates = [obj.flow_rates Q_old];
-obj.filling_factors = [obj.filling_factors filling_facs_old];
-it = 2;
+obj = obj.add_data_all_times(it,t_old,p_old,...
+    p_gradients,Q_old,filling_facs_old,stiffness,actives,Dirichlets);
 
-while ~obj.is_fully_saturated() && obj.time <= obj.T
+tic
+
+while ~obj.is_fully_saturated() && obj.time + obj.time_step <= obj.T
+
+    it = it + 1;
 
     %% Solve pressure & velocity problem
     obj.pressure_class = obj.pressure_class.solve();
-    p_new = obj.pressure_class.pressure;
-    obj.pressures = [obj.pressures p_new];
-    obj.pressure_gradients{it} = obj.pressure_class.pressure_gradient;
-    it = it + 1;
     obj.velocity_class = obj.velocity_class.compute_velocity(obj.pressure_class);
     
     %% Solve flow problem
     obj = obj.compute_flow_rates();
-    Q_new = obj.volume_rates_of_flow;
-    obj.flow_rates = [obj.flow_rates Q_new];
 
     %% Visualise
     % obj.visualise_class.plot(obj);
@@ -36,16 +35,28 @@ while ~obj.is_fully_saturated() && obj.time <= obj.T
     %% Increment to new time
     obj = obj.update_time_level();
     t_new = obj.time;
-    obj.times = [obj.times t_new];
     dt = obj.time_step;
  
     %% Update flow volumes and moving boundaries
     obj = obj.update_filling_percentage();
+
+    %% Save data to object (each time)
+    p_new = obj.pressure_class.pressure;
+    Q_new = obj.volume_rates_of_flow;
     filling_facs_new = obj.volume_fill_percentage;
-    obj.filling_factors = [obj.filling_factors filling_facs_new];
+    p_gradients_new = obj.pressure_class.pressure_gradient;
+    stiffness = obj.pressure_class.stiffness_matrix;
+    Dirichlets = obj.pressure_class.is_Dirichlet;
+    actives = obj.pressure_class.is_node_active;
+    obj = obj.add_data_all_times(it,t_new,p_new,...
+        p_gradients_new,Q_new,filling_facs_new,...
+        stiffness,actives,Dirichlets);
+
+    %% Update domain
     obj = obj.update_computational_domain();
+
     
-    % Save pressure at sensors
+    %% Save pressure at sensors
     if t_index <= length(observation_times)
         if (observation_times(t_index) > t_old) && (observation_times(t_index) < t_new)
             observation_time = observation_times(t_index);
@@ -64,7 +75,9 @@ while ~obj.is_fully_saturated() && obj.time <= obj.T
     t_old = t_new;
 end
 
-disp("end")
+obj.wall_time = toc;
+disp("Wall-time elapsed: " + num2str(obj.wall_time) + ' s')
+
 if t_index <= length(observation_times)
     obj.pressure_data(:,t_index:end) = p_new(sensor_inds_mesh);
 end

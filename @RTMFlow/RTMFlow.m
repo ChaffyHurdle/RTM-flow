@@ -18,6 +18,7 @@ classdef RTMFlow
         % Time
         time;
         time_step;
+        wall_time;
         
         %% Extract data at discrete times
         observation_times;
@@ -35,6 +36,9 @@ classdef RTMFlow
         pressure_gradients;
         flow_rates;
         filling_factors;
+        stiffness_matrices;
+        Dirichlet_nodes;
+        active_nodes;
 
         %% Tracking
         volume_fill_percentage;
@@ -75,10 +79,14 @@ classdef RTMFlow
             obj.pressure_gradients = cell(1);
             obj.flow_rates = [];
             obj.filling_factors = [];
+            obj.stiffness_matrices = cell(1);
+            obj.active_nodes = [];
+            obj.Dirichlet_nodes = [];
 
             %% Setting up time and time stepping
             obj.time = 0.0;
             obj.time_step = 0.0;
+            obj.wall_time = 0.0;
 
              %% Setting up active nodes/elements
             inlet_flag = pressure_class.is_inlet;
