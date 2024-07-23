@@ -1,10 +1,9 @@
-function grad_lambda_ij = compute_lambda_gradient(obj,lambda_ij)
+function grad_lambda_ij = compute_grad_lambda_ij(obj,lambda_ij,shape_cell)
 
 elements = obj.mesh_class.elements;
 num_elements = obj.mesh_class.num_elements;
 num_times = length(obj.RTMflow_class.times);
 grad_lambda_ij = zeros(num_elements,2,num_times);
-shape_gradients = obj.RTMflow_class.pressure_class.shape_fun_gradients;
 
 for i = 1:num_times
 
@@ -12,10 +11,10 @@ for i = 1:num_times
 
     for j = 1:num_elements 
         
-        local_pressure = lambda_ij_time(elements(j,:));
-        grad_phi = shape_gradients{j};
+        local_lambda = lambda_ij_time(elements(j,:));
+        grad_phi = shape_cell.Values{j};
     
-        grad_lambda_ij(j,:,i) = (grad_phi * local_pressure)';
+        grad_lambda_ij(j,:,i) = (grad_phi * local_lambda)';
     end
 end
 

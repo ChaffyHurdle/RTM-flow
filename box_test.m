@@ -1,5 +1,8 @@
 %% clearing and loading
-clear all
+clear;
+close all;
+clc;
+delete(gcp('nocreate'))
 addpath('Meshes')
 meshes = {'p_ref.mat', 'e_ref.mat', 't_ref.mat', ...
     'p.mat', 'e.mat', 't.mat'};
@@ -61,26 +64,26 @@ my_lmap = my_lmap.compute_all_lambdas();
 %     parallel_pressure{i} = my_RTMflow.pressure_data;
 % end
 % toc
-k = 16;
-for i = 1:width(my_lmap.lambdas{1})
+k = 17;
+for i = 1:width(my_lmap.lambdas(:,:,k))
     figure(1)
     pdeplot(true_RTMflow.Delaunay_mesh_class.nodes',...
                 true_RTMflow.Delaunay_mesh_class.elements', ...
-                XYData=my_lmap.lambdas{k}(:,i),XYStyle='interp',ColorMap="jet",Mesh="off")
+                XYData=my_lmap.lambdas(:,i,k),XYStyle='interp',ColorMap="jet",Mesh="off")
     hold on
     scatter(true_RTMflow.sensor_locs_on_mesh(:,1),true_RTMflow.sensor_locs_on_mesh(:,2),'wo','filled')
     title("time elapsed: " + num2str(true_RTMflow.times(i)))
     hold off
 
-    figure(2)
-    pdeplot(true_RTMflow.Delaunay_mesh_class.nodes',...
-                true_RTMflow.Delaunay_mesh_class.elements', 'flowdata',...
-                my_lmap.gradient_lambdas{k}(:,:,i),XYStyle='interp',ColorMap="jet",Mesh="off")
-    hold on
-    scatter(true_RTMflow.sensor_locs_on_mesh(:,1),true_RTMflow.sensor_locs_on_mesh(:,2),'wo','filled')
-    title("time elapsed: " + num2str(true_RTMflow.times(i)))
-    hold off
-    xlim([0,1]); ylim([0,1]);
+%     figure(2)
+%     pdeplot(true_RTMflow.Delaunay_mesh_class.nodes',...
+%                 true_RTMflow.Delaunay_mesh_class.elements', 'flowdata',...
+%                 my_lmap.gradient_lambdas{k}(:,:,i),XYStyle='interp',ColorMap="jet",Mesh="off")
+%     hold on
+%     scatter(true_RTMflow.sensor_locs_on_mesh(:,1),true_RTMflow.sensor_locs_on_mesh(:,2),'wo','filled')
+%     title("time elapsed: " + num2str(true_RTMflow.times(i)))
+%     hold off
+%     xlim([0,1]); ylim([0,1]);
 end
 
 
