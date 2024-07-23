@@ -18,6 +18,7 @@ classdef LMAP
         f;
 
         lambdas;
+        gradient_lambdas;
 
     end
 
@@ -33,13 +34,14 @@ classdef LMAP
             obj.u_true = inverse_class.u_meshcenters;
             obj.u0 = zeros(1,length(obj.u_true));
             obj.pressure_data = RTMflow_class.pressure_data;
-            obj.sigma_delta_t = 1e-9;
-            obj.sigma_delta_x = 1/5000;
+            obj.sigma_delta_t = 1e-10;
+            obj.sigma_delta_x = 1/100;
             obj.delta_t = @(t_i,t) exp(-0.5*abs(t-t_i)^2/(2*obj.sigma_delta_t^2))/sqrt(2*pi*obj.sigma_delta_t^2);
             obj.delta_x = @(x_i,x) exp(-0.5*vecnorm( (x-x_i)' ).^2/(2*obj.sigma_delta_x^2))/sqrt(2*pi*obj.sigma_delta_x^2);
             obj.f = @(t) sin(t/obj.RTMflow_class.T*pi)*exp(-t/obj.RTMflow_class.T);
 
             obj.lambdas = cell(RTMflow_class.nsensors,RTMflow_class.nobservations);
+            obj.gradient_lambdas = cell(1);
         end
     end
 

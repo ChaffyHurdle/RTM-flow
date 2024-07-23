@@ -7,8 +7,7 @@ j_vec = 1:nobs;
 [i_vec, j_vec] = meshgrid(i_vec,j_vec);
 i_vec = reshape(i_vec,[],1);
 j_vec = reshape(j_vec,[],1);
-lambda_mat = cell(1,nobs*nsensors);
-grad_lambda_mat = cell(1,nobs*nsensors);
+lambda_c = zeros(obj.mesh_class.num_nodes,length(obj.RTMflow_class.times),nobs*nsensors);
 
 parfor k = 1:nobs*nsensors
     
@@ -17,9 +16,7 @@ parfor k = 1:nobs*nsensors
     lambda_ij = obj.compute_lambda_ij(i,j);
     grad_lambda_ij = obj.compute_lambda_gradient(lambda_ij);
     disp([i,j,size(lambda_ij)])
-    lambda_mat{k} = lambda_ij;
-    grad_lambda_mat{k} = grad_lambda_ij;
+    lambda_cell(:,:,k) = lambda_ij;
 end
 
-obj.lambdas = lambda_mat;
-obj.gradient_lambdas = grad_lambda_mat;
+obj.lambdas = lambda_cell;

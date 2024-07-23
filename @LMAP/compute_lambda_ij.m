@@ -18,7 +18,7 @@ for t = length(obj.RTMflow_class.pressure_gradients):-1:1
 
     lambda = zeros(length(nodes),1);
     lambda(inlet_nodes) = 0.0;
-    lambda(is_moving_boundary) = obj.f(obj.RTMflow_class.times(t));
+    lambda(is_moving_boundary) = obj.f(obj.RTMflow_class.times(t))*nodes(is_moving_boundary,2)*10000;
 
     load_vector = obj.delta_t(t_j, obj.RTMflow_class.times(t))*...
         obj.delta_x(x_i, nodes);
