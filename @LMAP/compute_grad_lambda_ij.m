@@ -12,7 +12,7 @@ for i = 1:num_times
     for j = 1:num_elements 
         
         local_lambda = lambda_ij_time(elements(j,:));
-        grad_phi = shape_cell.Values{j};
+        grad_phi = shape_cell{j};
     
         grad_lambda_ij(j,:,i) = (grad_phi * local_lambda)';
     end

@@ -21,13 +21,8 @@ classdef RTMFlow
         wall_time;
         
         %% Extract data at discrete times
-        observation_times;
-        T;
-        sensor_locs;
         sensor_inds_on_mesh;
         sensor_locs_on_mesh;
-        nsensors;
-        nobservations;
         pressure_data;
 
         %% Save data at all times
@@ -52,7 +47,7 @@ classdef RTMFlow
     methods
     %% CVFEM class methods
 
-    function obj = RTMFlow(Delaunay_mesh_class,physics_class,pressure_class,observation_times,sensor_locs,T)
+    function obj = RTMFlow(Delaunay_mesh_class,physics_class,pressure_class)
             
             %% Store other classes
             obj.Delaunay_mesh_class = Delaunay_mesh_class;
@@ -65,13 +60,8 @@ classdef RTMFlow
             obj.visualise_class = Visualisation();
                
             %% Data extraction
-            obj.observation_times = observation_times;
-            obj.sensor_locs = sensor_locs;
-            obj.T = T;
             obj = obj.find_sensor_locs_mesh();
-            obj.nsensors = length(sensor_locs);
-            obj.nobservations = length(observation_times);
-            obj.pressure_data = zeros(obj.nsensors, obj.nobservations);
+            obj.pressure_data = zeros(physics_class.nsensors, physics_class.nobservations);
 
             %% All data
             obj.times = [];

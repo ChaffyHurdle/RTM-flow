@@ -1,4 +1,4 @@
-function lambdas = compute_lambdas(obj)
+function [lambdas,grad_lambdas] = compute_lambdas(obj)
 
     % This code is written to optimise data transfer to all workers
     % Most notably, we never want to pass obj into the worker function since
@@ -26,12 +26,13 @@ function lambdas = compute_lambdas(obj)
 
     lambda_mat = zeros(length(obj.mesh_class.nodes), ...
         length(obj.RTMflow_class.times), nobs * nsensors);
+    lambda_grad_mat = cell(1,nobs * nsensors);
 
     % Broadcast large objects to share between pool
     broadcast_stiffness_matrices = parallel.pool.Constant(obj.RTMflow_class.stiffness_matrices);
     active_matrix = parallel.pool.Constant(obj.RTMflow_class.active_nodes); % nodes in D(t)
     dirichlet_matrix = parallel.pool.Constant(obj.RTMflow_class.Dirichlet_nodes); % inlet, front and beyond front
-    shape_fun_grads = parallel.pool.Constat(obj.pressure_class.shape_fun_gradients);
+    shape_func_grads = parallel.pool.Constat(obj.pressure_class.shape_fun_gradients);
     deltat = obj.delta_t;
 
     % Compute each adjoint for pressure (along with its gradient)
@@ -61,12 +62,14 @@ function lambdas = compute_lambdas(obj)
 
         % Compute grad lambda_ij
         grad_lambda_ij = compute_grad_lambda_ij(lambda_ij,shape_fun_grads_ij, ...
-    elements,num_elements,num_times)
+    elements,num_elements,num_times);
+        lambda_grad_mat{k} = grad_lambda_ij;
 
     end
 
     % Set data
     lambdas = lambda_mat;
+    grad_lambdas = lambda_grad_mat;
 end
 
 
@@ -113,7 +116,7 @@ for t = length(times):-1:1
 end
 end
 
-
+% Worker function
 function grad_lambda_ij = compute_grad_lambda_ij(lambda_ij,shape_fun_grads, ...
     elements,num_elements,num_times)
 

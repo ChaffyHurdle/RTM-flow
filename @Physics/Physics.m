@@ -12,6 +12,11 @@ classdef Physics
         p_I;
         p_0;
         permeability;
+        sensor_locs;
+        nsensors;
+        observation_times;
+        nobservations;
+        T;
     end
 
     methods
@@ -21,7 +26,7 @@ classdef Physics
         % properties. These must be defined within matlab before entering
         % into the constructor function.
 
-        function obj = Physics(viscosity, porosity, thickness, inlet_pressure, outlet_pressure, permeability)
+        function obj = Physics(viscosity, porosity, thickness, inlet_pressure, outlet_pressure, permeability, sensor_locs, observation_times, T)
 
             obj.viscosity = viscosity;
             obj.porosity = porosity;
@@ -29,6 +34,11 @@ classdef Physics
             obj.p_I = inlet_pressure;
             obj.p_0 = outlet_pressure;
             obj.permeability = permeability;
+            obj.sensor_locs = sensor_locs;
+            obj.observation_times = observation_times;
+            obj.T = T;
+            obj.nsensors = length(sensor_locs);
+            obj.nobservations = length(observation_times);
 
         end
 

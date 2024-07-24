@@ -1,4 +1,4 @@
-function obj = compute_matern_covariance(obj)
+function C0 = compute_matern_covariance(obj,centroids)
 
 % Define the number of points on highly refined structured 2D grid
 % x = linspace(0,1,obj.high_ref);
@@ -7,7 +7,7 @@ function obj = compute_matern_covariance(obj)
 % xx = reshape(xx,[],1);
 % yy = reshape(yy,[],1);
 % xxyy = [xx yy];
-xxyy = obj.DelaunayMesh.centroids;
+xxyy = centroids;
 N = length(xxyy);
 
 % Define the covariance function (Squared Exponential/RBF Kernel)
@@ -26,6 +26,6 @@ for i = 1:N
     end
     C(i,i) = sigma_f;
 end
-obj.C0 = C;
+C0 = C;
 
 

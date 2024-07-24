@@ -3,45 +3,45 @@ classdef LMAP
     properties
         
         % Properties associated with pressure data collection
+        inverse_class
         mesh_class;
         physics_class;
+        pressure_class;
         RTMflow_class;
-        inverse_class;
 
-        u_true;
-        u0;
-        pressure_data;
         sigma_delta_x;
         sigma_delta_t;
         delta_t;
         delta_x;
         f;
-
+        
+        u;
         lambdas;
-        gradient_lambdas;
+        grad_lambdas;
 
     end
 
     methods
 
-        function obj = LMAP(RTMflow_class, inverse_class)
+        function obj = LMAP(inverse_class,physics_class)
             
-            obj.mesh_class = RTMflow_class.Delaunay_mesh_class;
-            obj.physics_class = RTMflow_class.physics_class;
-            obj.RTMflow_class = RTMflow_class;
+            % Classes
             obj.inverse_class = inverse_class;
-
-            obj.u_true = inverse_class.u_meshcenters;
-            obj.u0 = zeros(1,length(obj.u_true));
-            obj.pressure_data = RTMflow_class.pressure_data;
+            obj.mesh_class = inverse_class.inv_mesh;
+            obj.physics_class = physics_class;
+            obj.physics_class.permeability = exp(inverse_class.u0);
+            obj.pressure_class = Pressure(obj.mesh_class,obj.physics_class);
+            obj.RTMflow_class = RTMFlow(obj.mesh_class,obj.physics_class,obj.pressure_class);
+            
+            % Dirac deltas
             obj.sigma_delta_t = 1e-10;
             obj.sigma_delta_x = 1/100;
             obj.delta_t = @(t_i,t) exp(-0.5*abs(t-t_i)^2/(2*obj.sigma_delta_t^2))/sqrt(2*pi*obj.sigma_delta_t^2);
             obj.delta_x = @(x_i,x) exp(-0.5*vecnorm( (x-x_i)' ).^2/(2*obj.sigma_delta_x^2))/sqrt(2*pi*obj.sigma_delta_x^2);
-            obj.f = @(t) sin(t/obj.RTMflow_class.T*pi)*exp(-t/obj.RTMflow_class.T);
 
-            obj.lambdas = cell(RTMflow_class.nsensors,RTMflow_class.nobservations);
-            obj.gradient_lambdas = cell(1);
+            % Placeholder for time-dependent boundary condition
+            obj.f = @(t) sin(t/obj.RTMflow_class.T*pi)*exp(-t/obj.RTMflow_class.T);
+    
         end
     end
 

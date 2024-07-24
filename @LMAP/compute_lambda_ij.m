@@ -1,15 +1,11 @@
-function lambda_ij = compute_lambda_ij(obj,i,j,stiffness_matrices,active_matrix,dirichlet_matrix)
+function lambda_ij = compute_lambda_ij(x_i,t_j,nodes,inlet_nodes,times, ...
+    stiffness_matrices,active_matrix,dirichlet_matrix)
 
 % Various init variables
-nodes = obj.mesh_class.nodes;
-lambda_ij = zeros(length(nodes),length(obj.RTMflow_class.times));
-inlet_nodes = obj.RTMflow_class.pressure_class.is_inlet;
-t_j = obj.RTMflow_class.observation_times(j);
-x_i = obj.RTMflow_class.sensor_locs_on_mesh(i,:);
-x_i_ind = obj.RTMflow_class.sensor_inds_on_mesh(i);
+lambda_ij = zeros(length(nodes),length(times));
 
 % Solve adjoint backwards in time!
-for t = length(obj.RTMflow_class.pressure_gradients):-1:1
+for t = length(times):-1:1
     
     % Various data from the forward solve
     stiffness_matrix = stiffness_matrices{t};

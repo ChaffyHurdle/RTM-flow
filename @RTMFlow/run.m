@@ -1,6 +1,6 @@
 function obj = run(obj)
 
-observation_times = obj.observation_times;
+observation_times = obj.physics_class.observation_times;
 sensor_inds_mesh = obj.sensor_inds_on_mesh;
 t_index = 1;
 p_old = obj.pressure_class.pressure;
@@ -18,7 +18,7 @@ obj = obj.add_data_all_times(it,t_old,p_old,...
 
 tic
 
-while ~obj.is_fully_saturated() && obj.time + obj.time_step <= obj.T
+while ~obj.is_fully_saturated() && obj.time + obj.time_step <= obj.physics_class.T
 
     it = it + 1;
 
