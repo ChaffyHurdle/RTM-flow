@@ -18,6 +18,7 @@ classdef LMAP
         u;
         lambdas;
         grad_lambdas;
+        representers;
 
     end
 
