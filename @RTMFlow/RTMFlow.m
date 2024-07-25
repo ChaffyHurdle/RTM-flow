@@ -34,6 +34,7 @@ classdef RTMFlow
         stiffness_matrices;
         Dirichlet_nodes;
         active_nodes;
+        all_active_elements;
 
         %% Tracking
         volume_fill_percentage;
@@ -72,6 +73,7 @@ classdef RTMFlow
             obj.stiffness_matrices = cell(1);
             obj.active_nodes = [];
             obj.Dirichlet_nodes = [];
+            obj.all_active_elements = [];
 
             %% Setting up time and time stepping
             obj.time = 0.0;

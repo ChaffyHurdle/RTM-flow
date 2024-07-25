@@ -9,12 +9,14 @@ Q_old = obj.volume_rates_of_flow;
 filling_facs_old = obj.volume_fill_percentage;
 stiffness = obj.pressure_class.stiffness_matrix;
 Dirichlets = obj.pressure_class.is_Dirichlet;
-actives = obj.pressure_class.is_node_active;
+active_nodes = obj.pressure_class.is_node_active;
+active_elements = obj.active_elements;
 t_old = obj.time;
 it = 1;
 
 obj = obj.add_data_all_times(it,t_old,p_old,...
-    p_gradients,Q_old,filling_facs_old,stiffness,actives,Dirichlets);
+    p_gradients,Q_old,filling_facs_old,stiffness,active_nodes,Dirichlets, ...
+    active_elements);
 
 tic
 
@@ -47,10 +49,11 @@ while ~obj.is_fully_saturated() && obj.time + obj.time_step <= obj.physics_class
     p_gradients_new = obj.pressure_class.pressure_gradient;
     stiffness = obj.pressure_class.stiffness_matrix;
     Dirichlets = obj.pressure_class.is_Dirichlet;
-    actives = obj.pressure_class.is_node_active;
+    active_nodes = obj.pressure_class.is_node_active;
+    active_elements = obj.active_elements;
     obj = obj.add_data_all_times(it,t_new,p_new,...
         p_gradients_new,Q_new,filling_facs_new,...
-        stiffness,actives,Dirichlets);
+        stiffness,active_nodes,Dirichlets,active_elements);
 
     %% Update domain
     obj = obj.update_computational_domain();

@@ -21,9 +21,9 @@ function obj = compute_lambdas(obj)
     diff_times = diff(times);
     num_times = length(times);
     ob_times = obj.physics_class.observation_times;
-    ob_times_inds = zeros(1,length(ob_times));
+    ob_times_ids = zeros(1,length(ob_times));
     for i = 1:length(ob_times)
-        ob_times_inds(i) = find(obj.RTMflow_class.times > ob_times(i),1)-1;
+        ob_times_ids(i) = find(obj.RTMflow_class.times > obj.physics_class.observation_times(1),1)-1;
     end
 
     [i_vec, j_vec] = meshgrid(1:nsensors, 1:nobs);
@@ -66,10 +66,9 @@ function obj = compute_lambdas(obj)
         % Access other required variables
         t_j = ob_times(j);
         x_i_ind = sensor_locs_inds(i);
-        ob_time_ind = ob_times_inds(j);
         
         % Compute lambda_ij
-        lambda_ij = compute_lambda_ij(x_i_ind,t_j,ob_time_ind, ...
+        lambda_ij = compute_lambda_ij(x_i_ind,t_j, ...
             nodes,inlet_nodes,times,deltat, ...
             stiffness_matrix_ij,active_matrix_ij,dirichlet_matrix_ij);
         
@@ -99,49 +98,47 @@ end
 
 
 %% Worker function for lambda_ij
-function lambda_ij = compute_lambda_ij(x_i_ind,t_j,ob_time_ind, ...
+function lambda_ij = compute_lambda_ij(x_i_ind,t_j, ...
     nodes,inlet_nodes,times,deltat, ...
     stiffness_matrices,active_matrix,dirichlet_matrix)
 
 % Init
 lambda_ij = zeros(length(nodes),length(times));
-%del_t = 3*max(diff(times));
-del_t = 10e-10;
 
 % Solve adjoint backwards in time!
-% if active_matrix(x_i_ind,ob_time_ind)
-for t = length(times):-1:1
+if ~active_nodes(x_i_ind)
+    for t = length(times):-1:1
+        
+        % Various data from the forward solve
+        stiffness_matrix = stiffness_matrices{t};
+        active_nodes = active_matrix(:,t); % nodes in D(t)
+        dirichlet_nodes = dirichlet_matrix(:,t); % inlet, front and beyond front
+        free = active_nodes & ~dirichlet_nodes; % nodes in D(t) except front and inlet
+        fixed = ~free; % nodes that are not free
+        is_moving_boundary = dirichlet_nodes ...
+                       & active_nodes ...
+                       & ~inlet_nodes; % nodes that are active, Dirichlet but not inlet
+        
+        % Set Dirichlet boundary conditions
+        lambda = zeros(length(nodes),1);
+        lambda(inlet_nodes) = 0.0;
+        lambda(is_moving_boundary) = nodes(is_moving_boundary,2)*100;
+        
+        load_vector = zeros(length(nodes),1);
+        is_sensor_i_active = active_nodes(x_i_ind);
+        load_vector(x_i_ind) = deltat(t_j,times(t))*is_sensor_i_active;
     
-    % Various data from the forward solve
-    stiffness_matrix = stiffness_matrices{t};
-    active_nodes = active_matrix(:,t); % nodes in D(t)
-    dirichlet_nodes = dirichlet_matrix(:,t); % inlet, front and beyond front
-    free = active_nodes & ~dirichlet_nodes; % nodes in D(t) except front and inlet
-    fixed = ~free; % nodes that are not free
-    is_moving_boundary = dirichlet_nodes ...
-                   & active_nodes ...
-                   & ~inlet_nodes; % nodes that are active, Dirichlet but not inlet
+    %     load_vector = obj.delta_t(t_j, obj.RTMflow_class.times(t))*...
+    %         obj.delta_x(x_i, nodes);
+        b_free = load_vector(free) - ...
+                          stiffness_matrix(free,fixed)*lambda(fixed);
+        A_free = stiffness_matrix(free,free);
     
-    % Set Dirichlet boundary conditions
-    lambda = zeros(length(nodes),1);
-    lambda(inlet_nodes) = 0.0;
-    lambda(is_moving_boundary) = 1;
-    
-    load_vector = zeros(length(nodes),1);
-    is_sensor_i_active = active_nodes(x_i_ind);
-    load_vector(x_i_ind) = deltat(t_j,times(t),del_t)*is_sensor_i_active;
-
-%     load_vector = obj.delta_t(t_j, obj.RTMflow_class.times(t))*...
-%         obj.delta_x(x_i, nodes);
-    b_free = load_vector(free) - ...
-                      stiffness_matrix(free,fixed)*lambda(fixed);
-    A_free = stiffness_matrix(free,free);
-
-    %% solve matrix equation for pressure
-    lambda(free) = A_free\b_free;
-    lambda_ij(:,t) = lambda;
+        %% solve matrix equation for pressure
+        lambda(free) = A_free\b_free;
+        lambda_ij(:,t) = lambda;
+    end
 end
-%end
 
 end
 

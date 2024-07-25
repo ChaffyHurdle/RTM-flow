@@ -19,17 +19,20 @@ while ~converged
     obj = obj.compute_lambdas();
 
     % Compute representers
-    obj = obj.compute_representers();
+    %obj = obj.compute_representers();
 
     % Compute linearised states
 
     % Construct linear system
 
     % Update u_{k} -> u_{k+1}
-    u = u + normrnd(0,5,1,length(u));
+    L = obj.inverse_class.cholesky_L_inv; % Cholesky decomposition
+    NL = length(L);
+    z = randn(NL, 1); % Standard normal random variables
+    u = (L * z)';
 
     iterate = iterate + 1;
-    if iterate == 2
+    if iterate == 3
         converged = 1;
     end
 end
