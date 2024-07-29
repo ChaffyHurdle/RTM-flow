@@ -1,21 +1,33 @@
 function obj = compute_lambdas(obj)
-    disp("computing lambdas")
-    % This code is written to optimise data transfer to all workers
+    
+    %% General comments
+    disp("Solving adjoint, representer and linearised state equations...")
+    % This code is written to optimise data transfer to all workers.
     % Most notably, we never want to pass obj into the worker function since
-    % it contains a lot of (mostly unnecessary) data.
+    % it contains a lot of (mostly unnecessary) data. This can make this
+    % function rather messy.
 
-    % Various init variables
+    % Each worker carries out the following routine: 
+    % i -> (lambda_i,kappa_i) -> R_i -> (\tilde{p}_i,\tilde{\Upsilon}_i).
+    % This is all done in one pass to avoid opening and closing parfor
+    % loops, which would require sending data to workers once more.
+
+    %% Various init variables
+
     nobs = obj.physics_class.nobservations;
     nsensors = obj.physics_class.nsensors;
-
+    
+    % Node data
     nodes = obj.mesh_class.nodes;
+    num_nodes = obj.mesh_class.num_nodes;
     inlet_nodes = obj.RTMflow_class.pressure_class.is_inlet;
     sensor_locs = obj.RTMflow_class.sensor_locs_on_mesh;
     sensor_locs_inds = obj.RTMflow_class.sensor_inds_on_mesh;
-
+    
+    % Element data
     elements = obj.mesh_class.elements;
     num_elements = obj.mesh_class.num_elements;
-    num_nodes = obj.mesh_class.num_nodes;
+    
 
     times = obj.RTMflow_class.times;
     diff_times = diff(times);
@@ -106,7 +118,7 @@ function lambda_ij = compute_lambda_ij(x_i_ind,t_j,ob_time_ind, ...
 % Init
 lambda_ij = zeros(length(nodes),length(times));
 %del_t = 3*max(diff(times));
-del_t = 10e-10;
+del_t = 10e-11;
 
 % Solve adjoint backwards in time!
 % if active_matrix(x_i_ind,ob_time_ind)
@@ -125,7 +137,7 @@ for t = length(times):-1:1
     % Set Dirichlet boundary conditions
     lambda = zeros(length(nodes),1);
     lambda(inlet_nodes) = 0.0;
-    lambda(is_moving_boundary) = 1;
+    lambda(is_moving_boundary) = 0.0;
     
     load_vector = zeros(length(nodes),1);
     is_sensor_i_active = active_nodes(x_i_ind);
@@ -178,4 +190,6 @@ function R_i = compute_representer_i(times,diff_times, ...
         R_i = R_i + diff_times(i) * (f_i + f_iplus1)';
     end
     R_i = - R_i .* exp(permeability);
+
+    R_i(abs(R_i)<1e-10)=0;
 end

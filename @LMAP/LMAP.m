@@ -34,11 +34,10 @@ classdef LMAP
             obj.pressure_class = Pressure(obj.mesh_class,obj.physics_class);
             obj.RTMflow_class = RTMFlow(obj.mesh_class,obj.physics_class,obj.pressure_class);
             
-            % Dirac deltas
+            % Dirac delta in time
             obj.sigma_delta_t = 1e-11;
-            obj.sigma_delta_x = 1/1000;
             obj.delta_t = @(t_i,t,delt_t) exp(-abs(t-t_i)^2/(2*delt_t^2))/sqrt(2*pi*delt_t^2);
-            obj.delta_x = @(x_i,x) exp(-vecnorm( (x-x_i)' ).^2/(2*obj.sigma_delta_x))/sqrt(2*pi*obj.sigma_delta_x);
+            % obj.delta_x = @(x_i,x) exp(-vecnorm( (x-x_i)' ).^2/(2*obj.sigma_delta_x))/sqrt(2*pi*obj.sigma_delta_x);
 
             % Placeholder for time-dependent boundary condition
             obj.f = @(t) sin(t/obj.RTMflow_class.T*pi)*exp(-t/obj.RTMflow_class.T);
