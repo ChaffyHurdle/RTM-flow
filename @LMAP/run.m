@@ -4,6 +4,7 @@ function obj = run(obj)
 converged = 0;
 iterate = 1;
 u = obj.inverse_class.u0;
+obj.alpha = 1e5;
 
 while ~converged
     disp(iterate)

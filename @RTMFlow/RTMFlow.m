@@ -35,6 +35,7 @@ classdef RTMFlow
         Dirichlet_nodes;
         active_nodes;
         all_active_elements;
+        all_new_active_elements;
 
         %% Tracking
         volume_fill_percentage;
@@ -74,6 +75,7 @@ classdef RTMFlow
             obj.active_nodes = [];
             obj.Dirichlet_nodes = [];
             obj.all_active_elements = [];
+            obj.all_new_active_elements = [];
 
             %% Setting up time and time stepping
             obj.time = 0.0;

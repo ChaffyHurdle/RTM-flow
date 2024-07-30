@@ -23,7 +23,7 @@ my_inverse = my_inverse.generate_u();
 my_inverse.plot_u_true();
 
 %% Physics and pressure set up
-mu = 0.1; phi = 1; thickness = 1; p_I = 6.0e5; p_0 = 1.0e5;
+mu = 1; phi = 1; thickness = 1; p_I = 2; p_0 = 1;
 
 % Approx. ob. times for 5 equal increments of the front (hard-coded to work 
 % for mean 0 prior generating u_true). Stop when ~95% filled.
@@ -84,6 +84,14 @@ for i = 0:4
     end
 end
 
+k = 25;
+sum_tildes = sum(my_lmap.p_tildes,3);
+for i = 1:1000
+    figure(1)
+    pdeplot(my_inverse_mesh.nodes',...
+               my_inverse_mesh.elements', ...
+               XYData=sum_tildes(:,i),XYStyle='interp',ColorMap="jet",Mesh="off")
+end
 
 %% Execute solver
 % parallel_pressure = cell(1,3);
@@ -117,4 +125,12 @@ for i = 1:width(my_lmap.lambdas(:,:,k))
 %     title("time elapsed: " + num2str(true_RTMflow.times(i)))
 %     hold off
 %     xlim([0,1]); ylim([0,1]);
+end
+
+k = 20;
+for i = 1:1000
+    figure(1)
+    pdeplot(my_inverse_mesh.nodes',...
+               my_inverse_mesh.elements', ...
+               XYData=my_lmap.p_tildes(:,i,k),XYStyle='interp',ColorMap="jet",Mesh="off")
 end
