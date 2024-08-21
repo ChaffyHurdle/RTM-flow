@@ -7,7 +7,7 @@ classdef RTMFlow
 
     properties
 
-        % Classes
+        %% Classes
         Delaunay_mesh_class;
         pressure_class;
         Voronoi_mesh_class;
@@ -15,7 +15,7 @@ classdef RTMFlow
         physics_class;
         visualise_class;
         
-        % Time
+        %% Time
         time;
         time_step;
         wall_time;
@@ -23,9 +23,10 @@ classdef RTMFlow
         %% Extract data at discrete times
         sensor_inds_on_mesh;
         sensor_locs_on_mesh;
+        sensor_element_inds;
         pressure_data;
 
-        %% Save data at all times
+        %% Save data at all times (used for LMAP)
         times;
         pressures;
         pressure_gradients;
@@ -65,7 +66,7 @@ classdef RTMFlow
             obj = obj.find_sensor_locs_mesh();
             obj.pressure_data = zeros(physics_class.nsensors, physics_class.nobservations);
 
-            %% All data
+            %% All data (used for LMAP)
             obj.times = [];
             obj.pressures = [];
             obj.pressure_gradients = cell(1);

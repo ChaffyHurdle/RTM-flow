@@ -1,4 +1,4 @@
-%% clearing and loading
+%% Clearing and loading
 clear;
 close all;
 clc;
@@ -11,7 +11,7 @@ for i = 1:numel(meshes)
 end
 parpool('local', 10);
 
-%% Mesh set up (avoid inverse crimes)
+%% Mesh set up (avoiding inverse crimes)
 my_forward_mesh = DelaunayMesh(p_ref,e_ref,t_ref);
 my_inverse_mesh = DelaunayMesh(p,e,t);
 
@@ -30,7 +30,7 @@ mu = 1; phi = 1; thickness = 1; p_I = 2; p_0 = 1;
 observation_times = linspace(0.1,0.9,5).^2*mu*phi/(2*(p_I-p_0));
 T = 0.95^2*mu*phi/(2*(p_I-p_0));
 
-% Set sensor locs.
+% Set sensor locs
 sensor_locs_x = [0.25,0.5,0.75];
 sensor_locs_y = [0.25,0.5,0.75];
 [sensor_locs_x,sensor_locs_y] = meshgrid(sensor_locs_x,sensor_locs_y);
@@ -45,6 +45,7 @@ my_pressure = Pressure(my_forward_mesh,my_darcy);
 
 %% RTM set up (fine forward mesh)
 true_RTMflow = RTMFlow(my_forward_mesh,my_darcy,my_pressure);
+
 % true_RTMflow.visualise_class.is_plotting_volume = true;
 true_RTMflow = true_RTMflow.run();
 % true_RTMflow.flow_plots();
@@ -84,7 +85,7 @@ for i = 0:4
     end
 end
 
-k = 25;
+k = 10;
 sum_tildes = sum(my_lmap.p_tildes,3);
 for i = 1:1000
     figure(1)
@@ -105,7 +106,7 @@ end
 %     parallel_pressure{i} = my_RTMflow.pressure_data;
 % end
 % toc
-k = 4;
+k = 20;
 for i = 1:width(my_lmap.lambdas(:,:,k))
     figure(1)
     pdeplot(my_inverse_mesh.nodes',...
@@ -133,4 +134,26 @@ for i = 1:1000
     pdeplot(my_inverse_mesh.nodes',...
                my_inverse_mesh.elements', ...
                XYData=my_lmap.p_tildes(:,i,k),XYStyle='interp',ColorMap="jet",Mesh="off")
+end
+
+
+for i = 2:1000
+    figure(1)
+    pdeplot(my_forward_mesh.nodes',...
+               my_forward_mesh.elements', ...
+               XYData=true_RTMflow.all_new_active_elements(:,i),XYStyle='flat',ColorMap="jet",Mesh="on")
+    front = boolean(true_RTMflow.active_nodes(:,i) & true_RTMflow.Dirichlet_nodes(:,i) & ~true_RTMflow.pressure_class.is_inlet);
+    front_nodes = my_forward_mesh.nodes(front,:);
+    hold on
+    scatter(front_nodes(:,1),front_nodes(:,2))
+    xlim([0,1]);ylim([0,1])
+    hold off
+end
+
+for i = 1:10
+    figure(1)
+    front = boolean(true_RTMflow.active_nodes(:,i) & true_RTMflow.Dirichlet_nodes(:,i) & ~true_RTMflow.pressure_class.is_inlet);
+    front_nodes = my_forward_mesh.nodes(front,:);
+    scatter(front_nodes(:,1),front_nodes(:,2))
+    xlim([0,1]);ylim([0,1])
 end

@@ -13,7 +13,6 @@ function obj = compute_lambdas(obj)
     % loops, which would require sending data to workers once more.
 
     %% Various init variables
-    
     alpha = obj.alpha;
     nobs = obj.physics_class.nobservations;
     nsensors = obj.physics_class.nsensors;
@@ -22,7 +21,6 @@ function obj = compute_lambdas(obj)
     nodes = obj.mesh_class.nodes;
     num_nodes = obj.mesh_class.num_nodes;
     inlet_nodes = obj.RTMflow_class.pressure_class.is_inlet;
-    sensor_locs = obj.RTMflow_class.sensor_locs_on_mesh;
     sensor_locs_inds = obj.RTMflow_class.sensor_inds_on_mesh;
     
     % Element data
@@ -30,7 +28,7 @@ function obj = compute_lambdas(obj)
     num_elements = obj.mesh_class.num_elements;
     element_areas = obj.mesh_class.element_areas;
     
-
+    % Time info
     times = obj.RTMflow_class.times;
     diff_times = diff(times);
     num_times = length(times);

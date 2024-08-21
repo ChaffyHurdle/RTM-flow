@@ -44,11 +44,8 @@ classdef Pressure
             obj.physics_class = physics_class;
 
             % Hard code inlet/vent positions
-            %obj.inlet_func = inlet_func;
             obj.inlet_func = @(x) (x(1) == 0);
-            %obj.vent_func = vent_func;
             obj.vent_func = @(x) (x(1) == 1);
-            %obj.p_D = p_D;
 
             %% set time to zero
             obj.time = 0.0;
@@ -60,7 +57,6 @@ classdef Pressure
             num_dofs = mesh_class.num_nodes;
 
             % Hard code Dirichlet condition
-            %obj.pressure = obj.pressure.p_D(obj);
             obj.pressure = physics_class.p_0*ones(num_dofs,1);
             obj.pressure(obj.is_inlet) = physics_class.p_I;
 
