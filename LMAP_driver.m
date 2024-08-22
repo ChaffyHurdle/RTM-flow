@@ -45,10 +45,7 @@ my_pressure = Pressure(my_forward_mesh,my_darcy);
 
 %% RTM set up (fine forward mesh)
 true_RTMflow = RTMFlow(my_forward_mesh,my_darcy,my_pressure);
-
-% true_RTMflow.visualise_class.is_plotting_volume = true;
 true_RTMflow = true_RTMflow.run();
-% true_RTMflow.flow_plots();
 
 %% Generate data for inverse problem
 my_inverse = my_inverse.generate_data(true_RTMflow.pressure_data,0.01);
@@ -150,10 +147,10 @@ for i = 2:1000
     hold off
 end
 
-for i = 1:10
+for i = 1:width(true_RTMflow.active_nodes)
     figure(1)
     front = boolean(true_RTMflow.active_nodes(:,i) & true_RTMflow.Dirichlet_nodes(:,i) & ~true_RTMflow.pressure_class.is_inlet);
-    front_nodes = my_forward_mesh.nodes(front,:);
-    scatter(front_nodes(:,1),front_nodes(:,2))
+    front_nodes = sort(my_forward_mesh.nodes(front,:),1);
+    plot(front_nodes(:,1),front_nodes(:,2))
     xlim([0,1]);ylim([0,1])
 end

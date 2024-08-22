@@ -10,15 +10,18 @@ classdef Inversion
         matern_var;
         matern_length_scale;
         matern_nu;
-
+        
+        % Matern covariance on refined mesh, along with u_true
         C0_fwd;
         cholesky_L_fwd;
         u_true;
-
+        
+        % Matern covariance on coarser mesh, along with u0
         C0_inv;
         cholesky_L_inv;
         u0;
-
+        
+        % Variables related to data
         pressure_noiseless;
         Sigma;
         data;
