@@ -13,6 +13,7 @@ classdef Sensitivity
         % Forward solves
         RTMflow_u;
         RTMflow_u_plus_h;
+        p_tilde;
     end
 
     methods

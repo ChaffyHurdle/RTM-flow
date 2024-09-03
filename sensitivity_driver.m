@@ -42,8 +42,80 @@ K_true = exp(my_inverse.u_true);
 my_darcy = Physics(mu, phi, thickness, p_I, p_0, K_true, sensor_locs, observation_times,T);
 
 %% Sensitivity setup
-my_sensitivity = Sensitivity(my_mesh,my_darcy,my_inverse.u_true,h);
+my_sensitivity = Sensitivity(my_mesh,my_darcy,my_inverse.u_true,h/10);
 my_sensitivity = my_sensitivity.fwd_solves();
+my_sensitivity = my_sensitivity.run();
+
+for i = 1:5
+    [ d, ix_u_plus_h ] = min( abs( my_sensitivity.RTMflow_u_plus_h.times-my_darcy.observation_times(i) ) );
+    [ d, ix_u ] = min( abs( my_sensitivity.RTMflow_u.times-my_darcy.observation_times(i) ) );
+    max_diff = max(max(abs(my_sensitivity.RTMflow_u_plus_h.pressures(:,ix_u_plus_h)-my_sensitivity.RTMflow_u.pressures(:,ix_u))),...
+        max(abs(my_sensitivity.RTMflow_u_plus_h.pressures(:,ix_u_plus_h) - my_sensitivity.RTMflow_u.pressures(:,ix_u) - my_sensitivity.p_tilde(:,ix_u))));
+    figure(i)
+
+    % p_{u+h}
+    subplot(2,3,1)
+    pdeplot(my_mesh.nodes',...
+                my_mesh.elements', ...
+                XYData=my_sensitivity.RTMflow_u_plus_h.pressures(:,ix_u_plus_h),XYStyle='flat',ColorMap="jet",Mesh="on")
+    title("$p_{u+h}$", 'interpreter', 'latex')
+    % p_{u}
+    subplot(2,3,2)
+    pdeplot(my_mesh.nodes',...
+                my_mesh.elements', ...
+                XYData=my_sensitivity.RTMflow_u.pressures(:,ix_u),XYStyle='flat',ColorMap="jet",Mesh="on")
+    title("$p_u$", 'interpreter', 'latex')
+    % |p_{u+h} - p_{u}|
+    subplot(2,3,3)
+    pdeplot(my_mesh.nodes',...
+                my_mesh.elements', ...
+                XYData=abs(my_sensitivity.RTMflow_u_plus_h.pressures(:,ix_u_plus_h)-my_sensitivity.RTMflow_u.pressures(:,ix_u)),XYStyle='flat',ColorMap="jet",Mesh="on")
+    caxis([0,max_diff])
+    title("$|p_{u+h} - p_u|$", 'interpreter', 'latex')
+    % p_{u+h}
+    subplot(2,3,4)
+    pdeplot(my_mesh.nodes',...
+                my_mesh.elements', ...
+                XYData=my_sensitivity.RTMflow_u_plus_h.pressures(:,ix_u_plus_h),XYStyle='flat',ColorMap="jet",Mesh="on")
+    title("$p_{u+h}$", 'interpreter', 'latex')
+    % p_{u} + \tilde{p}
+    subplot(2,3,5)
+    pdeplot(my_mesh.nodes',...
+                my_mesh.elements', ...
+                XYData=my_sensitivity.RTMflow_u.pressures(:,ix_u) + my_sensitivity.p_tilde(:,ix_u),XYStyle='flat',ColorMap="jet",Mesh="on")
+    title("$p_u + \tilde{p}$", 'interpreter', 'latex')
+    % |p_{u+h} - (p_u + \tilde{p})|
+    subplot(2,3,6)
+    pdeplot(my_mesh.nodes',...
+            my_mesh.elements', ...
+            XYData=abs(my_sensitivity.RTMflow_u_plus_h.pressures(:,ix_u_plus_h) - my_sensitivity.RTMflow_u.pressures(:,ix_u) - my_sensitivity.p_tilde(:,ix_u)),XYStyle='flat',ColorMap="jet",Mesh="on")
+    caxis([0,max_diff])
+    title("$|p_{u+h} - (p_u + \tilde{p})|$", 'interpreter', 'latex')
+    ob_time = "t_" + num2str(i);
+    sgtitle(ob_time)
+end
+
+for i = 1:5
+    [ d, ix_u_plus_h ] = min( abs( my_sensitivity.RTMflow_u_plus_h.times-my_darcy.observation_times(i) ) );
+    [ d, ix_u ] = min( abs( my_sensitivity.RTMflow_u.times-my_darcy.observation_times(i) ) );
+    max_cbar = max(max(my_sensitivity.p_tilde(:,ix_u)),max(my_sensitivity.RTMflow_u_plus_h.pressures(:,ix_u_plus_h)-my_sensitivity.RTMflow_u.pressures(:,ix_u)));
+    min_cbar = min(min(my_sensitivity.p_tilde(:,ix_u)),min(my_sensitivity.RTMflow_u_plus_h.pressures(:,ix_u_plus_h)-my_sensitivity.RTMflow_u.pressures(:,ix_u)));
+    figure(i+5)
+    subplot(1,2,1)
+    pdeplot(my_mesh.nodes',...
+                    my_mesh.elements', ...
+                    XYData=my_sensitivity.RTMflow_u_plus_h.pressures(:,ix_u_plus_h)-my_sensitivity.RTMflow_u.pressures(:,ix_u),XYStyle='flat',ColorMap="jet",Mesh="on")
+    caxis([min_cbar,max_cbar])
+    title("$p_{u+h}-p_u$",'interpreter','latex')
+    subplot(1,2,2)
+    pdeplot(my_mesh.nodes',...
+                    my_mesh.elements', ...
+                    XYData=my_sensitivity.p_tilde(:,ix_u),XYStyle='flat',ColorMap="jet",Mesh="on")
+    caxis([min_cbar,max_cbar])
+    title("$\tilde{p}$",'interpreter','latex')
+    ob_time = "t_" + num2str(i);
+    sgtitle(ob_time)
+end
 
 %% Plot differences in moving front and pressure
 
@@ -58,7 +130,7 @@ for i = my_darcy.observation_times
     plot(front_nodes(:,1),front_nodes(:,2))
     
     hold on
-    u_plus_h_RTMflow = my_sensitivity.RTMflow_u_plus_h{1};
+    u_plus_h_RTMflow = my_sensitivity.RTMflow_u_plus_h;
     [ d, ix ] = min( abs( u_plus_h_RTMflow.times-i ) );
     front = boolean(u_plus_h_RTMflow.active_nodes(:,ix) & u_plus_h_RTMflow.Dirichlet_nodes(:,ix) & ~u_plus_h_RTMflow.pressure_class.is_inlet);
     front_nodes = sortrows(my_mesh.nodes(front,:),2);
@@ -74,7 +146,7 @@ u_RTMflow = my_sensitivity.RTMflow_u;
 max_error = zeros(1,4);
 k = 1;
 for i=1:4
-    u_plus_h_RTMflow = my_sensitivity.RTMflow_u_plus_h{i};
+    u_plus_h_RTMflow = my_sensitivity.RTMflow_u_plus_h;
     for j=my_darcy.observation_times
         subplot(4,5,k)
         [ d, ix_u_plus_h ] = min( abs( u_plus_h_RTMflow.times-j ) );
@@ -86,7 +158,28 @@ for i=1:4
         colorbar; caxis([-1/2 1/2]);
         k = k + 1;
     end
-    max_error(i) = (u_plus_h_RTMflow.pressures(100,ix_u_plus_h) - u_RTMflow.pressures(100,ix_u))/h_norm;
+    max_error(i) = (u_plus_h_RTMflow.pressures(500,ix_u_plus_h) - u_RTMflow.pressures(500,ix_u))/h_norm;
 end
 
+for i = 1:50
+    figure(1)
+    subplot(1,2,1)
+    pdeplot(my_mesh.nodes',...
+            my_mesh.elements', ...
+            XYData=u_RTMflow.all_active_elements(:,i),XYStyle='flat',ColorMap="jet",Mesh="on")
+    title(num2str(sum(u_RTMflow.active_nodes(:,i))))
+    subplot(1,2,2)
+    pdeplot(my_mesh.nodes',...
+            my_mesh.elements', ...
+            XYData=u_RTMflow.all_active_elements(:,i+1),XYStyle='flat',ColorMap="jet",Mesh="on")
+    title(num2str(sum(u_RTMflow.active_nodes(:,i+1))))
+     input("Another? Y/Q");
+end
 
+moving_bndry = double(u_RTMflow.active_nodes & u_RTMflow.Dirichlet_nodes & ~u_RTMflow.pressure_class.is_inlet);
+for i = 1:50
+    figure(1)
+    pdeplot(my_mesh.nodes',...
+            my_mesh.elements', ...
+            XYData=moving_bndry(:,i),XYStyle='flat',ColorMap="jet",Mesh="on")
+end
