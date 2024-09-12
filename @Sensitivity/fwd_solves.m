@@ -19,4 +19,6 @@ RTMflow_u_plus_h = RTMFlow(mesh,darcy_class_u_plus_h,my_pressure_u_plus_h);
 RTMflow_u_plus_h = RTMflow_u_plus_h.run(); 
 obj.RTMflow_u_plus_h = RTMflow_u_plus_h;
 
+obj.is_moving_boundary = RTMflow_u.active_nodes & RTMflow_u.Dirichlet_nodes & ~my_pressure_u.is_inlet;
+
 end
