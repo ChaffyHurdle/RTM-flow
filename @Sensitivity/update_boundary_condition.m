@@ -6,14 +6,26 @@ dt_vec = diff(obj.RTMflow_u.times);
 viscosity = obj.RTMflow_u.physics_class.viscosity;
 porosity = obj.RTMflow_u.physics_class.porosity;
 normal_vec = obj.RTMflow_u.Voronoi_mesh_class.volume_outflow_vectors;
-pressure_gradient_t = obj.RTMflow_u.pressure_gradients{t};
+pressure_gradient_t = obj.RTMflow_u.pressure_gradients{t+1};
 
 % Find nodes associated with inlet, and the boundary at [t,t+1]
 is_moving_boundary = obj.is_moving_boundary(:,t) | obj.is_moving_boundary(:,t+1);
 inlet_nodes = obj.RTMflow_u.pressure_class.is_inlet;
 dirichlet_nodes = inlet_nodes | is_moving_boundary;
 obj.dirichlet_nodes_matrix = [obj.dirichlet_nodes_matrix dirichlet_nodes];
-dirichlet_inds = find(dirichlet_nodes);
+dirichlet_inds = find(is_moving_boundary);
+
+new_nodes = find(obj.is_moving_boundary(:,t+1) - obj.is_moving_boundary(:,t) == 1);
+old_nodes = find(obj.is_moving_boundary(:,t) - obj.is_moving_boundary(:,t+1) == 1);
+for i = 1:length(new_nodes)
+    candidate = new_nodes(i);
+    connected_nodes = obj.RTMflow_u.Voronoi_mesh_class.connected_polygons{candidate};
+    connected_nodes_logical = zeros(obj.mesh_class.num_nodes,1);
+    connected_nodes_logical(connected_nodes) = 1;
+    connected_and_active = boolean(connected_nodes_logical .* dirichlet_nodes);
+    obj.v_h(candidate) = mean(obj.v_h(connected_and_active));
+end
+%obj.v_h(old_nodes) = 0;
 
 % Find all elements connected to Dirichlet nodes
 candidate_elem = zeros(length(mesh_class.elements),1);
@@ -31,7 +43,7 @@ end
 candidate_elem = find(candidate_elem);
 
 % Set pressure gradient to 0
-pressure_grad = zeros(length(mesh_class.nodes),1);
+pressure_grad = zeros(mesh_class.num_nodes,1);
 dvh_dt = zeros(mesh_class.num_nodes,1);
 
 % For each element, compute the transfer of v_h and \nabla p between CVs
@@ -55,7 +67,8 @@ for i = 1:length(candidate_elem)
     pressure_grad(element) = pressure_grad(element) + local_pressure_grad;
 
 end
-obj.v_h = obj.v_h + dvh_dt*dt_vec(t)./obj.RTMflow_u.Voronoi_mesh_class.volume_measures;
+%obj.v_h(inlet_nodes) = 0;
+obj.v_h = obj.v_h + dvh_dt*dt_vec(t);
 obj.bndry_cond = - obj.v_h .* pressure_grad;
 
 %% function to compute outflow of standard elements

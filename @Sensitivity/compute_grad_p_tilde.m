@@ -10,5 +10,4 @@ for i = 1:num_elements
     grad_p_tilde(i,:) = (grad_phi * local_p_tilde)';
 end
 obj.grad_p_tilde = grad_p_tilde;
-
 end
