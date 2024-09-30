@@ -43,20 +43,6 @@ for t = 2:ntimes-1
 
     % Find RHS stiffness in variational form
     new_elements = find(all_new_active_elements(:,t-1));
-%     if t > 50 && t < 60
-%         figure(1)
-%         subplot(1,2,1)
-%         pdeplot(nodes',elements',XYData = double(obj.RTMflow_u.all_active_elements(:,t)),XYStyle='flat',ColorMap="jet",Mesh="on")
-%         hold on
-%         plot(nodes(is_moving_boundary,1),nodes(is_moving_boundary,2),'wo')
-%         hold off
-%         subplot(1,2,2)
-%         pdeplot(nodes',elements',XYData = pressures(:,t),XYStyle='flat',ColorMap="jet",Mesh="on")
-%         hold on
-%         plot(nodes(is_moving_boundary,1),nodes(is_moving_boundary,2),'wo')
-%         hold off
-%         input('')
-%     end
 
     for i = 1 : length(new_elements)
     
@@ -77,7 +63,6 @@ for t = 2:ntimes-1
     p_tilde_t(free) = A_free\b_free;
     
     obj = obj.compute_grad_p_tilde(p_tilde_t);
-    p_tilde_t(is_moving_boundary) = max(p_tilde_t(is_moving_boundary),0);
 
 %     figure(1)
 %     subplot(1,2,1)
@@ -102,145 +87,6 @@ end
 
 obj.p_tilde = p_tilde;
 
-p_tilde_ob_times = [];
-is_moving_boundary_ob_times = [];
-is_moving_boundary_ob_times_u_plus_h = [];
-times_u = obj.RTMflow_u.times;
-times_u_plus_h = obj.RTMflow_u_plus_h.times;
+obj = obj.save_sensitivity_data();
 
-for i = 1:length(obj.darcy_class_u.observation_times)
-    ob_time = obj.darcy_class_u.observation_times(i);
-    idx_u_after = find(times_u > ob_time, 1);
-    idx_u_plus_h_after = find(times_u_plus_h > ob_time, 1);
-    dt_u = times_u(idx_u_after)-times_u(idx_u_after-1);
-
-    interpolated_p_tilde = p_tilde(:,idx_u_after-1) + ...
-                ((ob_time - times_u(idx_u_after-1))/dt_u)*(p_tilde(:,idx_u_after) - p_tilde(:,idx_u_after-1));
-    is_moving_boundary_ob_times = [is_moving_boundary_ob_times obj.is_moving_boundary(:,idx_u_after-1)];
-    is_moving_boundary_ob_times_u_plus_h = [is_moving_boundary_ob_times_u_plus_h obj.is_moving_boundary_u_plus_h(:,idx_u_plus_h_after-1)];
-    p_tilde_ob_times = [p_tilde_ob_times interpolated_p_tilde];
-end
-
-obj.p_tildes = p_tilde_ob_times;
-obj.is_moving_boundary_ob_times = is_moving_boundary_ob_times;
-obj.is_moving_boundary_ob_times_u_plus_h = is_moving_boundary_ob_times_u_plus_h;
-
-num_ob_times = length(obj.darcy_class_u.observation_times);
-
-figure
-for i = 1:num_ob_times
-    max_diff = max(max(abs(obj.pressures_u_plus_h(:,i)-obj.pressures_u(:,i)).*obj.active_nodes_u(:,i)),...
-        max(abs(obj.pressures_u_plus_h(:,i) - obj.pressures_u(:,i) - obj.p_tildes(:,i)).*obj.active_nodes_u(:,i)));
-
-    % |p_{u+h} - p_{u}|
-    subplot(2,num_ob_times,i)
-    pdeplot(nodes',elements', ...
-        XYData=abs(obj.pressures_u_plus_h(:,i)-obj.pressures_u(:,i)), ...
-        XYStyle='flat',ColorMap="jet",Mesh="off")
-    caxis([0,max_diff])
-%     hold on
-%     plot(nodes(boolean(is_moving_boundary_ob_times(:,i)),1),nodes(boolean(is_moving_boundary_ob_times(:,i)),2),'w.')
-%     hold off
-    title("$|p_{u+h} - p_u|$", 'interpreter', 'latex')
-
-    % |p_{u+h} - (p_u + \tilde{p})|
-    subplot(2,num_ob_times,i+num_ob_times)
-    pdeplot(nodes',elements', ...
-        XYData=abs(obj.pressures_u_plus_h(:,i) - obj.pressures_u(:,i) - obj.p_tildes(:,i)), ...
-        XYStyle='flat',ColorMap="jet",Mesh="off")
-    caxis([0,max_diff])
-%     hold on
-%     plot(nodes(boolean(is_moving_boundary_ob_times(:,i)),1),nodes(boolean(is_moving_boundary_ob_times(:,i)),2),'w.')
-%     hold off
-    title("$|p_{u+h} - (p_u + \tilde{p})|$", 'interpreter', 'latex')
-end
-
-figure
-for i = 1:num_ob_times
-    subplot(4,num_ob_times,i)
-    max_cbar = max(max(obj.p_tildes(:,i)),max(obj.pressures_u_plus_h(:,i)-obj.pressures_u(:,i)));
-    min_cbar = min(min(obj.p_tildes(:,i)),min(obj.pressures_u_plus_h(:,i)-obj.pressures_u(:,i)));
-
-    pdeplot(nodes',elements', ...
-        XYData=(obj.pressures_u_plus_h(:,i)-obj.pressures_u(:,i)).*obj.active_nodes_u(:,i), ...
-        XYStyle='flat',ColorMap="jet",Mesh="off")
-    caxis([min_cbar,max_cbar])
-%     hold on
-%     plot(nodes(boolean(is_moving_boundary_ob_times(:,i)),1),nodes(boolean(is_moving_boundary_ob_times(:,i)),2),'w.')
-%     hold off
-    title("$p_{u+h}-p_u$",'interpreter','latex')
-
-    subplot(4,num_ob_times,i+num_ob_times)
-    pdeplot(nodes',elements', ...
-        XYData=obj.p_tildes(:,i).*obj.active_nodes_u(:,i), ...
-        XYStyle='flat',ColorMap="jet",Mesh="off")
-    caxis([min_cbar,max_cbar])
-%     hold on
-%     plot(nodes(boolean(is_moving_boundary_ob_times(:,i)),1),nodes(boolean(is_moving_boundary_ob_times(:,i)),2),'w.')
-%     hold off
-    title("$\tilde{p}$",'interpreter','latex')
-
-    subplot(4,num_ob_times,i+2*num_ob_times)
-    pdeplot(nodes',elements', ...
-        XYData=(obj.pressures_u_plus_h(:,i)-obj.pressures_u(:,i)).*is_moving_boundary_ob_times(:,i), ...
-        XYStyle='flat',ColorMap="jet",Mesh="off")
-    caxis([min_cbar,max_cbar])
-%     hold on
-%     plot(nodes(boolean(is_moving_boundary_ob_times(:,i)),1),nodes(boolean(is_moving_boundary_ob_times(:,i)),2),'w.')
-%     hold off
-    title("$p_{u+h}-p_u$ on boundary",'interpreter','latex')
-
-    subplot(4,num_ob_times,i+3*num_ob_times)
-    pdeplot(nodes',elements', ...
-        XYData=obj.p_tildes(:,i).*is_moving_boundary_ob_times(:,i), ...
-        XYStyle='flat',ColorMap="jet",Mesh="off")
-    caxis([min_cbar,max_cbar])
-%     hold on
-%     plot(nodes(boolean(is_moving_boundary_ob_times(:,i)),1),nodes(boolean(is_moving_boundary_ob_times(:,i)),2),'w.')
-%     hold off
-    title("$\tilde{p}$ on boundary",'interpreter','latex')
-end
-
-figure
-for i = 1:num_ob_times
-    plot(i, sum( (obj.pressures_u_plus_h(:,i)-obj.pressures_u(:,i) - obj.p_tildes(:,i)).^2 )/sum(obj.active_nodes_u(:,i)),'k*' )
-    hold on
-end
-hold off
-
-obj.p_tildes_at_sensors = zeros(size(obj.RTMflow_u.pressure_data));
-for i = 1:width(obj.p_tildes)
-    p_tilde = obj.p_tildes(:,i);
-    p_tilde_at_sensors = interpolate_pressures(p_tilde,obj.RTMflow_u,obj.mesh_class);
-    obj.p_tildes_at_sensors(:,i) = p_tilde_at_sensors;
-end
-
-end
-
-%% The following functions are designed to interpolate pressure at sensor locations
-function pressure_at_sensors = interpolate_pressures(p_tilde,obj,mesh)
-
-    sensor_element_inds = obj.sensor_element_inds;
-    sensor_locs = obj.physics_class.sensor_locs;
-    pressure_at_sensors = zeros(1,length(sensor_locs));
-
-    for i = 1:length(sensor_locs)
-        sensor_loc = sensor_locs(i,:);
-        nodes_surrounding_inds = mesh.elements(sensor_element_inds(i),:);
-        nodes_surrounding = mesh.nodes(nodes_surrounding_inds,:);
-        [lambda1, lambda2, lambda3] = compute_barycentric_coords(nodes_surrounding, sensor_loc);
-        P1 = p_tilde(nodes_surrounding_inds(1));
-        P2 = p_tilde(nodes_surrounding_inds(2));
-        P3 = p_tilde(nodes_surrounding_inds(3));
-        pressure_at_sensors(i) = lambda1 * P1 + lambda2 * P2 + lambda3 * P3;
-    end
-end
-
-% Auxiliary function (previously defined)
-function [lambda1, lambda2, lambda3] = compute_barycentric_coords(nodes_surrounding, p_tilde)
-    v1 = nodes_surrounding(1,:); v2 = nodes_surrounding(2,:); v3 = nodes_surrounding(3,:);
-    denominator = (v2(2) - v3(2))*(v1(1) - v3(1)) + (v3(1) - v2(1))*(v1(2) - v3(2));
-    lambda1 = ((v2(2) - v3(2))*(p_tilde(1) - v3(1)) + (v3(1) - v2(1))*(p_tilde(2) - v3(2))) / denominator;
-    lambda2 = ((v3(2) - v1(2))*(p_tilde(1) - v3(1)) + (v1(1) - v3(1))*(p_tilde(2) - v3(2))) / denominator;
-    lambda3 = 1 - lambda1 - lambda2;
 end
