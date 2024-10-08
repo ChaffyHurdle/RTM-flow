@@ -18,15 +18,22 @@ my_inverse = Inversion(my_mesh,my_mesh,matern_args);
 
 %% Generate u and h
 my_inverse = my_inverse.generate_u();
+%my_inverse.u_true = my_inverse.u_true*0;
 h = my_inverse.generate_h();
-
+%h = -ones(1,length(my_inverse.u_true))/4;
+% for i = 1:length(my_mesh.elements)
+%     if my_mesh.centroids(i,1) < 0.5
+%         h(i) = -1;
+%     end
+% end
+% h = h';
 %% Darcy setup
 mu = 1; phi = 1; thickness = 1; p_I = 2; p_0 = 1;
 
 % Approx. ob. times for 5 equal increments of the front (hard-coded to work 
 % for mean 0 prior generating u_true). Stop when ~95% filled.
 observation_times = linspace(0.2,0.8,5).^2*mu*phi/(2*(p_I-p_0));
-T = 0.95^2*mu*phi/(2*(p_I-p_0));
+T = 0.81^2*mu*phi/(2*(p_I-p_0));
 
 % Set sensor locs
 sensor_locs_x = [0.25,0.5,0.75];
@@ -41,7 +48,7 @@ K_true = exp(my_inverse.u_true);
 my_darcy = Physics(mu, phi, thickness, p_I, p_0, K_true, sensor_locs, observation_times,T);
 
 %% Sensitivity setup
-my_sensitivity = Sensitivity(my_mesh,my_darcy,my_inverse.u_true,h/2);
+my_sensitivity = Sensitivity(my_mesh,my_darcy,my_inverse.u_true,h/5);
 my_sensitivity = my_sensitivity.fwd_solves();
 my_sensitivity = my_sensitivity.run();
 my_sensitivity = my_sensitivity.plot_sensitivity();

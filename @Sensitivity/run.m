@@ -7,6 +7,7 @@ element_areas = obj.mesh_class.element_areas;
 shape_fun_grads = obj.RTMflow_u.pressure_class.shape_fun_gradients;
 num_nodes = length(nodes);
 ntimes = length(obj.RTMflow_u.times);
+k = 1;
 
 % Forward simulation data
 stiffness_left = obj.RTMflow_u.stiffness_matrices;
@@ -63,22 +64,36 @@ for t = 2:ntimes-1
     p_tilde_t(free) = A_free\b_free;
     
     obj = obj.compute_grad_p_tilde(p_tilde_t);
-
-%     figure(1)
-%     subplot(1,2,1)
-%     pdeplot(nodes',...
-%             elements', ...
-%             XYData=p_tilde_t,XYStyle='flat',ColorMap="jet",Mesh="on")
-%     hold on
-%     scatter(nodes(is_moving_boundary,1),nodes(is_moving_boundary,2),'w.')
-%     hold off
-%     subplot(1,2,2)
-%     pdeplot(nodes',...
-%             elements', ...
-%             XYData=obj.bndry_cond.*is_moving_boundary,XYStyle='flat',ColorMap="jet",Mesh="on")
-%     hold on
-%     scatter(nodes(is_moving_boundary,1),nodes(is_moving_boundary,2),'w.')
-%     hold off
+ 
+    if ismember(t,obj.time_inds_u)
+        figure(10)
+        subplot(1,5,k)
+        pdeplot(nodes',...
+                elements', ...
+                XYData=p_tilde_t.*free,XYStyle='flat',ColorMap="jet",Mesh="off")
+        hold on
+        %scatter(nodes(is_moving_boundary,1),nodes(is_moving_boundary,2),'w.')
+        t_uplush = find(obj.RTMflow_u_plus_h.times > obj.RTMflow_u.times(t),1)-1;
+        %scatter(nodes(obj.is_moving_boundary_u_plus_h(:,t_uplush),1),nodes(obj.is_moving_boundary_u_plus_h(:,t_uplush),2),'wo')
+        for j = 1:size(obj.all_edge_data{t},1)
+            plot([nodes(obj.all_edge_data{t}(j,2),1), nodes(obj.all_edge_data{t}(j,3),1)],...
+                [nodes(obj.all_edge_data{t}(j,2),2), nodes(obj.all_edge_data{t}(j,3),2)],'w','LineWidth',2);
+            midpoint = (nodes(obj.all_edge_data{t}(j,2),:) + obj.mesh_class.nodes(obj.all_edge_data{t}(j,3),:))/2;
+            vdotn = dot(obj.v_h(obj.all_edge_data{t}(j,1),:), obj.all_edge_data{t}(j,4:5));
+            plot([midpoint(1), midpoint(1)+vdotn*obj.all_edge_data{t}(j,4)],[midpoint(2),midpoint(2) + vdotn*obj.all_edge_data{t}(j,5)],'w-','LineWidth',1)
+        end
+        mov_bndry_uplush = obj.is_moving_boundary_u_plus_h(:,t_uplush);
+        mov_bdnry_uplush_inds = find(mov_bndry_uplush);
+        mov_bdnry_uplush_nodes = nodes(mov_bdnry_uplush_inds,:);
+        [~,sorted_inds_increasing] = sort(mov_bdnry_uplush_nodes(:,2));
+        for j = 1:length(sorted_inds_increasing)-1
+           plot([nodes(mov_bdnry_uplush_inds(sorted_inds_increasing(j)),1), nodes(mov_bdnry_uplush_inds(sorted_inds_increasing(j+1)),1)],...
+                [nodes(mov_bdnry_uplush_inds(sorted_inds_increasing(j)),2), nodes(mov_bdnry_uplush_inds(sorted_inds_increasing(j+1)),2)],'m-','LineWidth',2); 
+        end
+        k = k+1;
+        hold off
+        xlim([0,1]); ylim([0,1]);
+    end
 
     % Save and update boundary condition
     p_tilde(:,t) = p_tilde_t;

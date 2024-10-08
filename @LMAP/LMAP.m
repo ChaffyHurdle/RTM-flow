@@ -17,6 +17,9 @@ classdef LMAP
         
         u;
         alpha;
+        max_iterations;
+        tol1;
+        tol2;
         lambdas;
         grad_lambdas;
         representers;

@@ -43,7 +43,10 @@ if t > 4
         [~, idx] = min(distances);
         nearest_ind = prev_elems(idx);
         nearest_inds(elem) = nearest_ind;
-        obj.v_h(elem,:) = obj.v_h(nearest_ind,:);
+        %obj.v_h(elem,:) = obj.v_h(nearest_ind,:);
+
+        [~,b] = sort(distances);
+        obj.v_h(elem,:) = mean(obj.v_h(prev_elems(b(1:3)),:));
     end
 
 %     if t < 60 && t > 50

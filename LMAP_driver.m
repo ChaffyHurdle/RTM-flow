@@ -5,7 +5,7 @@ clc;
 delete(gcp('nocreate'))
 addpath('Meshes')
 meshes = {'p_ref.mat', 'e_ref.mat', 't_ref.mat', ...
-    'p.mat', 'e.mat', 't.mat'};
+    'p_new.mat', 'e_new.mat', 't_new.mat'};
 for i = 1:numel(meshes)
     load(meshes{i})
 end
@@ -13,12 +13,13 @@ parpool('local', 10);
 
 %% Mesh set up (avoiding inverse crimes)
 my_forward_mesh = DelaunayMesh(p_ref,e_ref,t_ref);
-my_inverse_mesh = DelaunayMesh(p,e,t);
+my_inverse_mesh = DelaunayMesh(p_new,e_new,t_new);
 
 %% Inverse problem set up
 var_matern = 0.25; length_scale = 0.1; nu_matern = 1.5;
 matern_args = [var_matern,length_scale,nu_matern];
 my_inverse = Inversion(my_forward_mesh,my_inverse_mesh,matern_args);
+
 my_inverse = my_inverse.generate_u();
 my_inverse.plot_u_true();
 
@@ -27,8 +28,8 @@ mu = 1; phi = 1; thickness = 1; p_I = 2; p_0 = 1;
 
 % Approx. ob. times for 5 equal increments of the front (hard-coded to work 
 % for mean 0 prior generating u_true). Stop when ~95% filled.
-observation_times = linspace(0.1,0.9,5).^2*mu*phi/(2*(p_I-p_0));
-T = 0.95^2*mu*phi/(2*(p_I-p_0));
+observation_times = linspace(0.15,0.85,5).^2*mu*phi/(2*(p_I-p_0));
+T = 0.86^2*mu*phi/(2*(p_I-p_0));
 
 % Set sensor locs
 sensor_locs_x = [0.25,0.5,0.75];

@@ -50,7 +50,7 @@ end
 
 figure
 for i = 1:num_ob_times
-    subplot(4,num_ob_times,i)
+    subplot(2,num_ob_times,i)
     free_nodes = obj.active_nodes_u(:,i) & ~obj.is_moving_boundary_ob_times(:,i);
     max_cbar = max(max(obj.p_tildes(:,i).*free_nodes),max( (obj.pressures_u_plus_h(:,i)-obj.pressures_u(:,i)).*free_nodes) );
     min_cbar = min(min(obj.p_tildes(:,i).*free_nodes),min( (obj.pressures_u_plus_h(:,i)-obj.pressures_u(:,i)).*free_nodes) );
@@ -70,7 +70,7 @@ for i = 1:num_ob_times
     hold off
     title("$p_{u+h}-p_u$",'interpreter','latex')
 
-    subplot(4,num_ob_times,i+num_ob_times)
+    subplot(2,num_ob_times,i+num_ob_times)
     pdeplot(nodes',elements', ...
         XYData=obj.p_tildes(:,i).*free_nodes, ...
         XYStyle='flat',ColorMap="jet",Mesh="off")
@@ -86,37 +86,37 @@ for i = 1:num_ob_times
     hold off
     title("$\tilde{p}$",'interpreter','latex')
 
-    subplot(4,num_ob_times,i+2*num_ob_times)
-    pdeplot(nodes',elements', ...
-        XYData=(obj.pressures_u_plus_h(:,i)-obj.pressures_u(:,i)).*is_moving_boundary_ob_times(:,i), ...
-        XYStyle='flat',ColorMap="jet",Mesh="off")
-    caxis([min_cbar,max_cbar])
-    hold on
-    plot(nodes(boolean(is_moving_boundary_ob_times_u_plus_h(:,i)),1),nodes(boolean(is_moving_boundary_ob_times_u_plus_h(:,i)),2),'w.')
-    hold off
-    hold on
-    for j = 1:length(edge_data{obj.time_inds_u(i)})
-        plot([nodes(edge_data{obj.time_inds_u(i)}(j,2),1), nodes(edge_data{obj.time_inds_u(i)}(j,3),1)],...
-            [nodes(edge_data{obj.time_inds_u(i)}(j,2),2), nodes(edge_data{obj.time_inds_u(i)}(j,3),2)],'w');
-    end
-    hold off
-    title("$p_{u+h}-p_u$ on boundary",'interpreter','latex')
-
-    subplot(4,num_ob_times,i+3*num_ob_times)
-    pdeplot(nodes',elements', ...
-        XYData=obj.p_tildes(:,i).*is_moving_boundary_ob_times(:,i), ...
-        XYStyle='flat',ColorMap="jet",Mesh="off")
-    caxis([min_cbar,max_cbar])
-    hold on
-    plot(nodes(boolean(is_moving_boundary_ob_times_u_plus_h(:,i)),1),nodes(boolean(is_moving_boundary_ob_times_u_plus_h(:,i)),2),'w.')
-    hold off
-    hold on
-    for j = 1:length(edge_data{obj.time_inds_u(i)})
-        plot([nodes(edge_data{obj.time_inds_u(i)}(j,2),1), nodes(edge_data{obj.time_inds_u(i)}(j,3),1)],...
-            [nodes(edge_data{obj.time_inds_u(i)}(j,2),2), nodes(edge_data{obj.time_inds_u(i)}(j,3),2)],'w');
-    end
-    hold off
-    title("$\tilde{p}$ on boundary",'interpreter','latex')
+%     subplot(4,num_ob_times,i+2*num_ob_times)
+%     pdeplot(nodes',elements', ...
+%         XYData=(obj.pressures_u_plus_h(:,i)-obj.pressures_u(:,i)).*is_moving_boundary_ob_times(:,i), ...
+%         XYStyle='flat',ColorMap="jet",Mesh="off")
+%     caxis([min_cbar,max_cbar])
+%     hold on
+%     plot(nodes(boolean(is_moving_boundary_ob_times_u_plus_h(:,i)),1),nodes(boolean(is_moving_boundary_ob_times_u_plus_h(:,i)),2),'w.')
+%     hold off
+%     hold on
+%     for j = 1:length(edge_data{obj.time_inds_u(i)})
+%         plot([nodes(edge_data{obj.time_inds_u(i)}(j,2),1), nodes(edge_data{obj.time_inds_u(i)}(j,3),1)],...
+%             [nodes(edge_data{obj.time_inds_u(i)}(j,2),2), nodes(edge_data{obj.time_inds_u(i)}(j,3),2)],'w');
+%     end
+%     hold off
+%     title("$p_{u+h}-p_u$ on boundary",'interpreter','latex')
+% 
+%     subplot(4,num_ob_times,i+3*num_ob_times)
+%     pdeplot(nodes',elements', ...
+%         XYData=obj.p_tildes(:,i).*is_moving_boundary_ob_times(:,i), ...
+%         XYStyle='flat',ColorMap="jet",Mesh="off")
+%     caxis([min_cbar,max_cbar])
+%     hold on
+%     plot(nodes(boolean(is_moving_boundary_ob_times_u_plus_h(:,i)),1),nodes(boolean(is_moving_boundary_ob_times_u_plus_h(:,i)),2),'w.')
+%     hold off
+%     hold on
+%     for j = 1:length(edge_data{obj.time_inds_u(i)})
+%         plot([nodes(edge_data{obj.time_inds_u(i)}(j,2),1), nodes(edge_data{obj.time_inds_u(i)}(j,3),1)],...
+%             [nodes(edge_data{obj.time_inds_u(i)}(j,2),2), nodes(edge_data{obj.time_inds_u(i)}(j,3),2)],'w');
+%     end
+%     hold off
+%     title("$\tilde{p}$ on boundary",'interpreter','latex')
 end
 
 figure
