@@ -52,4 +52,3 @@ obj.pressures_u_plus_h = pressures_u_plus_h;
 obj.time_inds_u = time_inds_u;
 obj.time_inds_u_plus_h = time_inds_u_plus_h;
 obj.active_nodes_u = active_nodes_u;
-obj.RTMflow_u.all_new_active_elements = [zeros(mesh.num_elements,1) obj.RTMflow_u.all_new_active_elements];

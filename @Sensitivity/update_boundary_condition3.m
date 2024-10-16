@@ -115,7 +115,7 @@ if t > 4
 %     end
     
     
-    % Triangles on boundary minus new active elements
+    % Triangles on boundary
     candidate_elem = zeros(mesh_class.num_elements,1);
     candidate_elem(obj.edge_data(:,1)) = 1;
     candidate_elem_inds = find(candidate_elem);

@@ -55,6 +55,7 @@ classdef Pressure
 
             %% Allocating pressure and pressure gradient
             num_dofs = mesh_class.num_nodes;
+            obj.new_active_elements = zeros(1,mesh_class.num_elements);
 
             % Hard code Dirichlet condition
             obj.pressure = physics_class.p_0*ones(num_dofs,1);

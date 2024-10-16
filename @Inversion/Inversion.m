@@ -19,6 +19,7 @@ classdef Inversion
         % Matern covariance on coarser mesh, along with u0
         C0_inv;
         cholesky_L_inv;
+        C0_minushalf;
         u0;
         
         % Variables related to data
@@ -48,6 +49,7 @@ classdef Inversion
             obj.C0_fwd = obj.compute_matern_covariance(fwd_mesh.centroids);
             obj.cholesky_L_fwd = chol(obj.C0_fwd,'lower');
             obj.C0_inv = obj.compute_matern_covariance(inv_mesh.centroids);
+            obj.C0_minushalf = inv(sqrt(obj.C0_inv));
             obj.cholesky_L_inv = chol(obj.C0_inv,'lower');
         end
     end

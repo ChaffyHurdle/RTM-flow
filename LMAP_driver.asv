@@ -33,7 +33,7 @@ observation_times = linspace(0.15,0.85,5).^2*mu*phi/(2*(p_I-p_0));
 T = 0.86^2*mu*phi/(2*(p_I-p_0));
 
 % Set N sensor locs (equally space)
-sqrtN = 7;
+sqrtN = 5;
 sensor_locs_x = 1/(2*sqrtN) + linspace(0,sqrtN-1,sqrtN)/sqrtN;
 sensor_locs_y = sensor_locs_x;
 [sensor_locs_x,sensor_locs_y] = meshgrid(sensor_locs_x,sensor_locs_y);
@@ -57,12 +57,11 @@ my_inverse = my_inverse.generate_data(true_RTMflow.pressure_data,0.005);
 my_lmap = LMAP(my_inverse,my_darcy);
 my_lmap = my_lmap.run();
 
-for t = 1:size(my_lmap.u_iterations,2)
+for t = 1:size(my_lmap.u_iterations(,2)
     figure(1)
     pdeplot(my_inverse_mesh.nodes',...
             my_inverse_mesh.elements', ...
             XYData=my_lmap.u_iterations(:,t),XYStyle='interp',ColorMap="jet",Mesh="off");
-    clim([min(my_lmap.u_iterations,[],'all'),max(my_lmap.u_iterations,[],'all')])
     input('');
 end
 

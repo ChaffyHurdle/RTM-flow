@@ -14,7 +14,7 @@ for i = 1 : length(new_elements)
     area = obj.mesh_class.element_areas(new_elements(i));
     
     %% local FEM stiffness matrix
-    grad_phi = obj.shape_fun_gradients{new_elements(i)};
+    grad_phi = obj.shape_fun_gradients(:,:,new_elements(i));
     A_local = (K(new_elements(i))*grad_phi)'*grad_phi*area;
     
     %% local to global mapping

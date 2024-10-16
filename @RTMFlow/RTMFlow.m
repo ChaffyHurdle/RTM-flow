@@ -34,10 +34,12 @@ classdef RTMFlow
         filling_factors;
         stiffness_matrices;
         Dirichlet_nodes;
+        moving_boundary;
         active_nodes;
         all_active_elements;
         all_new_active_elements;
         new_filled_volumes;
+        edge_data;
 
         %% Tracking
         volume_fill_percentage;
@@ -68,17 +70,19 @@ classdef RTMFlow
             obj.pressure_data = zeros(physics_class.nsensors, physics_class.nobservations);
 
             %% All data (used for LMAP)
-            obj.times = [];
-            obj.pressures = [];
+            max_times = 10000;
+            obj.times = zeros(1,max_times);
+            obj.pressures = zeros(Delaunay_mesh_class.num_nodes,max_times);
             obj.pressure_gradients = cell(1);
-            obj.flow_rates = [];
-            obj.filling_factors = [];
+            obj.flow_rates = zeros(Delaunay_mesh_class.num_nodes,max_times);
+            obj.filling_factors = zeros(Delaunay_mesh_class.num_nodes,max_times);
             obj.stiffness_matrices = cell(1);
-            obj.active_nodes = [];
-            obj.Dirichlet_nodes = [];
-            obj.all_active_elements = [];
-            obj.all_new_active_elements = [];
+            obj.active_nodes = zeros(Delaunay_mesh_class.num_nodes,max_times);
+            obj.Dirichlet_nodes = zeros(Delaunay_mesh_class.num_nodes,max_times);
+            obj.all_active_elements = zeros(Delaunay_mesh_class.num_elements,max_times);
+            obj.all_new_active_elements = zeros(Delaunay_mesh_class.num_elements,max_times);
             obj.new_filled_volumes = [];
+            obj.edge_data = cell(1);
 
             %% Setting up time and time stepping
             obj.time = 0.0;

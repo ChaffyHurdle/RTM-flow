@@ -20,7 +20,7 @@ it = 1;
 
 obj = obj.add_data_all_times(it,t_old,p_old,...
     p_gradients,Q_old,filling_facs_old,stiffness,active_nodes,Dirichlets, ...
-    active_elements,new_active_elements,new_filled_volume);
+    active_elements,new_active_elements,new_filled_volume,0);
 
 tic
 
@@ -58,9 +58,15 @@ while ~obj.is_fully_saturated() && obj.time + obj.time_step <= obj.physics_class
     active_elements = obj.active_elements;
     new_active_elements = obj.pressure_class.new_active_elements;
     new_filled_volume = obj.new_filled_volume;
+    if it > 4
+        edge_data = obj.extract_edge_data();
+    else
+        edge_data = 0;
+    end
+
     obj = obj.add_data_all_times(it,t_new,p_new,...
         p_gradients_new,Q_new,filling_facs_new,...
-        stiffness,active_nodes,Dirichlets,active_elements,new_active_elements,new_filled_volume);
+        stiffness,active_nodes,Dirichlets,active_elements,new_active_elements,new_filled_volume,edge_data);
 
     %% Update domain
     obj = obj.update_computational_domain();
@@ -70,12 +76,12 @@ while ~obj.is_fully_saturated() && obj.time + obj.time_step <= obj.physics_class
     if t_index <= length(observation_times)
         if (observation_times(t_index) > t_old) && (observation_times(t_index) < t_new)
             observation_time = observation_times(t_index);
-            disp([t_old,observation_time,t_new])
+            %disp([t_old,observation_time,t_new])
             obj.pressure_data(:,t_index) ...
                 = p_old_at_sensors + ...
                 ((observation_time - t_old)/dt)*(p_new_at_sensors - p_old_at_sensors);
             t_index = t_index + 1;
-            obj.visualise_class.plot(obj);
+            % obj.visualise_class.plot(obj);
         end
 
     %else
@@ -88,11 +94,21 @@ while ~obj.is_fully_saturated() && obj.time + obj.time_step <= obj.physics_class
 end
 
 obj.wall_time = toc;
-disp("Wall-time elapsed: " + num2str(obj.wall_time) + ' s')
+%disp("Wall-time elapsed: " + num2str(obj.wall_time) + ' s')
 
 if t_index <= length(observation_times)
     obj.pressure_data(:,t_index:end) = p_new(sensor_inds_mesh);
 end
+
+obj.times = obj.times(1:it);
+obj.pressures = obj.pressures(:,1:it);
+obj.flow_rates = obj.flow_rates(:,1:it);
+obj.filling_factors = obj.filling_factors(:,1:it);
+obj.active_nodes = obj.active_nodes(:,1:it);
+obj.Dirichlet_nodes = obj.Dirichlet_nodes(:,1:it) ;
+obj.all_active_elements = obj.all_active_elements(:,1:it);
+obj.all_new_active_elements = obj.all_new_active_elements(:,1:it);
+obj.moving_boundary = obj.active_nodes & obj.Dirichlet_nodes & ~obj.pressure_class.is_inlet;
 
 end
 

@@ -12,7 +12,6 @@ G_u0 = obj.RTMflow_class.pressure_data;
 u_iterations = zeros(obj.mesh_class.num_elements,obj.max_iterations);
 J_iterations = zeros(1,obj.max_iterations);
 execution_times = zeros(1,obj.max_iterations);
-best_alpha = obj.alpha;
 
 % Evaluate posterior cost function at u0
 J = obj.evaluate_cost_function(u,obj.RTMflow_class);
@@ -22,10 +21,6 @@ execution_times(1) = 0;
 
 
 while ~converged & iterate < obj.max_iterations
-
-    if patience > 3
-        break
-    end
 
     % Compute lambdas, gradient lambdas, representers and linearised states
     if ~do_over
@@ -46,12 +41,12 @@ while ~converged & iterate < obj.max_iterations
     candidate_RTM = candidate_RTM.run();
     candidate_J = obj.evaluate_cost_function(candidate_u,candidate_RTM);
 
-    disp("Iterate: " + num2str(iterate) + ", Best J: " + num2str(J) + ", Current J: " + num2str(candidate_J) + ", J change: " + num2str(round(100*((candidate_J-J)/J),1)) + "%, Alpha: " + num2str(obj.alpha))
+    disp("Iterate: " + num2str(iterate) + ", Best J: " + num2str(J) + ", Current J: " + num2str(candidate_J) + ", J change: " + num2str(round(100*((J-candidate_J)/J),3)) + "%, Alpha: " + num2str(obj.alpha))
 
     % If candidate improved, perform iteration. If not, increase regularisation
     if candidate_J < J
         % Convergence check
-        if abs(candidate_J - J)/abs(J) <= obj.tol1 && iterate>3 %|| max((u - candidate_u)')/max(u') < obj.tol2
+        if abs(candidate_J - J)/abs(J) <= obj.tol1 && obj.alpha <= 1 %|| max((u - candidate_u)')/max(u') < obj.tol2
             disp("LMAP converged")
             converged = 1;
         end
@@ -62,13 +57,11 @@ while ~converged & iterate < obj.max_iterations
         J_iterations(iterate+1) = candidate_J;
         execution_times(iterate+1) = toc;
 
-        best_alpha = min(best_alpha,obj.alpha);
-
         % Various sets
         u = candidate_u;
         obj.u = u;
         J = candidate_J;
-        obj.alpha = obj.alpha/10;
+        obj.alpha = obj.alpha/2;
         obj.physics_class = candidate_physics;
         obj.pressure_class = candidate_pressure;
         obj.RTMflow_class = candidate_RTM;
@@ -138,21 +131,9 @@ while ~converged & iterate < obj.max_iterations
             title("$D$ (black), G($u_0$) (blue), G($u_{map}$) (red)",'interpreter','latex')
         end
         drawnow
-
-        posterior_samples = mvnrnd(u,C_post,25);
-        figure(3)
-        for i = 1:25
-            subplot(5,5,i)
-            pdeplot(obj.mesh_class.nodes',...
-                    obj.mesh_class.elements', ...
-                    XYData=posterior_samples(i,:), ...
-                    XYStyle='interp',ColorMap="jet",Mesh="off")
-            clim([c_min,c_max])
-            drawnow
-        end
     else
         disp("Cost function got worse, increasing regularisation")
-        obj.alpha = 10*obj.alpha;
+        obj.alpha = 2*obj.alpha;
         do_over = 1;
         patience = patience + 1;
     end
@@ -163,4 +144,3 @@ obj.C_map = C - obj.R*inv(obj.tildePmat + Sigma)*obj.R';
 obj.u_iterations = u_iterations(:,1:iterate+1);
 obj.J_iterations = J_iterations(1:iterate+1);
 obj.execution_times = execution_times(1:iterate+1);
-obj.best_alpha = best_alpha;
