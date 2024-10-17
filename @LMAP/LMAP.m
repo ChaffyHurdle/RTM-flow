@@ -63,7 +63,7 @@ classdef LMAP
             obj.j_vec = reshape(j_vec', [], 1);
             obj.u = inverse_class.u0;
             obj.u0 = inverse_class.u0;
-            obj.alpha = 1e5;
+            obj.alpha = 1e4;
             obj.tol1 = 0.03;
             obj.tol2 = 0.03;
             obj.max_iterations = 50;

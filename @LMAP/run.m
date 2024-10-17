@@ -24,12 +24,13 @@ execution_times(1) = 0;
 while ~converged & iterate < obj.max_iterations
 
     if patience > 3
+        disp("Converged through patience")
         break
     end
 
     % Compute lambdas, gradient lambdas, representers and linearised states
     if ~do_over
-        tic;
+        start_time = tic;
         obj = obj.parallel_computations();
         obj = obj.construct_linear_system(); % compute R, d
     end
@@ -60,7 +61,8 @@ while ~converged & iterate < obj.max_iterations
         % Save data
         u_iterations(:,iterate+1) = candidate_u;
         J_iterations(iterate+1) = candidate_J;
-        execution_times(iterate+1) = toc;
+        time_elapsed = toc(start_time);
+        execution_times(iterate+1) = time_elapsed;
 
         best_alpha = min(best_alpha,obj.alpha);
 
@@ -68,7 +70,7 @@ while ~converged & iterate < obj.max_iterations
         u = candidate_u;
         obj.u = u;
         J = candidate_J;
-        obj.alpha = obj.alpha/10;
+        obj.alpha = obj.alpha/2;
         obj.physics_class = candidate_physics;
         obj.pressure_class = candidate_pressure;
         obj.RTMflow_class = candidate_RTM;
@@ -148,11 +150,11 @@ while ~converged & iterate < obj.max_iterations
                     XYData=posterior_samples(i,:), ...
                     XYStyle='interp',ColorMap="jet",Mesh="off")
             clim([c_min,c_max])
-            drawnow
         end
+        drawnow
     else
         disp("Cost function got worse, increasing regularisation")
-        obj.alpha = 10*obj.alpha;
+        obj.alpha = 2*obj.alpha;
         do_over = 1;
         patience = patience + 1;
     end
@@ -160,7 +162,7 @@ end
 
 obj.u_map = u;
 obj.C_map = C - obj.R*inv(obj.tildePmat + Sigma)*obj.R';
-obj.u_iterations = u_iterations(:,1:iterate+1);
-obj.J_iterations = J_iterations(1:iterate+1);
-obj.execution_times = execution_times(1:iterate+1);
+obj.u_iterations = u_iterations(:,1:iterate);
+obj.J_iterations = J_iterations(1:iterate);
+obj.execution_times = execution_times(1:iterate);
 obj.best_alpha = best_alpha;
