@@ -39,21 +39,21 @@ active_R_mat = zeros(num_elems, length(active_inds));
 active_Q_mat = zeros(num_elems, length(active_inds));
 
 for i = 1:length(num_taken)-1
-    % disp("Starting parfor " + num2str(i))
+    disp("Starting parfor " + num2str(i))
     parfor k = cum_sum_num_taken(i)+1 : cum_sum_num_taken(i+1)
         idx = sorted_inds(k);
         i = obj_data.i_vec(idx);
         j = obj_data.j_vec(idx);
+        disp([i,j])
         [lambda_ij,grad_lambda_ij] = compute_lambda_ij(i,j,obj_data);
         active_lambda_mat(:,:,k) = lambda_ij;
-        
         Q_ij = compute_representer_ij(grad_lambda_ij,obj_data);
         R_ij = obj_data.inverse_class.C0_inv * (Q_ij' .* obj_data.mesh_class.element_areas);
         active_Q_mat(:,k) = Q_ij;
         active_R_mat(:,k) = R_ij;
     end
 end
-% disp("Finished parfor")
+disp("Finished parfor")
 
 % Add sub-matrix parts to overall matrix
 for k = 1 : length(sorted_inds)

@@ -51,29 +51,36 @@ if t > 10
     end    
     
     % Triangles on boundary minus new active elements
-    candidate_elem = zeros(obj_data.mesh_class.num_elements,1);
-    candidate_elem(edge_data{t}(:,1)) = 1;
-    candidate_elem_inds = find(candidate_elem);
+    candidate_elem_inds = edge_data{t}(:,1);
+    grad_pressure_temp = pressure_gradient_tplus1;
+    grad_lambda_temp = grad_lambda;
+    grad_pressure_temp(new_active_elements,:) = pressure_gradient_tplus1(nearest_inds(new_active_elements),:);
+    grad_lambda_temp(new_active_elements,:) = grad_lambda_temp(nearest_inds(new_active_elements),:);
+
+    grad_p_dot_n = local_flux_tri(edge_data{t}(:,4:5),grad_pressure_temp(candidate_elem_inds,:));
+    grad_lambda_dot_n = local_flux_tri(edge_data{t}(:,4:5),grad_lambda_temp(candidate_elem_inds,:));
+    dkappa_dt = - exp(u(candidate_elem_inds)) .* grad_p_dot_n' .* grad_lambda_dot_n';
+    kappa_t_elem(candidate_elem_inds) = kappa_t_elem(candidate_elem_inds) - dt_vec(t)*dkappa_dt;
     
-    for i = 1:length(candidate_elem_inds)
-    
-        elem_index = candidate_elem_inds(i);
-    
-        %% extract linearised velocity in element centre
-        if ismember(elem_index, new_active_elements)
-            nearest_element_ind = nearest_inds(elem);
-            grad_p_dot_n = local_flux_tri(edge_data{t}(i,4:5),pressure_gradient_tplus1(nearest_element_ind,:)');
-            grad_lambda_dot_n = local_flux_tri(edge_data{t}(i,4:5),grad_lambda(nearest_element_ind,:)');
-            dkappa_dt = - exp(u(elem_index)) * grad_p_dot_n * grad_lambda_dot_n;
-        else
-            grad_p_dot_n = local_flux_tri(edge_data{t}(i,4:5),pressure_gradient_tplus1(elem_index,:)');
-            grad_lambda_dot_n = local_flux_tri(edge_data{t}(i,4:5),grad_lambda(elem_index,:)');
-            dkappa_dt = - exp(u(elem_index)) * grad_p_dot_n * grad_lambda_dot_n;
-        end
-        
-        kappa_t_elem(elem_index) = kappa_t_elem(elem_index) - dt_vec(t)*dkappa_dt;
-    
-    end
+    % for i = 1:length(candidate_elem_inds)
+    % 
+    %     elem_index = candidate_elem_inds(i);
+    % 
+    %     %% extract linearised velocity in element centre
+    %     if ismember(elem_index, new_active_elements)
+    %         nearest_element_ind = nearest_inds(elem_index);
+    %         grad_p_dot_n = local_flux_tri(edge_data{t}(i,4:5),pressure_gradient_tplus1(nearest_element_ind,:)');
+    %         grad_lambda_dot_n = local_flux_tri(edge_data{t}(i,4:5),grad_lambda(nearest_element_ind,:)');
+    %         dkappa_dt = - exp(u(elem_index)) * grad_p_dot_n * grad_lambda_dot_n;
+    %     else
+    %         grad_p_dot_n = local_flux_tri(edge_data{t}(i,4:5),pressure_gradient_tplus1(elem_index,:)');
+    %         grad_lambda_dot_n = local_flux_tri(edge_data{t}(i,4:5),grad_lambda(elem_index,:)');
+    %         dkappa_dt = - exp(u(elem_index)) * grad_p_dot_n * grad_lambda_dot_n;
+    %     end
+    % 
+    %     kappa_t_elem(elem_index) = kappa_t_elem(elem_index) - dt_vec(t)*dkappa_dt;
+    % 
+    % end
 
     for i = 1:length(moving_boundary_inds)
         node_ind = moving_boundary_inds(i);
@@ -89,6 +96,6 @@ end
 %% Compute v in normal direction
 function qn = local_flux_tri(normal_vec,v)
 
-qn = normal_vec*v;
+qn = sum(normal_vec.*v,2);
 
 end

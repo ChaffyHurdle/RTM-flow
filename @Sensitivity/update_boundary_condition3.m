@@ -10,11 +10,11 @@ pressure_gradient_t_minus_1 = obj.RTMflow_u.pressure_gradients{t-1};
 
 %% Edges
 if t > 4
-    active_nodes = boolean(obj.RTMflow_u.active_nodes(:,t)); % nodes in D(t)
+    active_nodes = logical(obj.RTMflow_u.active_nodes(:,t)); % nodes in D(t)
     is_moving_boundary = obj.is_moving_boundary(:,t);
     moving_boundary_inds = find(is_moving_boundary);
 
-    obj = obj.extract_edge_data(t);
+    edge_data = obj.RTMflow_u.edge_data{t};
 
     % Find new active elements, assign value based on nearest element at t-1
     new_active_elements = find(obj.RTMflow_u.all_new_active_elements(:,t-1));
@@ -117,7 +117,7 @@ if t > 4
     
     % Triangles on boundary
     candidate_elem = zeros(mesh_class.num_elements,1);
-    candidate_elem(obj.edge_data(:,1)) = 1;
+    candidate_elem(edge_data(:,1)) = 1;
     candidate_elem_inds = find(candidate_elem);
 
     bnd_vals = zeros(mesh_class.num_elements,1);
@@ -128,7 +128,7 @@ if t > 4
     
         %% extract linearised velocity in element centre
         if ismember(elem_index, new_active_elements)
-            nearest_element_ind = nearest_inds(elem);
+            nearest_element_ind = nearest_inds(elem_index);
             dvh_dt = - (1/(viscosity*porosity)) * ( exp(obj.u(elem_index)) * obj.h(elem_index) * pressure_gradient_t_minus_1(nearest_element_ind,:)' ...
                               + exp(obj.u(elem_index)) * obj.grad_p_tilde(nearest_element_ind,:)');
         else
@@ -139,8 +139,8 @@ if t > 4
         obj.v_h(elem_index,:) = obj.v_h(elem_index,:) + dt_vec(t-1)*dvh_dt';
     
         %% Compute transfer into each CV
-        local_linearised_flow_rate = local_flux_tri(obj.edge_data(i,4:5),obj.v_h(elem_index,:)');
-        local_pressure_grad = local_flux_tri(obj.edge_data(i,4:5),pressure_gradient_t(elem_index,:)');
+        local_linearised_flow_rate = local_flux_tri(edge_data(i,4:5),obj.v_h(elem_index,:)');
+        local_pressure_grad = local_flux_tri(edge_data(i,4:5),pressure_gradient_t(elem_index,:)');
     
         %% Need to track v_h as it depends on time
         bnd_vals(elem_index) = - local_linearised_flow_rate*local_pressure_grad;
@@ -150,8 +150,8 @@ if t > 4
 
     for i = 1:length(moving_boundary_inds)
         node_ind = moving_boundary_inds(i);
-        rows_involving_node = any(obj.edge_data(:,2:3) == node_ind,2);
-        obj.bndry_cond(node_ind) = mean(bnd_vals(obj.edge_data(rows_involving_node,1)));
+        rows_involving_node = any(edge_data(:,2:3) == node_ind,2);
+        obj.bndry_cond(node_ind) = mean(bnd_vals(edge_data(rows_involving_node,1)));
     end
     
 %     times_u_plus_h = obj.RTMflow_u_plus_h.times;

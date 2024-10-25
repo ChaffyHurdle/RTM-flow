@@ -11,13 +11,15 @@ Sigma = diag(reshape(obj.inverse_class.Sigma,[],1));
 G_u0 = obj.RTMflow_class.pressure_data;
 u_iterations = zeros(obj.mesh_class.num_elements,obj.max_iterations);
 J_iterations = zeros(1,obj.max_iterations);
+data_misfit_iterations = zeros(1,obj.max_iterations);
 execution_times = zeros(1,obj.max_iterations);
 best_alpha = obj.alpha;
 
 % Evaluate posterior cost function at u0
-J = obj.evaluate_cost_function(u,obj.RTMflow_class);
+[J,scaled_misfit_J] = obj.evaluate_cost_function(u,obj.RTMflow_class);
 u_iterations(:,1) = u;
 J_iterations(1) = J;
+data_misfit_iterations(1) = scaled_misfit_J;
 execution_times(1) = 0;
 
 
@@ -45,14 +47,14 @@ while ~converged & iterate < obj.max_iterations
     candidate_pressure = Pressure(obj.mesh_class,candidate_physics);
     candidate_RTM = RTMFlow(obj.mesh_class,candidate_physics,candidate_pressure);
     candidate_RTM = candidate_RTM.run();
-    candidate_J = obj.evaluate_cost_function(candidate_u,candidate_RTM);
+    [candidate_J,scaled_data_misfit] = obj.evaluate_cost_function(candidate_u,candidate_RTM);
 
     disp("Iterate: " + num2str(iterate) + ", Best J: " + num2str(J) + ", Current J: " + num2str(candidate_J) + ", J change: " + num2str(round(100*((candidate_J-J)/J),1)) + "%, Alpha: " + num2str(obj.alpha))
 
     % If candidate improved, perform iteration. If not, increase regularisation
     if candidate_J < J
         % Convergence check
-        if abs(candidate_J - J)/abs(J) <= obj.tol1 && iterate>3 %|| max((u - candidate_u)')/max(u') < obj.tol2
+        if (abs(candidate_J - J)/abs(J) <= obj.tol1 || max((u - candidate_u))/max(u) <= obj.tol2) && iterate > 5 %|| max((u - candidate_u)')/max(u') < obj.tol2
             disp("LMAP converged")
             converged = 1;
         end
@@ -61,6 +63,7 @@ while ~converged & iterate < obj.max_iterations
         % Save data
         u_iterations(:,iterate+1) = candidate_u;
         J_iterations(iterate+1) = candidate_J;
+        data_misfit_iterations(iterate+1) = scaled_data_misfit;
         time_elapsed = toc(start_time);
         execution_times(iterate+1) = time_elapsed;
 
@@ -70,7 +73,7 @@ while ~converged & iterate < obj.max_iterations
         u = candidate_u;
         obj.u = u;
         J = candidate_J;
-        obj.alpha = obj.alpha/2;
+        obj.alpha = obj.alpha/5;
         obj.physics_class = candidate_physics;
         obj.pressure_class = candidate_pressure;
         obj.RTMflow_class = candidate_RTM;
@@ -154,7 +157,7 @@ while ~converged & iterate < obj.max_iterations
         drawnow
     else
         disp("Cost function got worse, increasing regularisation")
-        obj.alpha = 2*obj.alpha;
+        obj.alpha = 5*obj.alpha;
         do_over = 1;
         patience = patience + 1;
     end
@@ -164,5 +167,6 @@ obj.u_map = u;
 obj.C_map = C - obj.R*inv(obj.tildePmat + Sigma)*obj.R';
 obj.u_iterations = u_iterations(:,1:iterate);
 obj.J_iterations = J_iterations(1:iterate);
+obj.scaled_data_misfit = data_misfit_iterations(1:iterate);
 obj.execution_times = execution_times(1:iterate);
 obj.best_alpha = best_alpha;

@@ -34,6 +34,7 @@ classdef LMAP
         C_map;
         u_iterations;
         J_iterations;
+        scaled_data_misfit;
         execution_times;
         best_alpha;
 
@@ -55,7 +56,7 @@ classdef LMAP
             
             % Dirac delta
             obj.sigma_delta_t = 0.0018/1000;
-            obj.delta_t = @(t_i,t,delt_t) exp(-abs(t-t_i)^2/(2*delt_t))/sqrt(2*pi*delt_t);
+            obj.delta_t = @(t_i,t,delt_t) exp(-abs(t-t_i).^2/(2*delt_t))/sqrt(2*pi*delt_t);
            
             % LMAP
             [i_vec, j_vec] = meshgrid(1:physics_class.nsensors, 1:physics_class.nobservations);
@@ -63,7 +64,7 @@ classdef LMAP
             obj.j_vec = reshape(j_vec', [], 1);
             obj.u = inverse_class.u0;
             obj.u0 = inverse_class.u0;
-            obj.alpha = 1e4;
+            obj.alpha = 1e3;
             obj.tol1 = 0.03;
             obj.tol2 = 0.03;
             obj.max_iterations = 50;

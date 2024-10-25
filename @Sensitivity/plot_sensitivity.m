@@ -3,7 +3,7 @@ function obj = plot_sensitivity(obj)
 nodes = obj.mesh_class.nodes;
 elements = obj.mesh_class.elements;
 num_ob_times = length(obj.darcy_class_u.observation_times);
-edge_data = obj.all_edge_data;
+edge_data = obj.RTMflow_u.edge_data;
 is_moving_boundary_ob_times = obj.is_moving_boundary_ob_times;
 is_moving_boundary_ob_times_u_plus_h = obj.is_moving_boundary_ob_times_u_plus_h;
 
@@ -20,7 +20,7 @@ for i = 1:num_ob_times
         XYStyle='flat',ColorMap="jet",Mesh="off")
     caxis([0,max_diff])
     hold on
-    plot(nodes(boolean(is_moving_boundary_ob_times_u_plus_h(:,i)),1),nodes(boolean(is_moving_boundary_ob_times_u_plus_h(:,i)),2),'w.')
+    plot(nodes(logical(is_moving_boundary_ob_times_u_plus_h(:,i)),1),nodes(logical(is_moving_boundary_ob_times_u_plus_h(:,i)),2),'w.')
     hold off
     hold on
     for j = 1:length(edge_data{obj.time_inds_u(i)})
@@ -37,7 +37,7 @@ for i = 1:num_ob_times
         XYStyle='flat',ColorMap="jet",Mesh="off")
     caxis([0,max_diff])
     hold on
-    plot(nodes(boolean(is_moving_boundary_ob_times_u_plus_h(:,i)),1),nodes(boolean(is_moving_boundary_ob_times_u_plus_h(:,i)),2),'w.')
+    plot(nodes(logical(is_moving_boundary_ob_times_u_plus_h(:,i)),1),nodes(logical(is_moving_boundary_ob_times_u_plus_h(:,i)),2),'w.')
     hold off
     hold on
     for j = 1:length(edge_data{obj.time_inds_u(i)})
@@ -60,7 +60,7 @@ for i = 1:num_ob_times
         XYStyle='flat',ColorMap="jet",Mesh="off")
     caxis([min_cbar,max_cbar])
     hold on
-    plot(nodes(boolean(is_moving_boundary_ob_times_u_plus_h(:,i)),1),nodes(boolean(is_moving_boundary_ob_times_u_plus_h(:,i)),2),'w.')
+    plot(nodes(logical(is_moving_boundary_ob_times_u_plus_h(:,i)),1),nodes(logical(is_moving_boundary_ob_times_u_plus_h(:,i)),2),'w.')
     hold off
     hold on
     for j = 1:length(edge_data{obj.time_inds_u(i)})
@@ -76,7 +76,7 @@ for i = 1:num_ob_times
         XYStyle='flat',ColorMap="jet",Mesh="off")
     caxis([min_cbar,max_cbar])
     hold on
-    plot(nodes(boolean(is_moving_boundary_ob_times_u_plus_h(:,i)),1),nodes(boolean(is_moving_boundary_ob_times_u_plus_h(:,i)),2),'w.')
+    plot(nodes(logical(is_moving_boundary_ob_times_u_plus_h(:,i)),1),nodes(logical(is_moving_boundary_ob_times_u_plus_h(:,i)),2),'w.')
     hold off
     hold on
     for j = 1:length(edge_data{obj.time_inds_u(i)})

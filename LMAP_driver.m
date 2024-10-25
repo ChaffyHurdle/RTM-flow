@@ -9,11 +9,11 @@ meshes = {'p_ref.mat', 'e_ref.mat', 't_ref.mat', ...
 for i = 1:numel(meshes)
     load(meshes{i})
 end
-parpool('Threads', 10);
+parpool('Threads', 45);
 
 %% Mesh set up (avoiding inverse crimes)
 my_forward_mesh = DelaunayMesh(p_ref,e_ref,t_ref);
-my_inverse_mesh = DelaunayMesh(p_new,e_new,t_new);
+my_inverse_mesh = DelaunayMesh(p_ref,e_ref,t_ref);
 
 %% Inverse problem set up
 var_matern = 0.25; length_scale = 0.1; nu_matern = 1.5;
@@ -22,11 +22,10 @@ my_inverse = Inversion(my_forward_mesh,my_inverse_mesh,matern_args);
 
 % Generate true permeability to be recovered
 my_inverse = my_inverse.generate_u();
-my_inverse.u_true = my_inverse.u_true*0;
-my_inverse.u_true(vecnorm( (my_forward_mesh.centroids-[0.25,0.3])' )<0.36^2) = 0.5;
-my_inverse.u_true(vecnorm( (my_forward_mesh.centroids-[0.65,0.7])' )<0.36^2) = -0.6;
-my_inverse.u_true(my_forward_mesh.centroids(:,2)>0.975) = 1;
-my_inverse.u_true(my_forward_mesh.centroids(:,2)<0.025) = 1;
+my_inverse.u_true = my_inverse.u_true*0.3;
+my_inverse.u_true(vecnorm( (my_forward_mesh.centroids - [0.3,0.3])')<0.1333) = 1.5;
+my_inverse.u_true(my_forward_mesh.centroids(:,1) < 0.8 & my_forward_mesh.centroids(:,1) > 0.1...
+    & my_forward_mesh.centroids(:,2) < 0.85 & my_forward_mesh.centroids(:,2) > 0.725) = -1.5;
 my_inverse.plot_u_true();
 
 %% Physics and pressure set up
@@ -38,13 +37,15 @@ observation_times = linspace(0.15,0.85,5).^2*mu*phi/(2*(p_I-p_0));
 T = 0.86^2*mu*phi/(2*(p_I-p_0));
 
 % Set N sensor locs (equally space)
-sqrtN = 6;
+sqrtN = 10;
 sensor_locs_x = 1/(2*sqrtN) + linspace(0,sqrtN-1,sqrtN)/sqrtN;
 sensor_locs_y = sensor_locs_x;
 [sensor_locs_x,sensor_locs_y] = meshgrid(sensor_locs_x,sensor_locs_y);
 sensor_locs_x = reshape(sensor_locs_x,[],1);
 sensor_locs_y = reshape(sensor_locs_y,[],1);
 sensor_locs = [sensor_locs_x sensor_locs_y];
+
+disp([sqrtN^2,length(observation_times)])
 
 % Define true permeability and place within physics class
 K_true = exp(my_inverse.u_true);
@@ -64,17 +65,20 @@ my_lmap = my_lmap.run();
 
 u_iterations = my_lmap.u_iterations;
 J_iterations = my_lmap.J_iterations;
+scaled_data_misfit = my_lmap.scaled_data_misfit;
 execution_times = my_lmap.execution_times;
 C_map = my_lmap.C_map;
 u_true = my_inverse.u_true;
 save("Results/u_iterations.mat","u_iterations");
 save("Results/J_iterations.mat","J_iterations");
+save("Results/scaled_data_misfit.mat","scaled_data_misfit");
 save("Results/execution_times.mat","execution_times");
 save("Results/C_map.mat","C_map");
 save("Results/u_true.mat","u_true");
 
 
-% %% To be tidied
+
+%% To be tidied
 % subplot(1,3,1)
 % max_c = max(max((1+my_lmap.alpha)*my_lmap.tildePmat,[],'all'),max(my_lmap.tildePmat2,[],'all'));
 % imagesc((1+my_lmap.alpha)*my_lmap.tildePmat)

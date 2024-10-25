@@ -30,6 +30,9 @@ del_t = max(obj_data.RTMflow_class.times(closest_time+2) - obj_data.RTMflow_clas
 del_t = del_t^2;
 start_index = min(closest_time+100,length(times)-1);
 %del_t = 0.002/200;
+%del_t = 5e-6;
+%start_index = find(obj_data.delta_t(t_j,obj_data.RTMflow_class.times,del_t)<1e-7 & obj_data.RTMflow_class.times > t_j,1);
+%start_index = min(start_index,length(times)-1);
 
 % Compute aspect of load vector from \delta(x_i-x) contribution.
 nodes_surrounding_xi = nodes(elements(x_i_sensor_elem,:),:);
