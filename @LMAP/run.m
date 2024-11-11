@@ -47,6 +47,7 @@ while ~converged & iterate < obj.max_iterations
     candidate_pressure = Pressure(obj.mesh_class,candidate_physics);
     candidate_RTM = RTMFlow(obj.mesh_class,candidate_physics,candidate_pressure);
     candidate_RTM = candidate_RTM.run();
+    disp(candidate_RTM.pressure_data)
     [candidate_J,scaled_data_misfit] = obj.evaluate_cost_function(candidate_u,candidate_RTM);
 
     disp("Iterate: " + num2str(iterate) + ", Best J: " + num2str(J) + ", Current J: " + num2str(candidate_J) + ", J change: " + num2str(round(100*((candidate_J-J)/J),1)) + "%, Alpha: " + num2str(obj.alpha))
@@ -134,12 +135,12 @@ while ~converged & iterate < obj.max_iterations
         figure(2)
         for i = 1:length(obj.physics_class.sensor_locs)
             subplot(sqrt(length(obj.physics_class.sensor_locs)),sqrt(length(obj.physics_class.sensor_locs)),i)
-            plot(obj.inverse_class.data(i,:),'k*')
+            plot(obj.inverse_class.data(i,:),'ko')
             hold on
             plot(candidate_RTM.pressure_data(i,:),'r*')
             plot(G_u0(i,:),'b*')
             hold off
-            ylim([0.9,2.1])
+            ylim([obj.physics_class.p_0-0.1,obj.physics_class.p_I+0.1])
             title("$D$ (black), G($u_0$) (blue), G($u_{map}$) (red)",'interpreter','latex')
         end
         drawnow

@@ -44,8 +44,8 @@ for i = 1:length(num_taken)-1
         idx = sorted_inds(k);
         i = obj_data.i_vec(idx);
         j = obj_data.j_vec(idx);
-        disp([i,j])
         [lambda_ij,grad_lambda_ij] = compute_lambda_ij(i,j,obj_data);
+        disp([i,j,any(isnan(lambda_ij), 'all')])
         active_lambda_mat(:,:,k) = lambda_ij;
         Q_ij = compute_representer_ij(grad_lambda_ij,obj_data);
         R_ij = obj_data.inverse_class.C0_inv * (Q_ij' .* obj_data.mesh_class.element_areas);

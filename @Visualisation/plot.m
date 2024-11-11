@@ -18,6 +18,7 @@ if obj.is_plotting_volume
     if obj.is_animate_volume 
         exportgraphics(gca,"volume.gif","Append",true)
     end
+    drawnow
 
 end
 

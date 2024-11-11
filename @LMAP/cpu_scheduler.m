@@ -16,7 +16,9 @@ temp_sorted_inds = active_times(sorted_active_times_inds);
 % end
 num_taken = 0;
 total_taken = 0;
+count = 0;
 while total_taken ~= length(sorted_inds)
+    count = count + 1;
     if isscalar(unique(temp_sorted_inds)) || length(temp_sorted_inds) <= numWorkers
         num_taken = [num_taken length(temp_sorted_inds)];
         total_taken = total_taken+length(temp_sorted_inds);
@@ -27,5 +29,9 @@ while total_taken ~= length(sorted_inds)
         num_taken = [num_taken num_to_take];
         total_taken = total_taken + num_to_take;
         temp_sorted_inds = temp_sorted_inds(num_to_take+1:end);
+    end
+    if count > 100
+        disp("Count loop forever")
+        break
     end
 end

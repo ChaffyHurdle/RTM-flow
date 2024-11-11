@@ -36,7 +36,7 @@ while ~obj.is_fully_saturated() && obj.time + obj.time_step <= obj.physics_class
     obj = obj.compute_flow_rates();
 
     %% Visualise
-    % obj.visualise_class.plot(obj);
+    %obj.visualise_class.plot(obj);
     
     %% Increment to new time
     obj = obj.update_time_level();
@@ -76,12 +76,12 @@ while ~obj.is_fully_saturated() && obj.time + obj.time_step <= obj.physics_class
     if t_index <= length(observation_times)
         if (observation_times(t_index) > t_old) && (observation_times(t_index) < t_new)
             observation_time = observation_times(t_index);
-            %disp([t_old,observation_time,t_new])
+            disp([t_old,observation_time,t_new])
             obj.pressure_data(:,t_index) ...
                 = p_old_at_sensors + ...
                 ((observation_time - t_old)/dt)*(p_new_at_sensors - p_old_at_sensors);
             t_index = t_index + 1;
-            % obj.visualise_class.plot(obj);
+            obj.visualise_class.plot(obj);
         end
 
     %else

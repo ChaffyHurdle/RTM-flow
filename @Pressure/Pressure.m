@@ -44,8 +44,8 @@ classdef Pressure
             obj.physics_class = physics_class;
 
             % Hard code inlet/vent positions
-            obj.inlet_func = @(x) (x(1) == 0);
-            obj.vent_func = @(x) (x(1) == 1);
+            obj.inlet_func = @(x) x(1) == 0;
+            obj.vent_func = @(x) x(1) == 1;
 
             %% set time to zero
             obj.time = 0.0;

@@ -9,7 +9,7 @@ meshes = {'p_ref.mat', 'e_ref.mat', 't_ref.mat', ...
 for i = 1:numel(meshes)
     load(meshes{i})
 end
-parpool('Threads', 45);
+parpool('Threads', 10);
 
 %% Mesh set up (avoiding inverse crimes)
 my_forward_mesh = DelaunayMesh(p_ref,e_ref,t_ref);
@@ -22,10 +22,6 @@ my_inverse = Inversion(my_forward_mesh,my_inverse_mesh,matern_args);
 
 % Generate true permeability to be recovered
 my_inverse = my_inverse.generate_u();
-my_inverse.u_true = my_inverse.u_true*0.3;
-my_inverse.u_true(vecnorm( (my_forward_mesh.centroids - [0.3,0.3])')<0.1333) = 1.5;
-my_inverse.u_true(my_forward_mesh.centroids(:,1) < 0.8 & my_forward_mesh.centroids(:,1) > 0.1...
-    & my_forward_mesh.centroids(:,2) < 0.85 & my_forward_mesh.centroids(:,2) > 0.725) = -1.5;
 my_inverse.plot_u_true();
 
 %% Physics and pressure set up
@@ -33,11 +29,11 @@ mu = 1; phi = 1; thickness = 1; p_I = 2; p_0 = 1;
 
 % Approx. ob. times for 5 equal increments of the front (hard-coded to work 
 % for mean 0 prior generating u_true). Stop when ~86% filled.
-observation_times = linspace(0.15,0.85,5).^2*mu*phi/(2*(p_I-p_0));
-T = 0.86^2*mu*phi/(2*(p_I-p_0));
+observation_times = linspace(0.1,0.9,5).^2*mu*phi/(2*(p_I-p_0));
+T = 0.92^2*mu*phi/(2*(p_I-p_0));
 
 % Set N sensor locs (equally space)
-sqrtN = 10;
+sqrtN = 6;
 sensor_locs_x = 1/(2*sqrtN) + linspace(0,sqrtN-1,sqrtN)/sqrtN;
 sensor_locs_y = sensor_locs_x;
 [sensor_locs_x,sensor_locs_y] = meshgrid(sensor_locs_x,sensor_locs_y);
