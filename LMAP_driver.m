@@ -33,7 +33,7 @@ observation_times = linspace(0.1,0.9,5).^2*mu*phi/(2*(p_I-p_0));
 T = 0.92^2*mu*phi/(2*(p_I-p_0));
 
 % Set N sensor locs (equally space)
-sqrtN = 6;
+sqrtN = 4;
 sensor_locs_x = 1/(2*sqrtN) + linspace(0,sqrtN-1,sqrtN)/sqrtN;
 sensor_locs_y = sensor_locs_x;
 [sensor_locs_x,sensor_locs_y] = meshgrid(sensor_locs_x,sensor_locs_y);

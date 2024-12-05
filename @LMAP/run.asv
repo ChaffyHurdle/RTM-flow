@@ -99,10 +99,16 @@ while ~converged & iterate < obj.max_iterations
         scatter(obj.physics_class.sensor_locs(:,1),obj.physics_class.sensor_locs(:,2),'ko')
         hold off
         subplot(2,2,2)
-        pdeplot(obj.mesh_class.nodes',...
+        h = pdeplot(obj.mesh_class.nodes',...
                 obj.mesh_class.elements', ...
                 XYData=u, ...
                 XYStyle='interp',ColorMap="jet",Mesh="off")
+        pdeplot(model, ...
+    'XYData', u, ...                 % Heatmap data
+    'ColorMap', 'hot', ...           % Colormap
+    'FaceAlpha', 'flat', ...         % Use flat shading for transparency
+    'FaceAlphaData', alpha_decay, ...% Apply transparency
+    'AlphaDataMapping', 'scaled');   % Prevent scaling
         clim([c_min,c_max])
         title("$u_{map}$",'interpreter','latex')
         hold on
@@ -130,6 +136,12 @@ while ~converged & iterate < obj.max_iterations
         scatter(obj.physics_class.sensor_locs(:,1),obj.physics_class.sensor_locs(:,2),'ko')
         hold off
         title("$C_{map}$",'interpreter','latex')
+
+        
+        % Apply the distance-based transparency
+        set(h, 'AlphaData', diag(C_post)/obj.inverse_class.matern_var); % Apply the computed transparency
+        set(h, 'AlphaDataMapping', 'none'); % Prevent automatic scaling of transparency
+
         drawnow
 
         figure(2)
@@ -155,36 +167,7 @@ while ~converged & iterate < obj.max_iterations
                     XYStyle='interp',ColorMap="jet",Mesh="off")
             clim([c_min,c_max])
         end
-
-
-        figure(4)
-        centroid_x = obj.inverse_class.inv_mesh.centroids(:,1);
-        centroid_y = obj.inverse_class.inv_mesh.centroids(:,2);
-        
-        % Compute distance-based transparency
-        % Initialize transparency as ones (fully opaque)
-        alpha_map = diag(C_post)/obj.inverse_class.matern_var;
-        
-        % Create an alpha overlay
-        F = scatteredInterpolant(centroid_x, centroid_y, u', 'linear', 'none');
-        [xq, yq] = meshgrid(linspace(0,1,1000), ...
-                            linspace(0,1,1000));
-        zq = F(xq, yq);
-        
-        % Create an alpha overlay
-        F = scatteredInterpolant(centroid_x, centroid_y, alpha_map, 'linear', 'none');
-        [xq, yq] = meshgrid(linspace(0,1,1000), ...
-                            linspace(0,1,1000));
-        alpha_overlay = F(xq, yq);
-        
-        % Plot the alpha overlay as an image
-        im = imagesc(linspace(0,1,1000), linspace(0,1,1000), zq);
-        colormap jet
-        set(im, 'AlphaData', 1 - alpha_overlay); % Transparency decreases with alpha_map
-        set(im, 'AlphaDataMapping', 'none'); % Prevent scaling of alpha
-        colorbar
         drawnow
-        
     else
         disp("Cost function got worse, increasing regularisation")
         obj.alpha = 5*obj.alpha;

@@ -8,44 +8,49 @@ is_moving_boundary_ob_times = obj.is_moving_boundary_ob_times;
 is_moving_boundary_ob_times_u_plus_h = obj.is_moving_boundary_ob_times_u_plus_h;
 
 figure
+subplot(3,num_ob_times,2)
+pdeplot(nodes',elements', ...
+        XYData=obj.u, ...
+        XYStyle='flat',ColorMap="jet",Mesh="off")
+title("$u_k$", 'interpreter', 'latex')
+subplot(3,num_ob_times,4)
+pdeplot(nodes',elements', ...
+        XYData=obj.h, ...
+        XYStyle='flat',ColorMap="jet",Mesh="off")
+title("$u_k+h_k$", 'interpreter', 'latex')
+
 for i = 1:num_ob_times
     free_nodes = obj.active_nodes_u(:,i) & ~obj.is_moving_boundary_ob_times(:,i);
     max_diff = max(max(abs(obj.pressures_u_plus_h(:,i)-obj.pressures_u(:,i)).*free_nodes),...
         max(abs(obj.pressures_u_plus_h(:,i) - obj.pressures_u(:,i) - obj.p_tildes(:,i)).*free_nodes));
 
     % |p_{u+h} - p_{u}|
-    subplot(2,num_ob_times,i)
+    subplot(3,num_ob_times,num_ob_times+i)
     pdeplot(nodes',elements', ...
-        XYData=abs(obj.pressures_u_plus_h(:,i)-obj.pressures_u(:,i)).*free_nodes, ...
+        XYData=abs(obj.pressures_u_plus_h(:,i)-obj.pressures_u(:,i)), ...
         XYStyle='flat',ColorMap="jet",Mesh="off")
     caxis([0,max_diff])
-    hold on
-    plot(nodes(logical(is_moving_boundary_ob_times_u_plus_h(:,i)),1),nodes(logical(is_moving_boundary_ob_times_u_plus_h(:,i)),2),'w.')
-    hold off
     hold on
     for j = 1:length(edge_data{obj.time_inds_u(i)})
         plot([nodes(edge_data{obj.time_inds_u(i)}(j,2),1), nodes(edge_data{obj.time_inds_u(i)}(j,3),1)],...
             [nodes(edge_data{obj.time_inds_u(i)}(j,2),2), nodes(edge_data{obj.time_inds_u(i)}(j,3),2)],'w');
     end
     hold off
-    title("$|p_{u+h} - p_u|$", 'interpreter', 'latex')
+    title("$|p_{u_k+h_k} - p_{u_k}|$", 'interpreter', 'latex')
 
     % |p_{u+h} - (p_u + \tilde{p})|
-    subplot(2,num_ob_times,i+num_ob_times)
+    subplot(3,num_ob_times,i+2*num_ob_times)
     pdeplot(nodes',elements', ...
-        XYData=abs(obj.pressures_u_plus_h(:,i) - obj.pressures_u(:,i) - obj.p_tildes(:,i)).*free_nodes, ...
+        XYData=abs(obj.pressures_u_plus_h(:,i) - obj.pressures_u(:,i) - obj.p_tildes(:,i)), ...
         XYStyle='flat',ColorMap="jet",Mesh="off")
     caxis([0,max_diff])
-    hold on
-    plot(nodes(logical(is_moving_boundary_ob_times_u_plus_h(:,i)),1),nodes(logical(is_moving_boundary_ob_times_u_plus_h(:,i)),2),'w.')
-    hold off
     hold on
     for j = 1:length(edge_data{obj.time_inds_u(i)})
         plot([nodes(edge_data{obj.time_inds_u(i)}(j,2),1), nodes(edge_data{obj.time_inds_u(i)}(j,3),1)],...
             [nodes(edge_data{obj.time_inds_u(i)}(j,2),2), nodes(edge_data{obj.time_inds_u(i)}(j,3),2)],'w');
     end
     hold off
-    title("$|p_{u+h} - (p_u + \tilde{p})|$", 'interpreter', 'latex')
+    title("$|p_{u_k+h_k} - (p_{u_k} + \tilde{p}_k)|$", 'interpreter', 'latex')
 end
 
 figure
