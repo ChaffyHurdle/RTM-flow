@@ -1,8 +1,9 @@
 function obj = run(obj)
 
-start_permeability = obj.physics_class.permeability;
-start_pressure_class = obj.pressure_class;
+obj.physics_class.permeability = exp(obj.inverse_class.u0)';
+obj.pressure_class = Pressure(obj.mesh_class,obj.physics_class);
 start_flow_class = obj.RTMflow_class;
+obj.RTMflow_class = RTMflow_class;
 
 n = obj.physics_class.nobservations;
 umap_seq = zeros(obj.mesh_class.num_elements,n);
@@ -11,9 +12,11 @@ timer_seq = zeros(1,n);
 
 for t = 1:n
     disp(t)
-    obj.physics_class.permeability = start_permeability;
-    obj.pressure_class = start_pressure_class;
-    obj.RTMflow_class = start_flow_class;
+    obj.physics_class.permeability = exp(obj.inverse_class.u0)';
+    obj.pressure_class = Pressure(obj.mesh_class,obj.physics_class);
+    RTMflow_class = RTMFlow(obj.mesh_class,obj.physics_class,obj.pressure_class);
+    RTMflow_class = RTMflow_class.run(inf);
+    obj.RTMflow_class = RTMflow_class;
     obj.alpha = 1e4;
     obj.u = obj.inverse_class.u0;
 

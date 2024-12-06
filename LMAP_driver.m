@@ -29,11 +29,11 @@ mu = 1; phi = 1; thickness = 1; p_I = 2; p_0 = 1;
 
 % Approx. ob. times for 5 equal increments of the front (hard-coded to work 
 % for mean 0 prior generating u_true). Stop when ~86% filled.
-observation_times = linspace(0.1,0.9,5).^2*mu*phi/(2*(p_I-p_0));
-T = 0.92^2*mu*phi/(2*(p_I-p_0));
+observation_times = linspace(0.15,0.85,5).^2*mu*phi/(2*(p_I-p_0));
+T = 0.88^2*mu*phi/(2*(p_I-p_0));
 
 % Set N sensor locs (equally space)
-sqrtN = 4;
+sqrtN = 7;
 sensor_locs_x = 1/(2*sqrtN) + linspace(0,sqrtN-1,sqrtN)/sqrtN;
 sensor_locs_y = sensor_locs_x;
 [sensor_locs_x,sensor_locs_y] = meshgrid(sensor_locs_x,sensor_locs_y);
@@ -50,7 +50,7 @@ my_pressure = Pressure(my_forward_mesh,my_darcy);
 
 %% RTM set up (fine forward mesh)
 true_RTMflow = RTMFlow(my_forward_mesh,my_darcy,my_pressure);
-true_RTMflow = true_RTMflow.run();
+true_RTMflow = true_RTMflow.run(inf);
 
 %% Generate random data for inverse problem
 my_inverse = my_inverse.generate_data(true_RTMflow.pressure_data,0.005);
@@ -58,6 +58,8 @@ my_inverse = my_inverse.generate_data(true_RTMflow.pressure_data,0.005);
 %% Perform LMAP
 my_lmap = LMAP(my_inverse,my_darcy);
 my_lmap = my_lmap.run();
+
+my_lmap = my_lmap.run_t(2);
 
 u_iterations = my_lmap.u_iterations;
 J_iterations = my_lmap.J_iterations;

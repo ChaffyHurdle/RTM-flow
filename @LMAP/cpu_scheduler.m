@@ -3,6 +3,7 @@ function num_taken = cpu_scheduler(obj_data,active_sensors)
 % Number of cores/workers
 pool = gcp();
 numWorkers = pool.NumWorkers;
+disp(length(active_sensors))
 
 % Sort the active inds
 active_inds = find(active_sensors);
@@ -35,3 +36,6 @@ while total_taken ~= length(sorted_inds)
         break
     end
 end
+% Fast correction for an open debugging issue
+final_ind = find(num_taken, 1, 'last');
+num_taken = num_taken(1:final_ind)

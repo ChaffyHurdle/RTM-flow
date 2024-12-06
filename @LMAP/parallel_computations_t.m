@@ -1,10 +1,10 @@
-function obj = parallel_computations(obj)
+function obj = parallel_computations_t(obj,t)
 
 % Shorthand variables
 num_elems = obj.mesh_class.num_elements;
 num_nodes = obj.mesh_class.num_nodes;
 num_times = length(obj.RTMflow_class.times);
-nobs = length(obj.physics_class.observation_times);
+nobs = t;
 nsensors = obj.physics_class.nsensors;
 
 % Initialise outputs
@@ -30,6 +30,7 @@ active_inds = find(active_sensors);
 active_times = obj_data.j_vec(active_inds);
 [~,sorted_active_times_inds] = sort(active_times,'descend');
 sorted_inds = active_inds(sorted_active_times_inds);
+disp(length(sorted_inds))
 num_taken = cpu_scheduler(obj_data,active_sensors);
 cum_sum_num_taken = cumsum(num_taken);
 
@@ -39,8 +40,9 @@ active_R_mat = zeros(num_elems, length(active_inds));
 active_Q_mat = zeros(num_elems, length(active_inds));
 
 for i = 1:length(num_taken)-1
+    disp([cum_sum_num_taken(i)+1, min(cum_sum_num_taken(i+1),length(sorted_inds))])
     disp("Starting parfor " + num2str(i))
-    parfor k = cum_sum_num_taken(i)+1 : cum_sum_num_taken(i+1)
+    parfor k = cum_sum_num_taken(i)+1 : min(cum_sum_num_taken(i+1),length(sorted_inds))
         idx = sorted_inds(k);
         i = obj_data.i_vec(idx);
         j = obj_data.j_vec(idx);

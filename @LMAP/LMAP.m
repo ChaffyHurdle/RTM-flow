@@ -38,6 +38,10 @@ classdef LMAP
         execution_times;
         best_alpha;
 
+        umap_seq;
+        Cmap_seq;
+        timer_seq;
+
     end
 
     methods
@@ -51,7 +55,7 @@ classdef LMAP
             obj.physics_class.permeability = exp(inverse_class.u0)';
             obj.pressure_class = Pressure(obj.mesh_class,obj.physics_class);
             RTMflow_class = RTMFlow(obj.mesh_class,obj.physics_class,obj.pressure_class);
-            RTMflow_class = RTMflow_class.run();
+            RTMflow_class = RTMflow_class.run(inf);
             obj.RTMflow_class = RTMflow_class;
             
             % Dirac delta
@@ -64,7 +68,7 @@ classdef LMAP
             obj.j_vec = reshape(j_vec', [], 1);
             obj.u = inverse_class.u0;
             obj.u0 = inverse_class.u0;
-            obj.alpha = 1e3;
+            obj.alpha = 1e4;
             obj.tol1 = 0.03;
             obj.tol2 = 0.03;
             obj.max_iterations = 50;

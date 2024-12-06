@@ -1,4 +1,4 @@
-function obj = run(obj)
+function obj = run(obj,t)
 
 mesh = obj.Delaunay_mesh_class;
 observation_times = obj.physics_class.observation_times;
@@ -24,7 +24,7 @@ obj = obj.add_data_all_times(it,t_old,p_old,...
 
 tic
 
-while ~obj.is_fully_saturated() && obj.time + obj.time_step <= obj.physics_class.T
+while ~obj.is_fully_saturated() && obj.time <= min(obj.physics_class.T,1.1*t)
 
     it = it + 1;
 
@@ -81,7 +81,7 @@ while ~obj.is_fully_saturated() && obj.time + obj.time_step <= obj.physics_class
                 = p_old_at_sensors + ...
                 ((observation_time - t_old)/dt)*(p_new_at_sensors - p_old_at_sensors);
             t_index = t_index + 1;
-            obj.visualise_class.plot(obj);
+            %obj.visualise_class.plot(obj);
         end
 
     %else
@@ -96,9 +96,9 @@ end
 obj.wall_time = toc;
 %disp("Wall-time elapsed: " + num2str(obj.wall_time) + ' s')
 
-if t_index <= length(observation_times)
-    obj.pressure_data(:,t_index:end) = p_new(sensor_inds_mesh);
-end
+% if t_index <= length(observation_times)
+%     obj.pressure_data(:,t_index:end) = p_new(sensor_inds_mesh);
+% end
 
 obj.times = obj.times(1:it);
 obj.pressures = obj.pressures(:,1:it);
