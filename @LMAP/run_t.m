@@ -6,8 +6,10 @@ iterate = 1;
 do_over = 0;
 u = obj.u0;
 patience = 0;
+
 C = obj.inverse_class.C0_inv;
 Sigma = diag(reshape(obj.inverse_class.Sigma(:,1:t),[],1));
+Sigma_minus_half = diag(1./sqrt(reshape(obj.inverse_class.Sigma(:,1:t),[],1)));
 G_u0 = obj.RTMflow_class.pressure_data(:,1:t);
 u_iterations = zeros(obj.mesh_class.num_elements,obj.max_iterations);
 J_iterations = zeros(1,obj.max_iterations);
@@ -30,6 +32,13 @@ while ~converged & iterate < obj.max_iterations
         break
     end
 
+    dscrpncy = sum((Sigma_minus_half * (reshape(obj.inverse_class.data(:,1:t),[],1) - reshape(obj.RTMflow_class.pressure_data(:,1:t),[],1))).^2);
+    disp([dscrpncy,chi2inv(0.95,numel(obj.inverse_class.Sigma(:,1:t)))])
+    if dscrpncy < chi2inv(0.95,numel(obj.inverse_class.Sigma(:,1:t)))
+        disp("Converged through discrepancy")
+        break
+    end
+
     % Compute lambdas, gradient lambdas, representers and linearised states
     if ~do_over
         start_time = tic;
@@ -46,7 +55,7 @@ while ~converged & iterate < obj.max_iterations
     candidate_physics.permeability = exp(candidate_u');
     candidate_pressure = Pressure(obj.mesh_class,candidate_physics);
     candidate_RTM = RTMFlow(obj.mesh_class,candidate_physics,candidate_pressure);
-    candidate_RTM = candidate_RTM.run(obj.physics_class.observation_times(t));
+    candidate_RTM = candidate_RTM.run(inf);
     [candidate_J,scaled_data_misfit] = obj.evaluate_cost_function_t(candidate_u,candidate_RTM,t);
 
     disp("Iterate: " + num2str(iterate) + ", Best J: " + num2str(J) + ", Current J: " + num2str(candidate_J) + ", J change: " + num2str(round(100*((candidate_J-J)/J),1)) + "%, Alpha: " + num2str(obj.alpha))

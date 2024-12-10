@@ -76,7 +76,7 @@ while ~obj.is_fully_saturated() && obj.time <= min(obj.physics_class.T,1.1*t)
     if t_index <= length(observation_times)
         if (observation_times(t_index) > t_old) && (observation_times(t_index) < t_new)
             observation_time = observation_times(t_index);
-            disp([t_old,observation_time,t_new])
+            %disp([t_old,observation_time,t_new])
             obj.pressure_data(:,t_index) ...
                 = p_old_at_sensors + ...
                 ((observation_time - t_old)/dt)*(p_new_at_sensors - p_old_at_sensors);

@@ -38,4 +38,4 @@ while total_taken ~= length(sorted_inds)
 end
 % Fast correction for an open debugging issue
 final_ind = find(num_taken, 1, 'last');
-num_taken = num_taken(1:final_ind)
+num_taken = num_taken(1:final_ind);

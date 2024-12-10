@@ -13,7 +13,7 @@ parpool('Threads', 10);
 
 %% Mesh set up (avoiding inverse crimes)
 my_forward_mesh = DelaunayMesh(p_ref,e_ref,t_ref);
-my_inverse_mesh = DelaunayMesh(p_ref,e_ref,t_ref);
+my_inverse_mesh = DelaunayMesh(p_new,e_new,t_new);
 
 %% Inverse problem set up
 var_matern = 0.25; length_scale = 0.1; nu_matern = 1.5;
@@ -59,7 +59,7 @@ my_inverse = my_inverse.generate_data(true_RTMflow.pressure_data,0.005);
 my_lmap = LMAP(my_inverse,my_darcy);
 my_lmap = my_lmap.run();
 
-my_lmap = my_lmap.run_t(2);
+%my_lmap = my_lmap.run_t(2);
 
 u_iterations = my_lmap.u_iterations;
 J_iterations = my_lmap.J_iterations;
