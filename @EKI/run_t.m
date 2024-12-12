@@ -15,7 +15,6 @@ Sigma = diag(Sigma);
 d = reshape(obj.inverse_class.data(:,1:t),[],1);
 
 M=length(d);
-
 U_mean=mean(U,2);
 
 t_vec(1)=0;
@@ -26,16 +25,16 @@ tic;
 while (Cond==1)&&(iter<MAX)
     iter=iter+1;
     Z=zeros(M,N_En);
-    parfor en=1:N_En
+    for en=1:N_En
         
         K_true = exp(U(:,en));
         physics_class_en = physics_class;
-        physics_class_en.permeability = exp(K_true);
+        physics_class_en.permeability = K_true;
         pressure_class_en = Pressure(mesh_class,physics_class_en);
         RTMflow_class_en = RTMFlow(mesh_class,physics_class_en,pressure_class_en);
         RTMflow_class_en = RTMflow_class_en.run(physics_class.observation_times(t));
         p = reshape(RTMflow_class_en.pressure_data(:,1:t),[],1);
-        
+    
         Z(:,en)=Sigma_minus_half*(d-p);
     end
     Z_m=mean(Z,2);
@@ -66,7 +65,7 @@ while (Cond==1)&&(iter<MAX)
         pdeplot(mesh_class.nodes',mesh_class.elements',XYData=U_mean, ...
             XYStyle='interp',ColorMap="jet",Mesh="off")
         clim([-1.5,1.5])
-        subplot(1,3,2)
+        subplot(1,3,3)
         pdeplot(mesh_class.nodes',mesh_class.elements',XYData=var(U,0,2), ...
             XYStyle='interp',ColorMap="jet",Mesh="off")
         clim([0,0.25])

@@ -56,8 +56,8 @@ true_RTMflow = true_RTMflow.run(inf);
 my_inverse = my_inverse.generate_data(true_RTMflow.pressure_data,0.005);
 
 %% Perform LMAP
-my_lmap = LMAP(my_inverse,my_darcy);
-my_lmap = my_lmap.run();
+my_lmap = LMAP(my_inverse,my_darcy,1e4,2,0.03,0.03);
+my_lmap = my_lmap.run_t(5);
 
 my_eki = EKI(my_inverse,my_darcy);
 my_eki = my_eki.run_t(2);

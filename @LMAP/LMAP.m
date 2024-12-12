@@ -15,21 +15,24 @@ classdef LMAP
         
         % LMAP algorithm
         u;
-        u0
-        alpha;
-        max_iterations;
-        tol1;
-        tol2;
+        u0;
         lambdas;
         grad_lambdas;
         R;
         Q;
-        p_tildes;
-        p_tilde0;
+        d;
+        tildePmat;
         i_vec;
         j_vec;
-        tildePmat;
-        d;
+
+        % LMAP parameters
+        tol1;
+        tol2;
+        max_iterations;
+        alpha;
+        scale;
+
+        % Saves
         u_map;
         C_map;
         u_iterations;
@@ -37,7 +40,6 @@ classdef LMAP
         scaled_data_misfit;
         execution_times;
         best_alpha;
-
         umap_seq;
         Cmap_seq;
         timer_seq;
@@ -46,7 +48,7 @@ classdef LMAP
 
     methods
 
-        function obj = LMAP(inverse_class,physics_class)
+        function obj = LMAP(inverse_class,physics_class,alpha0,scale,tolU,tolJ)
             
             % Forward simulation
             obj.inverse_class = inverse_class;
@@ -68,9 +70,10 @@ classdef LMAP
             obj.j_vec = reshape(j_vec', [], 1);
             obj.u = inverse_class.u0;
             obj.u0 = inverse_class.u0;
-            obj.alpha = 1e4;
-            obj.tol1 = 0.03;
-            obj.tol2 = 0.03;
+            obj.alpha = alpha0;
+            obj.scale = scale;
+            obj.tol1 = tolU;
+            obj.tol2 = tolJ;
             obj.max_iterations = 50;
         end
     end

@@ -81,7 +81,7 @@ while ~obj.is_fully_saturated() && obj.time <= min(obj.physics_class.T,1.1*t)
                 = p_old_at_sensors + ...
                 ((observation_time - t_old)/dt)*(p_new_at_sensors - p_old_at_sensors);
             t_index = t_index + 1;
-            %obj.visualise_class.plot(obj);
+            obj.visualise_class.plot(obj);
         end
 
     %else

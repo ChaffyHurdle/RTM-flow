@@ -55,15 +55,17 @@ for i = 1:length(num_taken)-1
 end
 disp("Finished parfor")
 
-% Add sub-matrix parts to overall matrix
+% Add nonzero sub-matrix parts to overall matrix
 for k = 1 : length(sorted_inds)
     lambda_mat(:,:,sorted_inds(k)) = active_lambda_mat(:,:,k);
     Q_mat(:,sorted_inds(k)) = active_Q_mat(:,k);
     R_mat(:,sorted_inds(k)) = active_R_mat(:,k);
 end
 
+% Save data
 obj.lambdas = lambda_mat;
 obj.Q = Q_mat;
 obj.R = R_mat;
-%obj.p_tildes = p_tilde_mat;
+obj.tildePmat = obj.Q' * (obj.R .* obj.mesh_class.element_areas);
+obj.d = obj.Q' * ((obj.u0 - obj.u)'.*obj.mesh_class.element_areas);
 end
