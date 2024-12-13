@@ -64,7 +64,7 @@ my_eki = EKI(my_inverse,my_darcy);
 my_eki = my_eki.run_t(2);
 
 %% Perform MCMC
-my_mcmc = MCMC(my_inverse,my_darcy,100,10);
+my_mcmc = MCMC(my_inverse,my_darcy,10,2);
 my_mcmc = my_mcmc.run_t(2);
 
 %% Save data

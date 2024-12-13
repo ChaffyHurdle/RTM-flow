@@ -12,14 +12,15 @@ classdef EKI
         u0;
         J;
         ensemble;
-        max_iterations;
-        i_vec;
-        j_vec;
 
         u_iterations;
         J_iterations;
         scaled_data_misfit;
         execution_times;
+
+        ueki;
+        Ceki;
+        timer;
 
         ueki_seq;
         Ceki_seq;
@@ -29,7 +30,7 @@ classdef EKI
 
     methods
 
-        function obj = EKI(inverse_class,physics_class)
+        function obj = EKI(inverse_class,physics_class,J)
             
             % Forward simulation
             obj.inverse_class = inverse_class;
@@ -37,11 +38,8 @@ classdef EKI
             obj.physics_class = physics_class;
            
             % EKI
-            [i_vec, j_vec] = meshgrid(1:physics_class.nsensors, 1:physics_class.nobservations);
-            obj.i_vec = reshape(i_vec', [], 1);
-            obj.j_vec = reshape(j_vec', [], 1);
             obj.max_iterations = 50;
-            obj.J = 1000;
+            obj.J = J;
         end
     end
 

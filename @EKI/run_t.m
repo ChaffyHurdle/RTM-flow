@@ -3,7 +3,7 @@ function obj = run_t(obj,t)
 C_minus_half = obj.inverse_class.C0_minushalf;
 u = obj.inverse_class.u0;
 u_list = u;
-N_En = 100;
+N_En = 1000;
 U = mvnrnd(u,obj.inverse_class.C0_inv,N_En)';
 physics_class = obj.physics_class;
 mesh_class = obj.mesh_class;
@@ -25,7 +25,7 @@ tic;
 while (Cond==1)&&(iter<MAX)
     iter=iter+1;
     Z=zeros(M,N_En);
-    for en=1:N_En
+    parfor en=1:N_En
         
         K_true = exp(U(:,en));
         physics_class_en = physics_class;
@@ -74,6 +74,9 @@ while (Cond==1)&&(iter<MAX)
     
 end
 timer = toc
+obj.timer = timer;
+obj.ueki = U_mean;
+obj.Ceki = var(U,0,2);
 
 poolobj = gcp('nocreate');
 delete(poolobj);
