@@ -33,7 +33,7 @@ observation_times = linspace(0.15,0.85,5).^2*mu*phi/(2*(p_I-p_0));
 T = 0.88^2*mu*phi/(2*(p_I-p_0));
 
 % Set N sensor locs (equally space)
-sqrtN = 7;
+sqrtN = 5;
 sensor_locs_x = 1/(2*sqrtN) + linspace(0,sqrtN-1,sqrtN)/sqrtN;
 sensor_locs_y = sensor_locs_x;
 [sensor_locs_x,sensor_locs_y] = meshgrid(sensor_locs_x,sensor_locs_y);
@@ -56,7 +56,30 @@ true_RTMflow = true_RTMflow.run(inf);
 my_inverse = my_inverse.generate_data(true_RTMflow.pressure_data,0.005);
 
 %% Perform LMAP
+my_lmap = LMAP_edit(my_inverse,my_darcy,1e4,2,0.03,0.03);
+
+profile on
+R = my_lmap.compute_representers(5);
+profile viewer
+profile off
+
+for j = 1:5
+    for i = 1:25
+        k = (j-1)*25+i;
+        pdeplot(my_lmap.mesh_class.nodes',...
+            my_lmap.mesh_class.elements', ...
+            XYData=R(:,k), ...
+            XYStyle='interp',ColorMap="jet",Mesh="off")
+        hold on
+        scatter(my_lmap.physics_class.sensor_locs(i,1), ...
+            my_lmap.physics_class.sensor_locs(i,2),'ko','filled')
+        hold off
+        drawnow
+    end
+end
+
 my_lmap = LMAP(my_inverse,my_darcy,1e4,2,0.03,0.03);
+compute_curvature_circle([1,2,3,4],[1,4,9,16])
 my_lmap = my_lmap.run_t(5);
 
 %% Perform EKI

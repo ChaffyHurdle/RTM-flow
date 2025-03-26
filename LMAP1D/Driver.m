@@ -4,6 +4,9 @@ params_inv = set_parameters(1,2,1,1,1,0.42,0.25,0.1,1.5,250,250,20,[0.02, 0.05, 
 
 % Set true permeability to be recovered
 u_true = sim_permeability(zeros(1,params_fwd.Nx),set_covariance_matrix(params_fwd)); 
+plot(params_fwd.x_locations,u_true)
+xlim([0,1])
+ylim([-1.5,1.5])
 
 % Define mean function and covariance matrix
 C = set_covariance_matrix(params_inv);

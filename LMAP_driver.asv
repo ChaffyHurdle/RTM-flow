@@ -9,7 +9,7 @@ meshes = {'p_ref.mat', 'e_ref.mat', 't_ref.mat', ...
 for i = 1:numel(meshes)
     load(meshes{i})
 end
-parpool('Threads', 10);
+%parpool('Threads', 10);
 
 %% Mesh set up (avoiding inverse crimes)
 my_forward_mesh = DelaunayMesh(p_ref,e_ref,t_ref);
@@ -56,15 +56,48 @@ true_RTMflow = true_RTMflow.run(inf);
 my_inverse = my_inverse.generate_data(true_RTMflow.pressure_data,0.005);
 
 %% Perform LMAP
-my_lmap = LMAP(my_inverse,my_darcy,1e4,2,0.03,0.03);
+my_lmap = LMAP_edit(my_inverse,my_darcy,1e4,2,0.03,0.03);
+
+profile on
+R = my_lmap.compute_representers(5);
+profile viewer
+profile off
+
+for j = 1:5
+    for i = 1:49
+        k = (j-1)*49+i;
+        pdeplot(my_lmap.mesh_class.nodes',...
+            my_lmap.mesh_class.elements', ...
+            XYData=R(:,k), ...
+            XYStyle='interp',ColorMap="jet",Mesh="off")
+        hold on
+        scatter(my_lmap.physics_class.sensor_locs(i,1), ...
+            my_lmap.physics_class.sensor_locs(i,2),'ko','filled')
+        hold off
+        drawnow
+    end
+end
+
 my_lmap = my_lmap.run_t(5);
+
+%%
+p
+function grad_lambda_ij = compute_grad_lambda_ij(obj,lambda_ij)
+
+elements = obj.mesh_class.elements;
+shape_fun_grads = obj.RTMflow_class.pressure_class.shape_fun_gradients;
+
+local_lambdas = lambda_ij(elements);
+grad_lambda_ij = squeeze(sum(bsxfun(@times, shape_fun_grads, permute(local_lambdas, [3, 2, 1])), 2))';
+
+end
 
 %% Perform EKI
 my_eki = EKI(my_inverse,my_darcy);
 my_eki = my_eki.run_t(2);
 
 %% Perform MCMC
-my_mcmc = MCMC(my_inverse,my_darcy,10,2);
+my_mcmc = MCMC(my_inverse,my_darcy,100,10);
 my_mcmc = my_mcmc.run_t(2);
 
 %% Save data
