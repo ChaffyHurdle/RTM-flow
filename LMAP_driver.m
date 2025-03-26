@@ -57,6 +57,7 @@ my_inverse = my_inverse.generate_data(true_RTMflow.pressure_data,0.005);
 
 %% Perform LMAP
 my_lmap = LMAP_edit(my_inverse,my_darcy,1e4,2,0.03,0.03);
+my_lmap = my_lmap.run_t(5);
 
 profile on
 R = my_lmap.compute_representers(5);

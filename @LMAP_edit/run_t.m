@@ -39,11 +39,11 @@ while ~converged & iterate < obj.max_iterations
     % Solve adjoint equations, compute representers
     if ~do_over
         start_time = tic;
-        obj = obj.parallel_computations_t(t); % Compute \lambda, \mathbb{R}, \mathcal{R}, d
+        [bold_R,curly_R,d] = obj.compute_representers(t);
     end
 
     % Update u_{k} -> u_{k+1}
-    h = obj.compute_h_t(t);
+    h = obj.compute_h_t(curly_R,bold_R,d,t);
     h_accepted = zeros(1,5);
     RTM_candidates = cell(1,5);
     pressure_candidates = cell(1,5);
@@ -109,7 +109,7 @@ while ~converged & iterate < obj.max_iterations
     obj.physics_class = candidate_physics;
     obj.pressure_class = candidate_pressure;
     obj.RTMflow_class = candidate_RTM;
-    C_post = C - obj.R*inv(obj.tildePmat + (1+obj.alpha)*Sigma)*obj.R';
+    C_post = C - bold_R*inv(curly_R + (1+obj.alpha)*Sigma)*bold_R';
 
     obj.alpha = obj.alpha/obj.scale;
     do_over = 0;
@@ -122,7 +122,7 @@ while ~converged & iterate < obj.max_iterations
 end
 
 obj.u_map = u;
-obj.C_map = C - obj.R*inv(obj.tildePmat + Sigma)*obj.R';
+obj.C_map = C - bold_R*inv(curly_R + Sigma)*bold_R';
 obj.u_iterations = u_iterations(:,1:iterate);
 obj.J_iterations = J_iterations(1:iterate);
 obj.scaled_data_misfit = data_misfit_iterations(1:iterate);

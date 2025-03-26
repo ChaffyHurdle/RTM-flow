@@ -1,4 +1,4 @@
-function [R,Q] = compute_representers(obj,t)
+function [bold_R,curly_R,d] = compute_representers(obj,t)
 
 % Shorthand variables
 nodes = obj.mesh_class.nodes;
@@ -49,7 +49,7 @@ for t_ind = starting_triggers(k):-1:1
     
     % Set Dirichlet boundary conditions
     lambda = zeros(length(nodes),size(active_sensors_t,1));
-    lambda(moving_boundary_t,:) = 1;
+    lambda(moving_boundary_t,:) = 0;
     
     % Compute RHS
     load_vector = obj.compute_load_vec(active_sensors_t,t_ind);
@@ -97,7 +97,11 @@ end
 
 Q = - Q .* exp(obj.u');
 Q(abs(Q)<1e-10)=0;
-R = obj.inverse_class.C0_inv * (Q .* obj.mesh_class.element_areas);
+bold_R = obj.inverse_class.C0_inv * (Q .* obj.mesh_class.element_areas);
+
+% Save data
+curly_R = Q' * (bold_R .* obj.mesh_class.element_areas);
+d = Q' * ((obj.u0 - obj.u)'.*obj.mesh_class.element_areas);
 
 end
 

@@ -63,9 +63,9 @@ if t > 10
 
     grad_p_dot_n = local_flux_tri(edge_data{t}(:,4:5),grad_pressure_temp(candidate_elem_inds,:));
     grad_lambda_dot_n = local_flux_tri(edge_data{t}(:,4:5),grad_lambda_temp(candidate_elem_inds,:));
-    dkappa_dt = (exp(u(candidate_elem_inds)) .* grad_p_dot_n') .* (grad_lambda_dot_n' ...
+    dkappa_dt = - (exp(u(candidate_elem_inds)) .* grad_p_dot_n') .* (grad_lambda_dot_n' ...
         + kappa_t_elem(candidate_elem_inds)/(obj_data.physics_class.viscosity*obj_data.physics_class.porosity));
-    kappa_t_elem(candidate_elem_inds) = kappa_t_elem(candidate_elem_inds) + dt_vec(t)*dkappa_dt;
+    kappa_t_elem(candidate_elem_inds) = kappa_t_elem(candidate_elem_inds) - dt_vec(t)*dkappa_dt;
     
     % for i = 1:length(candidate_elem_inds)
     % 
