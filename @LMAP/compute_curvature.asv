@@ -43,8 +43,12 @@ function curv_edges = compute_curvature(obj,edge_data_t)
 
     curv_edges = zeros(1,size(edge_data_t,1));
     for i = 1:size(edge_data_t,1)
-        ind_n1 = find(curv_nodes(:,1) == edge_data_t(i,2));
-        ind_n2 = find(curv_nodes(:,1) == edge_data_t(i,3));
-        curv_edges(i) = (curv_nodes(ind_n1,2)+curv_nodes(ind_n2))/2;
+        edge_data_t(i,2)
+        edge_data_t(i,3)
+        curv_nodes(i,1)
+        ind_n1 = find(curv_nodes(i,1) == edge_data_t(i,2));
+        ind_n2 = find(curv_nodes(i,1) == edge_data_t(i,3));
+        curv_edges = (curv_nodes(ind_n1,2)+curv_nodes(ind_n2))/2;
     end
+curv_edges
 end

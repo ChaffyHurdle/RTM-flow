@@ -57,14 +57,13 @@ if t > 10
     grad_pressure_temp(new_active_elements,:) = pressure_gradient_tplus1(nearest_inds(new_active_elements),:);
     grad_lambda_temp(new_active_elements,:) = grad_lambda_temp(nearest_inds(new_active_elements),:);
 
-    front_pos = obj_data.mesh_class.nodes( ...
-        unique(reshape(obj_data.RTMflow_class.edge_data{t}(:,2:3),[],1)),:);
-    curvature = obj_data.compute_curvature(front_pos);
+    curvature = obj_data.compute_curvature(edge_data{t});
 
     grad_p_dot_n = local_flux_tri(edge_data{t}(:,4:5),grad_pressure_temp(candidate_elem_inds,:));
     grad_lambda_dot_n = local_flux_tri(edge_data{t}(:,4:5),grad_lambda_temp(candidate_elem_inds,:));
-    dkappa_dt = - (exp(u(candidate_elem_inds)) .* grad_p_dot_n') .* (grad_lambda_dot_n' ...
-        + kappa_t_elem(candidate_elem_inds)/(obj_data.physics_class.viscosity*obj_data.physics_class.porosity));
+    % dkappa_dt = - (exp(u(candidate_elem_inds)) .* grad_p_dot_n') .* (grad_lambda_dot_n' ...
+    %     + curvature.*kappa_t_elem(candidate_elem_inds)/(obj_data.physics_class.viscosity*obj_data.physics_class.porosity));
+    dkappa_dt = - (exp(u(candidate_elem_inds)) .* grad_p_dot_n') .* grad_lambda_dot_n';
     kappa_t_elem(candidate_elem_inds) = kappa_t_elem(candidate_elem_inds) - dt_vec(t)*dkappa_dt;
     
     % for i = 1:length(candidate_elem_inds)

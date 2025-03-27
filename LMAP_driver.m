@@ -57,7 +57,7 @@ my_inverse = my_inverse.generate_data(true_RTMflow.pressure_data,0.005);
 
 %% Perform LMAP
 my_lmap = LMAP_edit(my_inverse,my_darcy,1e4,2,0.03,0.03);
-my_lmap = my_lmap.run_t(5);
+my_lmap = my_lmap.run_t(1);
 
 profile on
 R = my_lmap.compute_representers(5);
@@ -80,7 +80,6 @@ for j = 1:5
 end
 
 my_lmap = LMAP(my_inverse,my_darcy,1e4,2,0.03,0.03);
-compute_curvature_circle([1,2,3,4],[1,4,9,16])
 my_lmap = my_lmap.run_t(5);
 
 %% Perform EKI
