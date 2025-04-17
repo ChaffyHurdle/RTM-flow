@@ -5,46 +5,53 @@ function curv_edges = compute_curvature(obj,edge_data_t)
     % Number of points
     n = length(unique_inds);
     curv_nodes = zeros(n,2); % Initialize curvature array
+
+
+    front = unique(edge_data_t(:,2:3));
+    x = obj.mesh_class.nodes(front,1);
+    y = obj.mesh_class.nodes(front,2);
     
-    % Loop over interior points (excluding first and last)
-    for i = 1:n
-        ind = unique_inds(i);
-
-        curv_nodes(i,1) = ind;
-
-        % Connected node inds
-        conn_inds = unique(edge_data_t( ...
-            find(sum(edge_data_t(:,2:3) == ind,2)), ...
-            2:3) ...
-            );
-        conn_nodes = obj.mesh_class.nodes(conn_inds,:);
-
-        if size(conn_nodes,1) == 3
-            % Get three consecutive points
-            x1 = conn_nodes(1,1); y1 = conn_nodes(1,2);
-            x2 = conn_nodes(2,1);   y2 = conn_nodes(2,2);
-            x3 = conn_nodes(3,1); y3 = conn_nodes(3,2);
+    % Step 1: Sort data by y (important for a well-behaved function)
+    [y, sortIdx] = sort(y);  
+    x = x(sortIdx);
     
-            % Compute side lengths
-            a = sqrt((x2 - x1)^2 + (y2 - y1)^2);
-            b = sqrt((x3 - x2)^2 + (y3 - y2)^2);
-            c = sqrt((x3 - x1)^2 + (y3 - y1)^2);
-            
-            % Compute signed triangle area
-            A = 0.5 * ((x2 - x1) * (y3 - y1) - (y2 - y1) * (x3 - x1)); 
+    % Step 2: Fit a smoothing spline for x as a function of y
+    p = 0.9999; % Smoothing parameter (0 = very smooth, 1 = interpolates all points)
+    spline_x = csaps(y, x, p);  
     
-            % Compute circumradius (avoid division by zero)
-            R = (a * b * c) / (4 * abs(A)); % Absolute area for radius
-            cross_product = (x2 - x1) * (y3 - y2) - (y2 - y1) * (x3 - x2);
-            curv_nodes(i,2) = 2 / R * sign(cross_product); % Assign sign based on cross product
-        end
-
-    end
+    % Step 3: Evaluate spline on a fine grid
+    y_fine = linspace(0, 1, 100);
+    x_fine = fnval(spline_x, y_fine);
+    
+    dx_dy = fnval(fnder(spline_x, 1), y_fine); % First derivative
+    d2x_dy2 = fnval(fnder(spline_x, 2), y_fine); % Second derivative
+    
+    % Step 4: Compute curvature
+    curvature = 2 * d2x_dy2 ./ (1 + dx_dy.^2).^(3/2); 
+    
 
     curv_edges = zeros(1,size(edge_data_t,1));
     for i = 1:size(edge_data_t,1)
-        ind_n1 = find(curv_nodes(:,1) == edge_data_t(i,2));
-        ind_n2 = find(curv_nodes(:,1) == edge_data_t(i,3));
-        curv_edges(i) = (curv_nodes(ind_n1,2)+curv_nodes(ind_n2))/2;
+        centroid = obj.mesh_class.centroids(edge_data_t(i,1),:);
+        [~, dist_id] = min(sum((centroid-[x_fine',y_fine']).^2,2));
+        curv_edges(i) = curvature(dist_id);
     end
+
+    % Plot results
+    % figure(1);
+    % plot(x_fine, y_fine, 'r-', 'LineWidth', 2, 'DisplayName', 'Fitted Spline'); % Smoothed curve
+    % hold on
+    % scatter(x, y, 80, 'k', 'filled', 'DisplayName', 'Noisy Data'); % Original nodes
+    % scatter(x_fine, y_fine, 20, curvature, 'filled');
+    % scatter(obj.mesh_class.centroids(edge_data_t(:,1),1),obj.mesh_class.centroids(edge_data_t(:,1),2),20,curv_edges)
+    % hold off
+    % grid on;
+    % title('Spline Fit for Near-Vertical Data');
+    % colorbar
+    % colormap(jet)
+    % xlabel('x'); ylabel('y');
+    % xlim([0,1]); ylim([0,1]);
+    % clim([-10,10])
+    % axis equal;
+
 end

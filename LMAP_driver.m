@@ -33,7 +33,7 @@ observation_times = linspace(0.15,0.85,5).^2*mu*phi/(2*(p_I-p_0));
 T = 0.88^2*mu*phi/(2*(p_I-p_0));
 
 % Set N sensor locs (equally space)
-sqrtN = 5;
+sqrtN = 10;
 sensor_locs_x = 1/(2*sqrtN) + linspace(0,sqrtN-1,sqrtN)/sqrtN;
 sensor_locs_y = sensor_locs_x;
 [sensor_locs_x,sensor_locs_y] = meshgrid(sensor_locs_x,sensor_locs_y);
@@ -79,8 +79,8 @@ for j = 1:5
     end
 end
 
-my_lmap = LMAP(my_inverse,my_darcy,1e4,2,0.03,0.03);
-my_lmap = my_lmap.run_t(5);
+my_lmap = LMAP(my_inverse,my_darcy,1e3,2,0.03,0.03);
+my_lmap = my_lmap.run_t(2);
 
 %% Perform EKI
 my_eki = EKI(my_inverse,my_darcy);
@@ -103,3 +103,20 @@ save("Results/scaled_data_misfit.mat","scaled_data_misfit");
 save("Results/execution_times.mat","execution_times");
 save("Results/C_map.mat","C_map");
 save("Results/u_true.mat","u_true");
+
+
+for i=1:14
+    figure(1)
+    subplot(1,2,1)
+    pdeplot(my_forward_mesh.nodes',my_forward_mesh.elements',XYData = log(K_true), ...
+        XYStyle='interp',ColorMap="jet",Mesh="off")
+    colorbar
+    clim([-1.5,1.5])
+    
+    subplot(1,2,2)
+    pdeplot(my_lmap.mesh_class.nodes',my_lmap.mesh_class.elements',XYData = my_lmap.u_iterations(:,i), ...
+        XYStyle='interp',ColorMap="jet",Mesh="off")
+    colorbar
+    clim([-1.5,1.5])
+    pause(0.5)
+end

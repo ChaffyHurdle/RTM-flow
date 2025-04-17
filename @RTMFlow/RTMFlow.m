@@ -40,6 +40,7 @@ classdef RTMFlow
         all_new_active_elements;
         new_filled_volumes;
         edge_data;
+        curvatures;
 
         %% Tracking
         volume_fill_percentage;
@@ -83,6 +84,7 @@ classdef RTMFlow
             obj.all_new_active_elements = zeros(Delaunay_mesh_class.num_elements,max_times);
             obj.new_filled_volumes = [];
             obj.edge_data = cell(1);
+            obj.curvatures = cell(1);
 
             %% Setting up time and time stepping
             obj.time = 0.0;

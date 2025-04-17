@@ -15,7 +15,7 @@ load("Results/u_true.mat","u_true");
 
 %% Mesh set up (avoiding inverse crimes)
 my_forward_mesh = DelaunayMesh(p_ref,e_ref,t_ref);
-my_inverse_mesh = DelaunayMesh(p_ref,e_ref,t_ref);
+my_inverse_mesh = DelaunayMesh(p_new,e_new,t_new);
 mu = 1; phi = 1; thickness = 1; p_I = 2; p_0 = 1;
 
 % Approx. ob. times for 5 equal increments of the front (hard-coded to work 
@@ -24,7 +24,7 @@ observation_times = linspace(0.1,0.9,5).^2*mu*phi/(2*(p_I-p_0));
 T = 0.92^2*mu*phi/(2*(p_I-p_0));
 
 % Set N sensor locs (equally space)
-sqrtN = 6;
+sqrtN = 10;
 sensor_locs_x = 1/(2*sqrtN) + linspace(0,sqrtN-1,sqrtN)/sqrtN;
 sensor_locs_y = sensor_locs_x;
 [sensor_locs_x,sensor_locs_y] = meshgrid(sensor_locs_x,sensor_locs_y);
@@ -39,7 +39,7 @@ my_pressure = Pressure(my_forward_mesh,my_darcy);
 
 %% RTM set up (fine forward mesh)
 true_RTMflow = RTMFlow(my_forward_mesh,my_darcy,my_pressure);
-true_RTMflow = true_RTMflow.run();
+true_RTMflow = true_RTMflow.run(inf);
 
 t_index = find(true_RTMflow.times > my_darcy.observation_times(end),1)-1;
 
@@ -74,7 +74,7 @@ for j = 1:length(true_RTMflow.edge_data{t_index})
 end
 hold off
 clim([min_u,max_u])
-title("$u_{MAP}$, " + num2str(round(sum(execution_times),1)) + "s",'interpreter','latex')
+title("$u_{MAP}$",'interpreter','latex')
 
 subplot(4,6,[5,6,11,12])
 pdeplot(my_inverse_mesh.nodes',my_inverse_mesh.elements',XYData = diag(C_map), ...
@@ -130,7 +130,7 @@ title("Data misfit statistic vs. chi-squared distribution")
 posterior_samples = mvnrnd(u_iterations(:,end),C_map,1000);
 figure(3)
 subplot(1,2,1)
-pdeplot(my_inverse_mesh.nodes',my_inverse_mesh.elements',XYData = u_true(:,end)>0.5 | u_true(:,end)<-0.5, ...
+pdeplot(my_forward_mesh.nodes',my_forward_mesh.elements',XYData = u_true(:,end)>0.5 | u_true(:,end)<-0.5, ...
     XYStyle='interp',ColorMap="jet",Mesh="off")
 hold on
 scatter(my_darcy.sensor_locs(:,1),my_darcy.sensor_locs(:,2),'wo','filled')

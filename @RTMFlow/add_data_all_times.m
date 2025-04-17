@@ -14,6 +14,7 @@ obj.Dirichlet_nodes(:,it) = Dirichlet_nodes;
 obj.all_active_elements(:,it) = active_elements;
 obj.new_filled_volumes = [obj.new_filled_volumes new_filled_volume];
 obj.edge_data{it} = edge_data;
+obj.curvatures{it} = obj.compute_curvature(edge_data);
 
 if ~isempty(new_active_elements)
     obj.all_new_active_elements(:,it) = new_active_elements;
