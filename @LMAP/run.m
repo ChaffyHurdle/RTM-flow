@@ -3,6 +3,7 @@ function obj = run(obj)
 start_permeability = obj.physics_class.permeability;
 start_pressure_class = obj.pressure_class;
 start_flow_class = obj.RTMflow_class;
+start_alpha = obj.alpha;
 
 n = obj.physics_class.nobservations;
 umap_seq = zeros(obj.mesh_class.num_elements,n);
@@ -14,7 +15,7 @@ for t = 1:n
     obj.physics_class.permeability = start_permeability;
     obj.pressure_class = start_pressure_class;
     obj.RTMflow_class = start_flow_class;
-    obj.alpha = 1e4;
+    obj.alpha = start_alpha;
     obj.u = obj.inverse_class.u0;
 
     obj = obj.run_t(t);

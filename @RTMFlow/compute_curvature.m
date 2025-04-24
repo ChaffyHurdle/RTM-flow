@@ -34,3 +34,5 @@ function curv_edges = compute_curvature(obj,edge_data_t)
             curv_edges(i) = curvature(dist_id);
         end
     end
+
+end

@@ -7,7 +7,6 @@ do_over = 0;
 u = obj.u0;
 physics_class = obj.physics_class;
 mesh_class = obj.mesh_class;
-patience = 0;
 C = obj.inverse_class.C0_inv;
 Sigma = diag(reshape(obj.inverse_class.Sigma(:,1:t),[],1));
 Sigma_minus_half = diag(1./sqrt(reshape(obj.inverse_class.Sigma(:,1:t),[],1)));
@@ -38,10 +37,8 @@ while ~converged & iterate < obj.max_iterations
     end
 
     % Solve adjoint equations, compute representers
-    if ~do_over
-        start_time = tic;
-        obj = obj.parallel_computations_t(t); % Compute \lambda, \mathbb{R}, \mathcal{R}, d
-    end
+    start_time = tic;
+    obj = obj.parallel_computations_t(t); % Compute \lambda, \mathbb{R}, \mathcal{R}, d
 
     % Update u_{k} -> u_{k+1}
     h = obj.compute_h_t(t);
@@ -73,7 +70,7 @@ while ~converged & iterate < obj.max_iterations
     end
 
     if sum(h_accepted) == 0
-        disp("Converged through patience.")
+        disp("Converged through patience (failed to improve).")
         break
     end
     firstaccepted = find(h_accepted, 1, 'first');
@@ -89,11 +86,10 @@ while ~converged & iterate < obj.max_iterations
     disp("Iterate: " + num2str(iterate) + ", Best J: " + num2str(J) + ", Current J: " + num2str(candidate_J) + ", J change: " + num2str(round(100*((candidate_J-J)/J),1)) + "%, Alpha: " + num2str(obj.alpha))
     
     if (abs(candidate_J - J)/abs(J) <= obj.tol1 || max((u - candidate_u)./max(u)) <= obj.tol2) && iterate > 5
-        disp("LMAP converged")
+        disp("Converged through stopping criterion.")
         converged = 1;
     end
 
-    disp("Cost function improved")
     % Save data
     u_iterations(:,iterate+1) = candidate_u;
     J_iterations(iterate+1) = candidate_J;
@@ -113,8 +109,6 @@ while ~converged & iterate < obj.max_iterations
     C_post = C - obj.R*inv(obj.tildePmat + (1+obj.alpha)*Sigma)*obj.R';
 
     obj.alpha = obj.alpha/obj.scale;
-    do_over = 0;
-    patience = 0;
     iterate = iterate + 1;
 
     % Plot iterate

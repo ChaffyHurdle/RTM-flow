@@ -20,8 +20,8 @@ mu = 1; phi = 1; thickness = 1; p_I = 2; p_0 = 1;
 
 % Approx. ob. times for 5 equal increments of the front (hard-coded to work 
 % for mean 0 prior generating u_true). Stop when ~86% filled.
-observation_times = linspace(0.1,0.9,5).^2*mu*phi/(2*(p_I-p_0));
-T = 0.92^2*mu*phi/(2*(p_I-p_0));
+observation_times = linspace(0.15,0.85,5).^2*mu*phi/(2*(p_I-p_0));
+T = 0.88^2*mu*phi/(2*(p_I-p_0));
 
 % Set N sensor locs (equally space)
 sqrtN = 10;

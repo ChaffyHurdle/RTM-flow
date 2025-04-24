@@ -11,6 +11,7 @@ classdef EKI
         u;
         u0;
         J;
+        max_iterations;
         ensemble;
 
         u_iterations;

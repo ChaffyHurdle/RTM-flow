@@ -1,0 +1,211 @@
+%% Clearing and loading
+clear;
+close all;
+clc;
+delete(gcp('nocreate'))
+
+folder_path = 'Case1';
+addpath(folder_path)
+meshes = {'p_fwd.mat', 'e_fwd.mat', 't_fwd.mat', ...
+    'p_inv.mat', 'e_inv.mat', 't_inv.mat'};
+for i = 1:numel(meshes)
+    load(meshes{i})
+end
+parpool('Threads');
+
+%% Mesh set up (avoiding inverse crimes)
+my_forward_mesh = DelaunayMesh(p_fwd,e_fwd,t_fwd);
+my_inverse_mesh = DelaunayMesh(p_inv,e_inv,t_inv);
+
+%% Inverse problem set up
+var_matern = 0.25; length_scale = 0.1; nu_matern = 1.5;
+matern_args = [var_matern,length_scale,nu_matern];
+my_inverse = Inversion(my_forward_mesh,my_inverse_mesh,matern_args);
+
+%% Generate true permeability to be recovered
+while true
+    my_inverse = my_inverse.generate_u();
+    my_inverse.plot_u_true();
+    key_input = input("Confirm ('y') or sample again (any other key)");
+    if key_input == 'y'
+        break
+    end
+end
+
+%% Physics and pressure set up
+mu = 1; phi = 1; thickness = 1; p_I = 2; p_0 = 1;
+
+% Approx. ob. times for 5 equal increments of the front (hard-coded to work 
+% for mean 0 prior generating u_true). Stop when ~86% filled.
+observation_times = linspace(0.2,0.9,5).^2*mu*phi/(2*(p_I-p_0));
+T = 0.92^2*mu*phi/(2*(p_I-p_0));
+
+% Set N sensor locs (equally spaced)
+sqrtN = 5;
+sensor_locs_x = 1/(2*sqrtN) + linspace(0,sqrtN-1,sqrtN)/sqrtN;
+sensor_locs_y = sensor_locs_x;
+[sensor_locs_x,sensor_locs_y] = meshgrid(sensor_locs_x,sensor_locs_y);
+sensor_locs_x = reshape(sensor_locs_x,[],1);
+sensor_locs_y = reshape(sensor_locs_y,[],1);
+sensor_locs = [sensor_locs_x sensor_locs_y];
+disp([sqrtN^2,length(observation_times)])
+
+% Define true permeability and place within physics class
+K_true = exp(my_inverse.u_true);
+my_darcy = Physics(mu, phi, thickness, p_I, p_0, K_true, sensor_locs, observation_times,T);
+my_pressure = Pressure(my_forward_mesh,my_darcy);
+
+%% RTM true simulation (on fine forward mesh)
+true_RTMflow = RTMFlow(my_forward_mesh,my_darcy,my_pressure);
+true_RTMflow = true_RTMflow.run(inf);
+
+%% Generate random data for inverse problem
+my_inverse = my_inverse.generate_data(true_RTMflow.pressure_data,0.005);
+
+%% Perform LMAP (all times)
+my_lmap = LMAP(my_inverse,my_darcy,1e3,2,0.03,0.03);
+my_lmap = my_lmap.run();
+
+%% Plot simple example
+
+figure(4)
+subplot(2,6,1)
+pdeplot(my_forward_mesh.nodes',my_forward_mesh.elements', ...
+    XYData = log(my_darcy.permeability), XYStyle='interp', ...
+    ColorMap="jet",Mesh="off")
+hold on
+scatter(my_darcy.sensor_locs(:,1),my_darcy.sensor_locs(:,2),'wo','filled')
+scatter(my_darcy.sensor_locs(:,1),my_darcy.sensor_locs(:,2),'ko')
+hold off
+clim([-1.5,1.5])
+title('$u^{\dagger}$','interpreter','latex')
+
+for i = 1:5
+    t_index = find(true_RTMflow.times > my_darcy.observation_times(i),1)-1;
+
+    figure(4)
+    subplot(2,6,i+1)
+    pdeplot(my_inverse_mesh.nodes',my_inverse_mesh.elements', ...
+            XYData = my_lmap.u_map_seq(:,i),XYStyle='interp', ...
+            ColorMap="jet",Mesh="off")
+    hold on
+    plot_front(true_RTMflow,t_index)
+    scatter(my_darcy.sensor_locs(:,1),my_darcy.sensor_locs(:,2),'wo','filled')
+    scatter(my_darcy.sensor_locs(:,1),my_darcy.sensor_locs(:,2),'ko')
+    hold off
+    clim([-1.5,1.5])
+    title(strcat('t = ', num2str(observation_times(i)),' t_c = ',num2str(sum(my_lmap.timer_seq(i)))),'interpreter','latex')
+
+    subplot(2,6,i+7)
+    pdeplot(my_inverse_mesh.nodes',my_inverse_mesh.elements', ...
+            XYData = diag(my_lmap.C_map_seq(:,:,i)),XYStyle='interp', ...
+            ColorMap="jet",Mesh="off")
+    hold on
+    plot_front(true_RTMflow,t_index)
+    scatter(my_darcy.sensor_locs(:,1),my_darcy.sensor_locs(:,2),'wo','filled')
+    scatter(my_darcy.sensor_locs(:,1),my_darcy.sensor_locs(:,2),'ko')
+    hold off
+    clim([0,0.25])
+end
+
+
+
+%% Perform EKI
+my_eki = EKI(my_inverse,my_darcy);
+my_eki = my_eki.run_t(5);
+
+%% Perform MCMC
+pool = gcp();
+numWorkers = pool.NumWorkers;
+my_mcmc = MCMC(my_inverse,my_darcy,100,numWorkers);
+my_mcmc = my_mcmc.run_t(5);
+
+%% Save data
+% u_iterations = my_lmap.u_iterations;
+% J_iterations = my_lmap.J_iterations;
+% scaled_data_misfit = my_lmap.scaled_data_misfit;
+% execution_times = my_lmap.execution_times;
+% C_map = my_lmap.C_map;
+% u_true = my_inverse.u_true;
+% save("Results/u_iterations.mat","u_iterations");
+% save("Results/J_iterations.mat","J_iterations");
+% save("Results/scaled_data_misfit.mat","scaled_data_misfit");
+% save("Results/execution_times.mat","execution_times");
+% save("Results/C_map.mat","C_map");
+% save("Results/u_true.mat","u_true");
+
+figure(5)
+subplot(2,3,1)
+pdeplot(my_forward_mesh.nodes',my_forward_mesh.elements', ...
+    XYData = log(my_darcy.permeability), XYStyle='interp', ...
+    ColorMap="jet",Mesh="off")
+hold on
+scatter(my_darcy.sensor_locs(:,1),my_darcy.sensor_locs(:,2),'wo','filled')
+scatter(my_darcy.sensor_locs(:,1),my_darcy.sensor_locs(:,2),'ko')
+hold off
+clim([-1.5,1.5])
+title('$u^{\dagger}$','interpreter','latex')
+
+subplot(2,3,2)
+pdeplot(my_inverse_mesh.nodes',my_inverse_mesh.elements', ...
+            XYData = my_lmap.u_map_seq(:,i),XYStyle='interp', ...
+            ColorMap="jet",Mesh="off")
+hold on
+plot_front(true_RTMflow,t_index)
+scatter(my_darcy.sensor_locs(:,1),my_darcy.sensor_locs(:,2),'wo','filled')
+scatter(my_darcy.sensor_locs(:,1),my_darcy.sensor_locs(:,2),'ko')
+hold off
+clim([-1.5,1.5])
+title('LMAP mean')
+
+subplot(2,3,3)
+pdeplot(my_inverse_mesh.nodes',my_inverse_mesh.elements', ...
+            XYData = diag(my_lmap.C_map_seq(:,:,i)),XYStyle='interp', ...
+            ColorMap="jet",Mesh="off")
+hold on
+plot_front(true_RTMflow,t_index)
+scatter(my_darcy.sensor_locs(:,1),my_darcy.sensor_locs(:,2),'wo','filled')
+scatter(my_darcy.sensor_locs(:,1),my_darcy.sensor_locs(:,2),'ko')
+hold off
+clim([0,0.25])
+title('LMAP variance')
+
+subplot(2,3,5)
+pdeplot(my_inverse_mesh.nodes',my_inverse_mesh.elements', ...
+            XYData = my_eki.ueki,XYStyle='interp', ...
+            ColorMap="jet",Mesh="off")
+hold on
+plot_front(true_RTMflow,t_index)
+scatter(my_darcy.sensor_locs(:,1),my_darcy.sensor_locs(:,2),'wo','filled')
+scatter(my_darcy.sensor_locs(:,1),my_darcy.sensor_locs(:,2),'ko')
+hold off
+clim([-1.5,1.5])
+title('EKI mean')
+
+subplot(2,3,6)
+pdeplot(my_inverse_mesh.nodes',my_inverse_mesh.elements', ...
+            XYData = diag(my_eki.Ceki),XYStyle='interp', ...
+            ColorMap="jet",Mesh="off")
+hold on
+plot_front(true_RTMflow,t_index)
+scatter(my_darcy.sensor_locs(:,1),my_darcy.sensor_locs(:,2),'wo','filled')
+scatter(my_darcy.sensor_locs(:,1),my_darcy.sensor_locs(:,2),'ko')
+hold off
+clim([0, 0.25])
+title('EKI variance')
+
+
+
+
+%% Plot front function
+function p = plot_front(RTMflow_class,t_index)
+
+for j = 1:length(RTMflow_class.edge_data{t_index})
+    p = plot([RTMflow_class.Delaunay_mesh_class.nodes(RTMflow_class.edge_data{t_index}(j,2),1), ...
+              RTMflow_class.Delaunay_mesh_class.nodes(RTMflow_class.edge_data{t_index}(j,3),1)],...
+             [RTMflow_class.Delaunay_mesh_class.nodes(RTMflow_class.edge_data{t_index}(j,2),2), ...
+              RTMflow_class.Delaunay_mesh_class.nodes(RTMflow_class.edge_data{t_index}(j,3),2)], ...
+             'w-','LineWidth',2);
+end
+
+end

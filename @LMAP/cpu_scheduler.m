@@ -11,9 +11,7 @@ active_times = obj_data.j_vec(active_inds);
 sorted_inds = active_inds(sorted_active_times_inds);
 
 temp_sorted_inds = active_times(sorted_active_times_inds);
-% for i =1:5
-%     disp(sum(temp_sorted_inds==i))
-% end
+
 num_taken = 0;
 total_taken = 0;
 count = 0;
