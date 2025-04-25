@@ -78,6 +78,7 @@ scatter(my_darcy.sensor_locs(:,1),my_darcy.sensor_locs(:,2),'wo','filled')
 scatter(my_darcy.sensor_locs(:,1),my_darcy.sensor_locs(:,2),'ko')
 hold off
 clim([-1.5,1.5])
+axis square;
 title('$u^{\dagger}$','interpreter','latex')
 
 for i = 1:5
@@ -86,7 +87,7 @@ for i = 1:5
     figure(4)
     subplot(2,6,i+1)
     pdeplot(my_inverse_mesh.nodes',my_inverse_mesh.elements', ...
-            XYData = my_lmap.u_map_seq(:,i),XYStyle='interp', ...
+            XYData = my_lmap.umap_seq(:,i),XYStyle='interp', ...
             ColorMap="jet",Mesh="off")
     hold on
     plot_front(true_RTMflow,t_index)
@@ -94,11 +95,12 @@ for i = 1:5
     scatter(my_darcy.sensor_locs(:,1),my_darcy.sensor_locs(:,2),'ko')
     hold off
     clim([-1.5,1.5])
-    title(strcat('t = ', num2str(observation_times(i)),' t_c = ',num2str(sum(my_lmap.timer_seq(i)))),'interpreter','latex')
+    axis square;
+    title(sprintf('\\bar{u}_{%d}', i), 'Interpreter', 'latex');
 
     subplot(2,6,i+7)
     pdeplot(my_inverse_mesh.nodes',my_inverse_mesh.elements', ...
-            XYData = diag(my_lmap.C_map_seq(:,:,i)),XYStyle='interp', ...
+            XYData = diag(my_lmap.Cmap_seq(:,:,i)),XYStyle='interp', ...
             ColorMap="jet",Mesh="off")
     hold on
     plot_front(true_RTMflow,t_index)
@@ -106,6 +108,8 @@ for i = 1:5
     scatter(my_darcy.sensor_locs(:,1),my_darcy.sensor_locs(:,2),'ko')
     hold off
     clim([0,0.25])
+    axis square;
+    title(sprintf('\\bar{u}_{%d}', i), 'Interpreter', 'latex');
 end
 
 
@@ -144,11 +148,12 @@ scatter(my_darcy.sensor_locs(:,1),my_darcy.sensor_locs(:,2),'wo','filled')
 scatter(my_darcy.sensor_locs(:,1),my_darcy.sensor_locs(:,2),'ko')
 hold off
 clim([-1.5,1.5])
+axis square;
 title('$u^{\dagger}$','interpreter','latex')
 
 subplot(2,3,2)
 pdeplot(my_inverse_mesh.nodes',my_inverse_mesh.elements', ...
-            XYData = my_lmap.u_map_seq(:,i),XYStyle='interp', ...
+            XYData = my_lmap.umap_seq(:,i),XYStyle='interp', ...
             ColorMap="jet",Mesh="off")
 hold on
 plot_front(true_RTMflow,t_index)
@@ -156,11 +161,25 @@ scatter(my_darcy.sensor_locs(:,1),my_darcy.sensor_locs(:,2),'wo','filled')
 scatter(my_darcy.sensor_locs(:,1),my_darcy.sensor_locs(:,2),'ko')
 hold off
 clim([-1.5,1.5])
+axis square;
 title('LMAP mean')
 
 subplot(2,3,3)
 pdeplot(my_inverse_mesh.nodes',my_inverse_mesh.elements', ...
-            XYData = diag(my_lmap.C_map_seq(:,:,i)),XYStyle='interp', ...
+            XYData = diag(my_lmap.Cmap_seq(:,:,i)),XYStyle='interp', ...
+            ColorMap="jet",Mesh="off")
+hold on
+plot_front(true_RTMflow,t_index)
+scatter(my_darcy.sensor_locs(:,1),my_darcy.sensor_locs(:,2),'wo','filled')
+scatter(my_darcy.sensor_locs(:,1),my_darcy.sensor_locs(:,2),'ko')
+hold off
+clim([0,0.25])
+axis square;
+title('LMAP variance')
+
+subplot(2,3,5)
+pdeplot(my_inverse_mesh.nodes',my_inverse_mesh.elements', ...
+            XYData = my_eki.ueki,XYStyle='interp', ...
             ColorMap="jet",Mesh="off")
 hold on
 plot_front(true_RTMflow,t_index)
@@ -168,12 +187,21 @@ scatter(my_darcy.sensor_locs(:,1),my_darcy.sensor_locs(:,2),'wo','filled')
 scatter(my_darcy.sensor_locs(:,1),my_darcy.sensor_locs(:,2),'ko')
 hold off
 clim([-1.5,1.5])
-title('LMAP std. dev.')
-
-subplot(2,3,5)
+axis square;
+title('EKI mean')
 
 subplot(2,3,6)
-
+pdeplot(my_inverse_mesh.nodes',my_inverse_mesh.elements', ...
+            XYData = diag(my_eki.Ceki),XYStyle='interp', ...
+            ColorMap="jet",Mesh="off")
+hold on
+plot_front(true_RTMflow,t_index)
+scatter(my_darcy.sensor_locs(:,1),my_darcy.sensor_locs(:,2),'wo','filled')
+scatter(my_darcy.sensor_locs(:,1),my_darcy.sensor_locs(:,2),'ko')
+hold off
+clim([0, 0.25])
+axis square;
+title('EKI variance')
 
 
 

@@ -6,6 +6,7 @@ delete(gcp('nocreate'))
 
 folder_path = 'Case1';
 addpath(folder_path)
+addpath('LMAP_plotting')
 meshes = {'p_fwd.mat', 'e_fwd.mat', 't_fwd.mat', ...
     'p_inv.mat', 'e_inv.mat', 't_inv.mat'};
 for i = 1:numel(meshes)
@@ -67,47 +68,13 @@ my_lmap = LMAP(my_inverse,my_darcy,1e3,2,0.03,0.03);
 my_lmap = my_lmap.run();
 
 %% Plot simple example
+plot_LMAP_seq(my_forward_mesh, my_inverse_mesh, my_darcy, ...
+    true_RTMflow,my_lmap);
 
-figure(4)
-subplot(2,6,1)
-pdeplot(my_forward_mesh.nodes',my_forward_mesh.elements', ...
-    XYData = log(my_darcy.permeability), XYStyle='interp', ...
-    ColorMap="jet",Mesh="off")
-hold on
-scatter(my_darcy.sensor_locs(:,1),my_darcy.sensor_locs(:,2),'wo','filled')
-scatter(my_darcy.sensor_locs(:,1),my_darcy.sensor_locs(:,2),'ko')
-hold off
-clim([-1.5,1.5])
-title('$u^{\dagger}$','interpreter','latex')
-
-for i = 1:5
-    t_index = find(true_RTMflow.times > my_darcy.observation_times(i),1)-1;
-
-    figure(4)
-    subplot(2,6,i+1)
-    pdeplot(my_inverse_mesh.nodes',my_inverse_mesh.elements', ...
-            XYData = my_lmap.u_map_seq(:,i),XYStyle='interp', ...
-            ColorMap="jet",Mesh="off")
-    hold on
-    plot_front(true_RTMflow,t_index)
-    scatter(my_darcy.sensor_locs(:,1),my_darcy.sensor_locs(:,2),'wo','filled')
-    scatter(my_darcy.sensor_locs(:,1),my_darcy.sensor_locs(:,2),'ko')
-    hold off
-    clim([-1.5,1.5])
-    title(strcat('t = ', num2str(observation_times(i)),' t_c = ',num2str(sum(my_lmap.timer_seq(i)))),'interpreter','latex')
-
-    subplot(2,6,i+7)
-    pdeplot(my_inverse_mesh.nodes',my_inverse_mesh.elements', ...
-            XYData = diag(my_lmap.C_map_seq(:,:,i)),XYStyle='interp', ...
-            ColorMap="jet",Mesh="off")
-    hold on
-    plot_front(true_RTMflow,t_index)
-    scatter(my_darcy.sensor_locs(:,1),my_darcy.sensor_locs(:,2),'wo','filled')
-    scatter(my_darcy.sensor_locs(:,1),my_darcy.sensor_locs(:,2),'ko')
-    hold off
-    clim([0,0.25])
-end
-
+u_samples = mvnrnd(my_lmap.u_map,my_lmap.C_map,100);
+[pressures,flow_fronts] = push_forward(u_samples, my_darcy, my_inverse_mesh);
+perturbed_pressures = pressures + normrnd(0,1,size(pressures)).*sqrt(my_inverse.Sigma(:)');
+plot_push_forward(perturbed_pressures, flow_fronts, my_darcy, my_inverse_mesh, true_RTMflow)
 
 
 %% Perform EKI
@@ -144,11 +111,12 @@ scatter(my_darcy.sensor_locs(:,1),my_darcy.sensor_locs(:,2),'wo','filled')
 scatter(my_darcy.sensor_locs(:,1),my_darcy.sensor_locs(:,2),'ko')
 hold off
 clim([-1.5,1.5])
+axis square;
 title('$u^{\dagger}$','interpreter','latex')
 
 subplot(2,3,2)
 pdeplot(my_inverse_mesh.nodes',my_inverse_mesh.elements', ...
-            XYData = my_lmap.u_map_seq(:,i),XYStyle='interp', ...
+            XYData = my_lmap.umap_seq(:,i),XYStyle='interp', ...
             ColorMap="jet",Mesh="off")
 hold on
 plot_front(true_RTMflow,t_index)
@@ -156,11 +124,12 @@ scatter(my_darcy.sensor_locs(:,1),my_darcy.sensor_locs(:,2),'wo','filled')
 scatter(my_darcy.sensor_locs(:,1),my_darcy.sensor_locs(:,2),'ko')
 hold off
 clim([-1.5,1.5])
+axis square;
 title('LMAP mean')
 
 subplot(2,3,3)
 pdeplot(my_inverse_mesh.nodes',my_inverse_mesh.elements', ...
-            XYData = diag(my_lmap.C_map_seq(:,:,i)),XYStyle='interp', ...
+            XYData = diag(my_lmap.Cmap_seq(:,:,i)),XYStyle='interp', ...
             ColorMap="jet",Mesh="off")
 hold on
 plot_front(true_RTMflow,t_index)
@@ -168,6 +137,7 @@ scatter(my_darcy.sensor_locs(:,1),my_darcy.sensor_locs(:,2),'wo','filled')
 scatter(my_darcy.sensor_locs(:,1),my_darcy.sensor_locs(:,2),'ko')
 hold off
 clim([0,0.25])
+axis square;
 title('LMAP variance')
 
 subplot(2,3,5)
@@ -180,6 +150,7 @@ scatter(my_darcy.sensor_locs(:,1),my_darcy.sensor_locs(:,2),'wo','filled')
 scatter(my_darcy.sensor_locs(:,1),my_darcy.sensor_locs(:,2),'ko')
 hold off
 clim([-1.5,1.5])
+axis square;
 title('EKI mean')
 
 subplot(2,3,6)
@@ -192,20 +163,5 @@ scatter(my_darcy.sensor_locs(:,1),my_darcy.sensor_locs(:,2),'wo','filled')
 scatter(my_darcy.sensor_locs(:,1),my_darcy.sensor_locs(:,2),'ko')
 hold off
 clim([0, 0.25])
+axis square;
 title('EKI variance')
-
-
-
-
-%% Plot front function
-function p = plot_front(RTMflow_class,t_index)
-
-for j = 1:length(RTMflow_class.edge_data{t_index})
-    p = plot([RTMflow_class.Delaunay_mesh_class.nodes(RTMflow_class.edge_data{t_index}(j,2),1), ...
-              RTMflow_class.Delaunay_mesh_class.nodes(RTMflow_class.edge_data{t_index}(j,3),1)],...
-             [RTMflow_class.Delaunay_mesh_class.nodes(RTMflow_class.edge_data{t_index}(j,2),2), ...
-              RTMflow_class.Delaunay_mesh_class.nodes(RTMflow_class.edge_data{t_index}(j,3),2)], ...
-             'w-','LineWidth',2);
-end
-
-end
