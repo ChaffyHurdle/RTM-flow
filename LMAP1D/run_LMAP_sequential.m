@@ -1,8 +1,8 @@
 function [u_maps,std_maps,iteration_vec,timer_vec] = run_LMAP_sequential(u0,C,params,experiment,plotting)
 
 C_minus_half = inv(sqrtm(C));
-tol_J = 0.05;
-tol_U = 0.05;
+tol_J = 0.01;
+tol_U = 0.01;
 u_maps = zeros(params.Nx,params.nobtimes);
 std_maps = zeros(params.Nx,params.nobtimes);
 iteration_vec = zeros(1,params.nobtimes);
@@ -13,7 +13,9 @@ for t = 1:params.nobtimes
     alpha = 1e4;
     breaker1 = 0;
     breaker2 = 0;
+    breaker3 = 0;
     iterations = 0;
+    patience = 0;
 
     Sigma_t = reshape(experiment.Sigma(:,1:t),[],1);
     d_t = reshape(experiment.d(:,1:t),[],1);
@@ -28,7 +30,6 @@ for t = 1:params.nobtimes
 
     tic;
     for k = 1:100
-
         [boldR,curlyR,c] = compute_representers(u,ups,C,params,t);
     
         h = (u0-u)/(1+alpha) + (boldR * ((curlyR + (1+alpha)*Sigma_t)\(d_t - reshape(p(:,1:t),[],1) - c/(1+alpha))))';
@@ -49,11 +50,14 @@ for t = 1:params.nobtimes
             p = p_cand;
             iterations = iterations + 1;
             alpha = alpha/2;
+            patience = 0;
         else
             alpha = alpha*2;
+            patience = patience + 1;
+            breaker3 = (patience == 5);
         end
     
-        if breaker1 || breaker2
+        if breaker1 || breaker2 || breaker3
             u_map = u;
             C_map = C - boldR * inv(curlyR + Sigma_t) * boldR';
             timer = toc

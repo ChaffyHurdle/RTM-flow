@@ -24,7 +24,7 @@ xlim([0,1])
 ylim([-2,2])
 xlabel('$$x$$','interpreter','latex')
 ylabel('$$u(x)$$','interpreter','latex')
-title("LMAP")
+title('LMAP','interpreter','latex')
 
 % EKI plot
 subplot(2,2,2)
@@ -46,7 +46,7 @@ xlim([0,1])
 ylim([-2,2])
 xlabel('$$x$$','interpreter','latex')
 ylabel('$$u(x)$$','interpreter','latex')
-title("EKI")
+title('EKI','interpreter','latex')
 
 
 % RML plot
@@ -68,7 +68,7 @@ xlim([0,1])
 ylim([-2,2])
 xlabel('$$x$$','interpreter','latex')
 ylabel('$$u(x)$$','interpreter','latex')
-title("RML")
+title('RML','interpreter','latex')
 
 
 % MCMC plot
@@ -90,7 +90,7 @@ ylabel('$$u(x)$$','interpreter','latex')
 hold off
 xlim([0,1])
 ylim([-2,2])
-title("MCMC")
+title('MCMC','interpreter','latex')
 
 figure(8)
 % Means comparison

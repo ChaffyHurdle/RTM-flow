@@ -81,7 +81,7 @@ while ~obj.is_fully_saturated() && obj.time <= min(obj.physics_class.T,1.1*t)
                 = p_old_at_sensors + ...
                 ((observation_time - t_old)/dt)*(p_new_at_sensors - p_old_at_sensors);
             t_index = t_index + 1;
-            obj.visualise_class.plot(obj);
+            %obj.visualise_class.plot(obj);
         end
 
     %else
@@ -119,7 +119,7 @@ function pressure_at_sensors = interpolate_pressures(p,obj,mesh)
     sensor_locs = obj.physics_class.sensor_locs;
     pressure_at_sensors = zeros(1,length(sensor_locs));
 
-    for i = 1:length(sensor_locs)
+    for i = 1:size(sensor_locs,1)
         sensor_loc = sensor_locs(i,:);
         nodes_surrounding_inds = mesh.elements(sensor_element_inds(i),:);
         nodes_surrounding = mesh.nodes(nodes_surrounding_inds,:);

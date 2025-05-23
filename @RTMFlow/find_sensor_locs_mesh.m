@@ -10,7 +10,7 @@ obj.sensor_locs_on_mesh = obj.Delaunay_mesh_class.nodes(obj.sensor_inds_on_mesh,
 
 sensor_element_inds = zeros(1,length(sensor_locs));
 
-for i = 1:length(sensor_locs)
+for i = 1:size(sensor_locs,1)
     sensor_loc = sensor_locs(i,:);
     sensor_element_inds(i) = findElementContainingPoint(obj.Delaunay_mesh_class,sensor_loc);
 end

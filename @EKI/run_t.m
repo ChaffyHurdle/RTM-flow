@@ -26,7 +26,7 @@ while (Cond==1)&&(iter<MAX)
     iter=iter+1;
     Z=zeros(M,N_En);
     parfor en=1:N_En
-        
+        disp(en)
         K_true = exp(U(:,en));
         physics_class_en = physics_class;
         physics_class_en.permeability = K_true;

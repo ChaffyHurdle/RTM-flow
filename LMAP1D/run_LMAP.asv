@@ -2,13 +2,11 @@ function [u_map,C_map,timer,iterations] = run_LMAP(u0,C,params,experiment,plotti
 
 C_minus_half = inv(sqrtm(C));
 alpha = 1e4;
-tol_J = 0.01;
-tol_U = 0.01;
+tol_J = 0.1;
+tol_U = 0.1;
 breaker1 = 0;
 breaker2 = 0;
-breaker3 = 0;
 iterations = 0;
-patience = 0;
 
 Sigma = reshape(experiment.Sigma,[],1);
 Sigma_minus_half = diag(1./sqrt(Sigma));
@@ -64,18 +62,15 @@ for k = 1:100
             xline(experiment.ups_true(end),"r--")
             hold off
             xlim([0,1])
-            ylim([min(min(lower95),-2),max(max(upper95),2)])
+            ylim([min(lower95,-2),max(upper95)])
             drawnow
         end
         alpha = alpha/2;
-        patience = 0;
     else
         alpha = alpha*2;
-        patience = patience + 1;
-        breaker3 = (patience == 5);
     end
 
-    if breaker1 || breaker2 || breaker3
+    if breaker1 || breaker2
         u_map = u;
         C_map = C - boldR * inv(curlyR + Sigma) * boldR';
         timer = toc
@@ -99,7 +94,7 @@ plot(experiment.params_fwd.x_locations,experiment.u_true,"r")
 xline(experiment.ups_true(end),"r--")
 hold off
 xlim([0,1])
-ylim([min(min(lower95),-2),max(max(upper95),2)])
+ylim([min(lower95),max(upper95)])
 drawnow
 
 end

@@ -1,8 +1,7 @@
-function [U,timer,iter] = run_EKI(u0,C,params,experiment,plotting)
+function [U,timer,iter] = run_EKI(u0,C,params,experiment,N_En,plotting)
 
 C_minus_half = inv(sqrtm(C));
 u_list = u0;
-N_En = 5000;
 U = mvnrnd(u0,C,N_En)';
 
 Sigma = reshape(experiment.Sigma,[],1);
@@ -70,6 +69,7 @@ while (Cond==1)&&(iter<MAX)
     
 end
 timer = toc
+iter = iter * N_En;
 
 poolobj = gcp('nocreate');
 delete(poolobj);

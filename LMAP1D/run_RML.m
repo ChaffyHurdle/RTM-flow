@@ -1,16 +1,10 @@
-function [U,timer,total_iterations] = run_RML(u0,C,params,experiment,plotting)
+function [U,timer,total_iterations] = run_RML(ubar,C,params,experiment,samples,plotting)
 
-samples = 5000;
-prior_samples = mvnrnd(u0,C,samples);
+prior_samples = mvnrnd(ubar,C,samples);
 U = zeros(params.Nx,samples);
 total_iterations = 0;
 
 C_minus_half = inv(sqrtm(C));
-alpha = 1e4;
-tol_J = 0.1;
-tol_U = 0.1;
-breaker1 = 0;
-breaker2 = 0;
 
 Sigma = reshape(experiment.Sigma,[],1);
 Sigma_minus_half = diag(1./sqrt(Sigma));
@@ -33,13 +27,15 @@ parfor i = 1:samples
     distance_from_ui = norm(C_minus_half * (u - u0)')^2;
     J = data_misfit + distance_from_ui;
     alpha = 1e4;
-    tol_J = 0.1;
-    tol_U = 0.1;
+    tol_J = 0.01;
+    tol_U = 0.01;
     breaker1 = 0;
     breaker2 = 0;
+    breaker3 = 0;
     iteration_count = 0;
+    patience = 0;
 
-    for j = 1:100
+    for j = 1:40
         [boldR,curlyR,c] = compute_representers(u,ups,C,params,5);
         h = (u0-u)/(1+alpha) + (boldR * ((curlyR + (1+alpha)*Sigma)\(d - reshape(p,[],1) - c/(1+alpha))))';
     
@@ -47,7 +43,7 @@ parfor i = 1:samples
     
         [p_cand,ups_cand] = forward_map(u_cand,params);
         data_misfit = norm(Sigma_minus_half * (d - reshape(p_cand,[],1)))^2;
-        distance_from_ui = norm(C_minus_half * (u_cand - u0)')^2;
+        distance_from_ui = norm(C_minus_half * (u_cand - ubar)')^2;
         J_cand = data_misfit + distance_from_ui;
         iteration_count = iteration_count+1;
 
@@ -59,16 +55,28 @@ parfor i = 1:samples
             ups = ups_cand;
             p = p_cand;
             alpha = alpha/2;
+            patience = 0;
         else
             alpha = alpha*2;
+            patience = patience + 1;
+            breaker3 = (patience == 5);
         end
 
-        if breaker1 || breaker2
-            U(:,i) = u;
-            total_iterations = total_iterations + iteration_count;
+        if breaker1 || breaker2 || breaker3
             break
         end
+
+        % figure(1)
+        % disp([alpha, J])
+        % plot(experiment.params_fwd.x_locations,experiment.u_true,"r")
+        % hold on
+        % plot(params.x_locations,u,"k")
+        % hold off
+        % xlim([0,1])
+
     end
+    total_iterations = total_iterations + iteration_count;
+    U(:,i) = u;
     
 end
 timer = toc
@@ -85,7 +93,6 @@ if plotting
     plot(params.x_locations,U_mean+1.96*sqrt(var(U,0,2)),'k')
     plot(params.x_locations,U_mean-1.96*sqrt(var(U,0,2)),'k')
     xline(experiment.ups_true(end),"r--")
-    %legend('$$U_{EKI}\pm 0.674\sigma_{EKI}$$','$$U_{EKI}$$','truth','location','north','fontsize',20,'interpreter','latex')
     xlim([0,1])
     ylim([-2,2])
     hold off

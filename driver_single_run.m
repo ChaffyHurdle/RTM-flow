@@ -76,9 +76,11 @@ u_samples = mvnrnd(my_lmap.u_map,my_lmap.C_map,100);
 perturbed_pressures = pressures + normrnd(0,1,size(pressures)).*sqrt(my_inverse.Sigma(:)');
 plot_push_forward(perturbed_pressures, flow_fronts, my_darcy, my_inverse_mesh, true_RTMflow)
 
-
 %% Perform EKI
 my_eki = EKI(my_inverse,my_darcy);
+my_eki = my_eki.run_t(5);
+
+my_eki = EKI(my_inverse,my_darcy,100);
 my_eki = my_eki.run_t(5);
 
 %% Perform MCMC

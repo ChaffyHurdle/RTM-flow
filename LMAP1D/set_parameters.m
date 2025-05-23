@@ -24,7 +24,7 @@ diff_x = diff(params.x_locations);
 params.dt = diff_t(1);
 params.dx = diff_x(1);
 
-params.sensor_locs = linspace(0.05,L-0.05,nsensors);
+params.sensor_locs = linspace(0.025,L-0.025,nsensors);
 params.nsensors = nsensors;
 params.ob_times = ob_times;
 params.nobtimes = length(ob_times);

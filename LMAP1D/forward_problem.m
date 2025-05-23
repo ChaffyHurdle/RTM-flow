@@ -7,9 +7,10 @@ pressure_mat(:,1) = params.p_I;
 dt = params.dt;
 
 for i = 2:params.Nt
-    opt_func = @(x) x - upsilon_vec(i-1) - dt/F_uh(x,u,1,params);
-    upsilon = fsolve(opt_func,upsilon_vec(i-1),options);
-    pressure = (params.p_I - (params.p_I - params.p_0) * F_uh(params.x_locations,u,1,params)'/F_uh(upsilon,u,1,params)) .* (params.x_locations <= upsilon);
+    opt_func = @(x) x - upsilon_vec(i-1) - dt/(F_u(x,u,params)*params.mu*params.phi);
+    upsilon = min(fsolve(opt_func,upsilon_vec(i-1),options),params.L);
+    pressure = (params.p_I - (params.p_I - params.p_0) * F_u(params.x_locations,u,params)'/F_u(upsilon,u,params)) .* (params.x_locations <= upsilon) ...
+        + params.p_0 * (params.x_locations > upsilon);
 
     upsilon_vec(i) = upsilon;
     pressure_mat(i,:) = pressure;
