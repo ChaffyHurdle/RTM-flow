@@ -17,6 +17,7 @@ J_iterations = zeros(1,obj.max_iterations);
 data_misfit_iterations = zeros(1,obj.max_iterations);
 execution_times = zeros(1,obj.max_iterations);
 best_alpha = obj.alpha;
+polar = obj.RTMflow_class.polar;
 
 % Evaluate posterior cost function at u0
 [J,scaled_misfit_J] = obj.evaluate_cost_function_t(u,obj.RTMflow_class,t);
@@ -57,7 +58,7 @@ while ~converged & iterate < obj.max_iterations
         candidate_physics.permeability = exp(candidate_u');
         candidate_pressure = Pressure(mesh_class,candidate_physics);
         candidate_RTM = RTMFlow(mesh_class,candidate_physics,candidate_pressure);
-        candidate_RTM = candidate_RTM.run(physics_class.observation_times(t));
+        candidate_RTM = candidate_RTM.run(physics_class.observation_times(t),polar);
         [candidate_J,scaled_data_misfit] = obj.evaluate_cost_function_t(candidate_u,candidate_RTM,t);
 
         physics_candidates{i} = candidate_physics;

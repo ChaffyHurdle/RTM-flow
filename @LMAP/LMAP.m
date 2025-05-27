@@ -48,7 +48,7 @@ classdef LMAP
 
     methods
 
-        function obj = LMAP(inverse_class,physics_class,alpha0,scale,tolU,tolJ)
+        function obj = LMAP(inverse_class,physics_class,alpha0,scale,tolU,tolJ,polar)
             
             % Forward simulation
             obj.inverse_class = inverse_class;
@@ -56,7 +56,7 @@ classdef LMAP
             obj.physics_class = physics_class;
             obj.physics_class.permeability = exp(inverse_class.u0)';
             obj.pressure_class = Pressure(obj.mesh_class,obj.physics_class);
-            RTMflow_class = RTMFlow(obj.mesh_class,obj.physics_class,obj.pressure_class);
+            RTMflow_class = RTMFlow(obj.mesh_class,obj.physics_class,obj.pressure_class,polar);
             RTMflow_class = RTMflow_class.run(inf);
             obj.RTMflow_class = RTMflow_class;
             

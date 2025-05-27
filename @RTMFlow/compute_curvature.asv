@@ -47,7 +47,7 @@ function curv_edges = compute_curvature(obj,edge_data_t)
             y = y(sortIdx);
             
             % Step 2: Fit a smoothing spline for x as a function of y
-            p = 0.999; % Smoothing parameter (0 = very smooth, 1 = interpolates all points)
+            p = 0.9999; % Smoothing parameter (0 = very smooth, 1 = interpolates all points)
             spline_x = csaps(theta, r, p);  
             
             % Step 3: Evaluate spline on a fine grid
@@ -79,19 +79,20 @@ function curv_edges = compute_curvature(obj,edge_data_t)
         end
 
         % Plot results
-        % figure(1);
-        % colormap turbo
-        % %plot(x_fine, y_fine, 'r-', 'LineWidth', 2, 'DisplayName', 'Fitted Spline'); % Smoothed curve
-        % %scatter(x, y, 80, 'k', 'filled', 'DisplayName', 'Noisy Data'); % Original nodes
-        % scatter(x_fine, y_fine, 20, curvature, 'filled');
-        % %scatter(obj.Delaunay_mesh_class.centroids(edge_data_t(:,1),1),obj.Delaunay_mesh_class.centroids(edge_data_t(:,1),2),20,curv_edges)
-        % grid on;
-        % title('Spline Fit for Near-Vertical Data');
-        % colorbar
-        % colormap(jet)
-        % xlabel('x'); ylabel('y');
-        % clim([-30,30])
-        % axis equal;
+        figure(1);
+        plot(x_fine, y_fine, 'r-', 'LineWidth', 2, 'DisplayName', 'Fitted Spline'); % Smoothed curve
+        hold on
+        %scatter(x, y, 80, 'k', 'filled', 'DisplayName', 'Noisy Data'); % Original nodes
+        scatter(x_fine, y_fine, 20, curvature, 'filled');
+        %scatter(obj.Delaunay_mesh_class.centroids(edge_data_t(:,1),1),obj.Delaunay_mesh_class.centroids(edge_data_t(:,1),2),20,curv_edges)
+        hold off
+        grid on;
+        title('Spline Fit for Near-Vertical Data');
+        colorbar
+        colormap(jet)
+        xlabel('x'); ylabel('y');
+        clim([-30,30])
+        axis equal;
     end
 
 

@@ -40,6 +40,7 @@ classdef RTMFlow
         all_new_active_elements;
         new_filled_volumes;
         edge_data;
+        polar;
         curvatures;
 
         %% Tracking
@@ -54,7 +55,7 @@ classdef RTMFlow
     methods
     %% CVFEM class methods
 
-    function obj = RTMFlow(Delaunay_mesh_class,physics_class,pressure_class)
+    function obj = RTMFlow(Delaunay_mesh_class,physics_class,pressure_class,polar)
             
             %% Store other classes
             obj.Delaunay_mesh_class = Delaunay_mesh_class;
@@ -84,6 +85,7 @@ classdef RTMFlow
             obj.all_new_active_elements = zeros(Delaunay_mesh_class.num_elements,max_times);
             obj.new_filled_volumes = [];
             obj.edge_data = cell(1);
+            obj.polar = polar;
             obj.curvatures = cell(1);
 
             %% Setting up time and time stepping

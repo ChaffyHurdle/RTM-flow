@@ -83,14 +83,14 @@ my_darcy = Physics(mu, phi, thickness, ...
 my_pressure = Pressure(my_forward_mesh,my_darcy);
 
 %% RTM true simulation (on fine forward mesh)
-true_RTMflow = RTMFlow(my_forward_mesh,my_darcy,my_pressure,true);
+true_RTMflow = RTMFlow(my_forward_mesh,my_darcy,my_pressure,polar=True);
 true_RTMflow = true_RTMflow.run(inf);
 
 %% Generate random data for inverse problem
 my_inverse = my_inverse.generate_data(true_RTMflow.pressure_data,0.005);
 
 %% Perform LMAP (all times)
-my_lmap = LMAP(my_inverse,my_darcy,1e3,2,0.03,0.03,true);
+my_lmap = LMAP(my_inverse,my_darcy,1e3,2,0.03,0.03);
 my_lmap = my_lmap.run_t(5);
 
 %% Plot simple example
