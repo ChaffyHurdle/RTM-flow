@@ -4,7 +4,7 @@ figure(1)
 clf;
 
 pdeplot(obj.fwd_mesh.nodes',obj.fwd_mesh.elements', ...
-    XYData=obj.u_true,XYStyle='interp',ColorMap='jet',Mesh='off')
+    XYData=obj.u_true,XYStyle='interp',ColorMap='turbo',Mesh='off')
 axis equal
 set(gca, 'YDir', 'normal');
 colorbar;

@@ -2,7 +2,7 @@ function p = plot_push_forward(pressures, flow_fronts, physics_class, mesh_class
     true_RTMflow)
 
 
-figure(7)
+figure
 subplot(2,5,[1,2,3,4,5])
 
 [nObs, ~] = size(pressures);

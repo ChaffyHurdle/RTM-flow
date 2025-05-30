@@ -31,7 +31,7 @@ while (Cond==1)&&(iter<MAX)
         physics_class_en = physics_class;
         physics_class_en.permeability = K_true;
         pressure_class_en = Pressure(mesh_class,physics_class_en);
-        RTMflow_class_en = RTMFlow(mesh_class,physics_class_en,pressure_class_en);
+        RTMflow_class_en = RTMFlow(mesh_class,physics_class_en,pressure_class_en,0);
         RTMflow_class_en = RTMflow_class_en.run(physics_class.observation_times(t));
         p = reshape(RTMflow_class_en.pressure_data(:,1:t),[],1);
     

@@ -12,7 +12,7 @@ parfor i = 1:n
     physics_class_i = physics_class;
     physics_class_i.permeability = K_i;
     pressure_class_i = Pressure(mesh_class,physics_class_i);
-    RTMflow_class_i = RTMFlow(mesh_class,physics_class_i,pressure_class_i);
+    RTMflow_class_i = RTMFlow(mesh_class,physics_class_i,pressure_class_i,0);
     RTMflow_class_i = RTMflow_class_i.run(inf);
     pressures(i,:) = reshape(transpose(RTMflow_class_i.pressure_data),1,[]);
 

@@ -82,17 +82,31 @@ my_inverse = my_inverse.generate_data(true_RTMflow.pressure_data,0.005);
 my_lmap = LMAP(my_inverse,my_darcy,1e3,2,0.03,0.03,polar);
 my_lmap = my_lmap.run();
 
+save(strcat(folder_path,'/lmap_seq.mat'), 'my_lmap')
+
 plot_LMAP_seq(my_forward_mesh, my_inverse_mesh, my_darcy, ...
     true_RTMflow,my_lmap)
 
 %% Plot push forward example
 
-u_samples = mvnrnd(my_lmap.u_map,my_lmap.C_map,100);
+u_samples = mvnrnd(my_lmap.umap_seq(:,end),my_lmap.Cmap_seq(:,:,end),1000);
 [pressures,flow_fronts] = push_forward(u_samples, my_darcy, my_inverse_mesh);
 perturbed_pressures = pressures + normrnd(0,1,size(pressures)).*sqrt(my_inverse.Sigma(:)');
 plot_push_forward(perturbed_pressures, flow_fronts, my_darcy, my_inverse_mesh, true_RTMflow)
 
+%% Perform EKI
+my_eki = EKI(my_inverse,my_darcy,1000);
+my_eki = my_eki.run_t(5);
 
+plot_LMAP_vs_EKI(true_RTMflow,my_forward_mesh,my_inverse_mesh,my_darcy,my_lmap,my_eki)
+
+%% Perform MCMC
+pool = gcp();
+numWorkers = pool.NumWorkers;
+my_mcmc = MCMC(my_inverse,my_darcy,100,numWorkers);
+my_mcmc = my_mcmc.run_t(5);
+
+%%
 % figure(3)
 % for j = round(14*length(true_RTMflow.edge_data)/15):length(true_RTMflow.edge_data)
 %     plot(0,0)
@@ -120,15 +134,3 @@ plot_push_forward(perturbed_pressures, flow_fronts, my_darcy, my_inverse_mesh, t
 %     hold off
 %     drawnow
 % end
-
-%% Perform EKI
-my_eki = EKI(my_inverse,my_darcy,1000);
-my_eki = my_eki.run_t(5);
-
-plot_LMAP_vs_EKI(true_RTMflow,my_forward_mesh,my_inverse_mesh,my_darcy,my_lmap,my_eki)
-
-%% Perform MCMC
-pool = gcp();
-numWorkers = pool.NumWorkers;
-my_mcmc = MCMC(my_inverse,my_darcy,100,numWorkers);
-my_mcmc = my_mcmc.run_t(5);

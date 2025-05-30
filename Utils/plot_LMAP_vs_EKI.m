@@ -2,7 +2,7 @@ function p = plot_LMAP_vs_EKI(true_RTMflow,my_forward_mesh,my_inverse_mesh,my_da
 
 t_index = 5;
 
-figure(5)
+figure
 subplot(2,3,1)
 pdeplot(my_forward_mesh.nodes',my_forward_mesh.elements', ...
     XYData = log(my_darcy.permeability), XYStyle='interp', ...

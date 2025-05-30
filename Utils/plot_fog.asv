@@ -1,0 +1,35 @@
+function im = plot_fog(my_lmap_seq,t)
+
+x = linspace(0,1,1000);
+y = x;
+centroid_x = my_lmap_seq.inverse_class.inv_mesh.centroids(:,1);
+centroid_y = my_lmap_seq.inverse_class.inv_mesh.centroids(:,2);
+
+% Compute distance-based transparency
+alpha_map = diag(my_lmap_seq.Cmap_seq(:,:,t))/my_lmap_seq.inverse_class.matern_var;
+
+% Create an alpha overlay
+F = scatteredInterpolant(centroid_x, centroid_y, u', 'linear', 'none');
+[xq, yq] = meshgrid(x,y);
+zq = F(xq, yq);
+
+% Create an alpha overlay
+F = scatteredInterpolant(centroid_x, centroid_y, alpha_map, 'linear', 'none');
+alpha_overlay = F(xq, yq);
+
+% Plot the alpha overlay as an image
+im = imagesc(x,y,zq);
+colormap turbo
+set(im, 'AlphaData', 1 - alpha_overlay); % Transparency decreases with alpha_map
+set(im, 'AlphaDataMapping', 'none'); % Prevent scaling of alpha
+clim([c_min,c_max])
+colorbar
+set(gca,'YDir','normal')
+xlim([0,1])
+ylim([0,1])
+hold on
+scatter(obj.physics_class.sensor_locs(:,1),obj.physics_class.sensor_locs(:,2),'wo','filled')
+scatter(obj.physics_class.sensor_locs(:,1),obj.physics_class.sensor_locs(:,2),'ko')
+hold off
+
+end
