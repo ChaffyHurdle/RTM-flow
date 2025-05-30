@@ -39,12 +39,18 @@ end
 % Remove duplicate rows 
 edgedata = unique(edgedata,'rows');
 
-% Compute unit outer normals 
+% Compute unit normals 
 edges = mesh_class.nodes(edgedata(:,2),:) - mesh_class.nodes(edgedata(:,3),:);
 normals = [-edges(:,2), edges(:,1)];
 normals = normals./vecnorm(normals')';
-neg_rows = normals(:, 1) < 0;
-normals(neg_rows, :) = -normals(neg_rows, :);
+
+% Point outwards
+edge_centres = obj.Delaunay_mesh_class.centroids(edgedata(:,1),:);
+edge_centres_to_midpoints = (obj.Delaunay_mesh_class.nodes(edgedata(:,2),:) + obj.Delaunay_mesh_class.nodes(edgedata(:,3),:))/2 - edge_centres;
+misaligned_inds = dot(edge_centres_to_midpoints,normals,2) < 0;
+
+%neg_rows = normals(:, 1) < 0;
+normals(misaligned_inds, :) = -normals(misaligned_inds, :);
 edgedata = [edgedata normals];
 
 end

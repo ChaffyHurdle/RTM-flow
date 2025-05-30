@@ -101,8 +101,8 @@ set(im, 'AlphaDataMapping', 'none'); % Prevent scaling of alpha
 clim([c_min,c_max])
 colorbar
 set(gca,'YDir','normal')
-xlim([0,1])
-ylim([0,1])
+xlim([-1,1])
+ylim([-1,1])
 hold on
 scatter(obj.physics_class.sensor_locs(:,1),obj.physics_class.sensor_locs(:,2),'wo','filled')
 scatter(obj.physics_class.sensor_locs(:,1),obj.physics_class.sensor_locs(:,2),'ko')

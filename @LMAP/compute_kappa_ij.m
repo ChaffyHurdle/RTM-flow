@@ -66,11 +66,13 @@ if t > 10
     % dkappa_dt = - (exp(u(candidate_elem_inds)) .* grad_p_dot_n') .* grad_lambda_dot_n';
     kappa_t_elem(candidate_elem_inds) = kappa_t_elem(candidate_elem_inds) - dt_vec(t)*dkappa_dt;
     
+    % ERROR HERE (edge data leaving gaps? Only t = 5 breaks)
     for i = 1:length(moving_boundary_inds)
         node_ind = moving_boundary_inds(i);
         rows_involving_node = any(edge_data{t}(:,2:3) == node_ind,2);
         bndry_cond(node_ind) = mean(kappa_t_elem(edge_data{t}(rows_involving_node,1)));
     end
+    %disp([t,anynan(bndry_cond)])
     
 end
 

@@ -58,7 +58,7 @@ for t = start_index:-1:1
     b_free = load_vector(free) - ...
                       stiffness_matrix_t(free,fixed)*lambda(fixed);
     A_free = stiffness_matrix_t(free,free);
-    
+
     % solve matrix equation for lambda_ij
     lambda(free) = A_free\b_free;
     lambda_ij(:,t) = lambda;

@@ -84,30 +84,29 @@ while ~converged & iterate < obj.max_iterations
     scaled_data_misfit = scaled_misfit_candidates(firstaccepted);
     obj.alpha = obj.alpha*obj.scale^(firstaccepted-1);
 
-    % figure(3)
-    % for j = round(5*length(candidate_RTM.edge_data)/10):length(candidate_RTM.edge_data)
-    %     plot(0,0)
-    %     hold on
-    %     for k = 1:length(candidate_RTM.edge_data{j})
-    %         plot([candidate_RTM.Delaunay_mesh_class.nodes(candidate_RTM.edge_data{j}(k,2),1), ...
-    %             candidate_RTM.Delaunay_mesh_class.nodes(candidate_RTM.edge_data{j}(k,3),1)],...
-    %             [candidate_RTM.Delaunay_mesh_class.nodes(candidate_RTM.edge_data{j}(k,2),2), ...
-    %             candidate_RTM.Delaunay_mesh_class.nodes(candidate_RTM.edge_data{j}(k,3),2)],'k-')
-    %         plot([(candidate_RTM.Delaunay_mesh_class.nodes(candidate_RTM.edge_data{j}(k,2),1) + candidate_RTM.Delaunay_mesh_class.nodes(candidate_RTM.edge_data{j}(k,3),1))/2, ...
-    %               (candidate_RTM.Delaunay_mesh_class.nodes(candidate_RTM.edge_data{j}(k,2),1) + candidate_RTM.Delaunay_mesh_class.nodes(candidate_RTM.edge_data{j}(k,3),1))/2 + candidate_RTM.edge_data{j}(k,4)/20], ...
-    %              [(candidate_RTM.Delaunay_mesh_class.nodes(candidate_RTM.edge_data{j}(k,2),2) + candidate_RTM.Delaunay_mesh_class.nodes(candidate_RTM.edge_data{j}(k,3),2))/2, ...
-    %               (candidate_RTM.Delaunay_mesh_class.nodes(candidate_RTM.edge_data{j}(k,2),2) + candidate_RTM.Delaunay_mesh_class.nodes(candidate_RTM.edge_data{j}(k,3),2))/2 + candidate_RTM.edge_data{j}(k,5)/20],'k-')
-    %     end
-    %     scatter(candidate_RTM.Delaunay_mesh_class.nodes(candidate_RTM.edge_data{j}(:,2),1),...
-    %             candidate_RTM.Delaunay_mesh_class.nodes(candidate_RTM.edge_data{j}(:,2),2),'b*')
-    %     scatter(candidate_RTM.Delaunay_mesh_class.nodes(candidate_RTM.moving_boundary(:,j),1),...
-    %             candidate_RTM.Delaunay_mesh_class.nodes(candidate_RTM.moving_boundary(:,j),2),'bo')
-    %     %plot(cos(0:pi/50:2*pi), sin(0:pi/50:2*pi),'r-');
-    %     xlim([0,1])
-    %     ylim([0,1])
-    %     hold off
-    %     drawnow
-    % end
+    figure(3)
+    for j = round(5*length(candidate_RTM.edge_data)/6):length(candidate_RTM.edge_data)
+        plot(0,0)
+        hold on
+        for k = 1:length(candidate_RTM.edge_data{j})
+            plot([candidate_RTM.Delaunay_mesh_class.nodes(candidate_RTM.edge_data{j}(k,2),1), ...
+                candidate_RTM.Delaunay_mesh_class.nodes(candidate_RTM.edge_data{j}(k,3),1)],...
+                [candidate_RTM.Delaunay_mesh_class.nodes(candidate_RTM.edge_data{j}(k,2),2), ...
+                candidate_RTM.Delaunay_mesh_class.nodes(candidate_RTM.edge_data{j}(k,3),2)],'k-')
+            plot([(candidate_RTM.Delaunay_mesh_class.nodes(candidate_RTM.edge_data{j}(k,2),1) + candidate_RTM.Delaunay_mesh_class.nodes(candidate_RTM.edge_data{j}(k,3),1))/2, ...
+                  (candidate_RTM.Delaunay_mesh_class.nodes(candidate_RTM.edge_data{j}(k,2),1) + candidate_RTM.Delaunay_mesh_class.nodes(candidate_RTM.edge_data{j}(k,3),1))/2 + candidate_RTM.edge_data{j}(k,4)/10], ...
+                [(candidate_RTM.Delaunay_mesh_class.nodes(candidate_RTM.edge_data{j}(k,2),2) + candidate_RTM.Delaunay_mesh_class.nodes(candidate_RTM.edge_data{j}(k,3),2))/2],'k-')
+        end
+        scatter(candidate_RTM.Delaunay_mesh_class.nodes(candidate_RTM.edge_data{j}(:,2),1),...
+                candidate_RTM.Delaunay_mesh_class.nodes(candidate_RTM.edge_data{j}(:,2),2),'b*')
+        scatter(candidate_RTM.Delaunay_mesh_class.nodes(candidate_RTM.moving_boundary(:,j),1),...
+                candidate_RTM.Delaunay_mesh_class.nodes(candidate_RTM.moving_boundary(:,j),2),'bo')
+        plot(cos(0:pi/50:2*pi), sin(0:pi/50:2*pi),'r-');
+        xlim([-1.1,1.1])
+        ylim([-1.1,1.1])
+        hold off
+        drawnow
+    end
 
     disp("Iterate: " + num2str(iterate) + ", Best J: " + num2str(J) + ", Current J: " + num2str(candidate_J) + ", J change: " + num2str(round(100*((candidate_J-J)/J),1)) + "%, Alpha: " + num2str(obj.alpha))
     
