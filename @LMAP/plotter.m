@@ -72,13 +72,15 @@ title("$C_{map}$",'interpreter','latex')
 %     clim([c_min,c_max])
 % end
 
+
+
+
 % Fog of war plot
 figure(2)
 centroid_x = obj.inverse_class.inv_mesh.centroids(:,1);
 centroid_y = obj.inverse_class.inv_mesh.centroids(:,2);
 
 % Compute distance-based transparency
-% Initialize transparency as ones (fully opaque)
 alpha_map = diag(C)/obj.inverse_class.matern_var;
 
 % Create an alpha overlay
@@ -89,8 +91,6 @@ zq = F(xq, yq);
 
 % Create an alpha overlay
 F = scatteredInterpolant(centroid_x, centroid_y, alpha_map, 'linear', 'none');
-[xq, yq] = meshgrid(linspace(0,1,1000), ...
-                    linspace(0,1,1000));
 alpha_overlay = F(xq, yq);
 
 % Plot the alpha overlay as an image
@@ -101,8 +101,8 @@ set(im, 'AlphaDataMapping', 'none'); % Prevent scaling of alpha
 clim([c_min,c_max])
 colorbar
 set(gca,'YDir','normal')
-xlim([-1,1])
-ylim([-1,1])
+xlim([0,1])
+ylim([0,1])
 hold on
 scatter(obj.physics_class.sensor_locs(:,1),obj.physics_class.sensor_locs(:,2),'wo','filled')
 scatter(obj.physics_class.sensor_locs(:,1),obj.physics_class.sensor_locs(:,2),'ko')
