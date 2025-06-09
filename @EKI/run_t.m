@@ -59,26 +59,23 @@ while (Cond==1)&&(iter<MAX)
         figure(1)
         subplot(1,3,1)
         pdeplot(obj.inverse_class.fwd_mesh.nodes',obj.inverse_class.fwd_mesh.elements',XYData=obj.inverse_class.u_true, ...
-            XYStyle='interp',ColorMap="jet",Mesh="off")
+            XYStyle='interp',ColorMap="turbo",Mesh="off")
         clim([-1.5,1.5])
         subplot(1,3,2)
         pdeplot(mesh_class.nodes',mesh_class.elements',XYData=U_mean, ...
-            XYStyle='interp',ColorMap="jet",Mesh="off")
+            XYStyle='interp',ColorMap="turbo",Mesh="off")
         clim([-1.5,1.5])
         subplot(1,3,3)
         pdeplot(mesh_class.nodes',mesh_class.elements',XYData=var(U,0,2), ...
-            XYStyle='interp',ColorMap="jet",Mesh="off")
+            XYStyle='interp',ColorMap="turbo",Mesh="off")
         clim([0,0.25])
         drawnow
     end
     
 end
+obj.F_evals = iter*N_En;
 timer = toc
 obj.timer = timer;
 obj.ueki = U_mean;
 obj.Ceki = var(U,0,2);
-
-poolobj = gcp('nocreate');
-delete(poolobj);
-disp ' ... all done.'
 end

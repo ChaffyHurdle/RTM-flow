@@ -31,8 +31,8 @@ while ~converged & iterate < obj.max_iterations
 
     % Break through discrepancy principle
     dscrpncy = norm( (Sigma_minus_half * (reshape(obj.inverse_class.data(:,1:t),[],1) - reshape(obj.RTMflow_class.pressure_data(:,1:t),[],1))) )^2;
-    disp([dscrpncy,chi2inv(0.95,numel(obj.inverse_class.Sigma(:,1:t)))])
-    if dscrpncy < chi2inv(0.95,numel(obj.inverse_class.Sigma(:,1:t)))
+    disp([dscrpncy,chi2inv(0.1,numel(obj.inverse_class.Sigma(:,1:t)))])
+    if dscrpncy < chi2inv(0.1,numel(obj.inverse_class.Sigma(:,1:t)))
         disp("Converged through discrepancy")
         break
     end

@@ -22,6 +22,7 @@ classdef EKI
         ueki;
         Ceki;
         timer;
+        F_evals;
 
         ueki_seq;
         Ceki_seq;

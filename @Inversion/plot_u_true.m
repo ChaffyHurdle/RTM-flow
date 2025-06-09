@@ -12,7 +12,7 @@ title('Heatmap of GP Sample');
 xlabel('x');
 ylabel('y');
 title("True log-permeability")
-clim([-1.5,1.5])
+%clim([-1.5,1.5])
 %xlim([0,1])
 %ylim([0,1])
 

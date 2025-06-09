@@ -53,14 +53,10 @@ end
 
 %% Physics and pressure set up
 K_true = exp(my_inverse.u_true);
-sensor_list = [3,4,5];
+sensor_list = [3,5,7,9,15];
 it = 0;
+my_lmap_list = cell(1,length(sensor_list));
 
-figure(1)
-subplot(length(sensor_list)+1,6,6);
-pdeplot(my_forward_mesh.nodes',my_forward_mesh.elements', ...
-    XYData=my_inverse.u_true,XYStyle='interp',Mesh='off')
-colorbar off
 for sqrtN = sensor_list
     disp(sqrtN)
 
@@ -87,24 +83,65 @@ for sqrtN = sensor_list
     my_inverse = my_inverse.generate_data(true_RTMflow.pressure_data,0.005);
     my_lmap = LMAP(my_inverse,my_darcy,1e3,2,0.03,0.03,polar);
     my_lmap = my_lmap.run();
+    my_lmap_list{it+1} = my_lmap;
 
-    subplot(length(sensor_list)+1,6,6*it+1 + 6)
+    it = it + 1;
+end
+
+
+%% Save
+for i = 1:length(sensor_list)
+    mean_file_name = strcat('Case1/SensorDensity/Example2/means',num2str(sensor_list(i)^2),'.mat');
+    var_file_name = strcat('Case1/SensorDensity/Example2/vars',num2str(sensor_list(i)^2),'.mat');
+    timer_file_name = strcat('Case1/SensorDensity/Example2/timers',num2str(sensor_list(i)^2),'.mat');
+    my_lmap = my_lmap_list{it};
+    means = my_lmap.umap_seq;
+    timers = my_lmap.timer_seq;
+    vars = zeros(size(means));
+    for j = 1:5
+        vars(:,j) = diag(my_lmap.Cmap_seq(:,:,j));
+    end
+    save(mean_file_name,"means")
+    save(var_file_name,"vars")
+    save(timer_file_name,"timers")
+end
+
+%% Plot 
+figure(3)
+subplot(length(sensor_list)+1,6,6);
+pdeplot(my_forward_mesh.nodes',my_forward_mesh.elements', ...
+    XYData=my_inverse.u_true,XYStyle='interp',Mesh='off')
+clim([min(log(K_true),[],'all') max(log(K_true),[],'all')])
+title('$u^\dagger$','interpreter','latex')
+colorbar off
+
+for i = 1:length(sensor_list)
+    my_lmap = my_lmap_list{i};
+    subplot(length(sensor_list)+1,6,6*(i-1)+1 + 6)
     plot(1,1)
-    scatter(sensor_locs(:,1),sensor_locs(:,2),'k','filled')
+    scatter(my_lmap.physics_class.sensor_locs(:,1), ...
+            my_lmap.physics_class.sensor_locs(:,2),4,'k','filled')
+    axis on
+    box on
     xlim([0,1])
     ylim([0,1])
+    if i == 1
+        title('Sensors','interpreter','latex')
+    end
 
     % Fog plot
     for j = 1:5
-        subplot(length(sensor_list)+1,6,6*it+j+1+6);
-        ax(it+1,j) = plot_fog(my_lmap,true_RTMflow,j);
+        subplot(length(sensor_list)+1,6,6*(i-1)+j+1+6);
+        ax(i,j) = plot_fog(my_lmap,true_RTMflow,j);
+        clim([min(log(K_true),[],'all') max(log(K_true),[],'all')])
+        if i == 1
+            title(sprintf('$t_{%d}$', j),'interpreter','latex')
+        end
     end
-    it = it + 1;
 end
 
 ax_handle = ancestor(ax(1,end), 'axes');
 colormap(ax_handle,'turbo');
 pos = get(subplot(length(sensor_list)+1,6,(length(sensor_list)+1)*6),'Position');
-h = colorbar('Position', [pos(1)+pos(3)+0.02  pos(2)  pos(3)/10  pos(4)*5.2]);
+h = colorbar('Position', [pos(1)+pos(3)+0.02  pos(2)  pos(3)/10  pos(4)*6.55]);
 clim([min(log(K_true),[],'all') max(log(K_true),[],'all')])
-

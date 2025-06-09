@@ -38,8 +38,8 @@ my_inverse = Inversion(my_forward_mesh,my_inverse_mesh,matern_args);
 %% Generate new true permeability, if wanted
 
 % Pull previous example:
-% u_mat = load("path_to_your_log_permeability_file.mat");
-% my_inverse.u_true = u_mat.u;
+K_mat = load("Case1/Comparison/Example1/K_true.mat");
+my_inverse.u_true = log(K_mat.K_true);
 
 % Generate new permeability
 while true
@@ -75,30 +75,47 @@ true_RTMflow = true_RTMflow.run(inf);
 if T > true_RTMflow.time
     disp('T greater than tau')
 end
+
+t_ind = find(true_RTMflow.times > my_darcy.observation_times(5),1,'first');
+plot(1,1)
+hold on
+plot_front(true_RTMflow,t_ind)
+hold off
+xlim([0,1])
+ylim([0,1])
 %% Generate random data for inverse problem
 my_inverse = my_inverse.generate_data(true_RTMflow.pressure_data,0.005);
 
 %% Perform LMAP (all times)
-my_lmap = LMAP(my_inverse,my_darcy,1e3,2,0.03,0.03,polar);
+my_lmap = LMAP(my_inverse,my_darcy,1e3,10,0.03,0.03,polar);
 my_lmap = my_lmap.run();
 
-save(strcat(folder_path,'/lmap_seq.mat'), 'my_lmap')
-
+%u_true = log(K_true);
+%save(strcat(folder_path,'/Comparison/u1.mat'), 'u_true')
 plot_LMAP_seq(my_forward_mesh, my_inverse_mesh, my_darcy, ...
     true_RTMflow,my_lmap)
 
 %% Plot push forward example
-
 u_samples = mvnrnd(my_lmap.umap_seq(:,end),my_lmap.Cmap_seq(:,:,end),1000);
 [pressures,flow_fronts] = push_forward(u_samples, my_darcy, my_inverse_mesh);
 perturbed_pressures = pressures + normrnd(0,1,size(pressures)).*sqrt(my_inverse.Sigma(:)');
 plot_push_forward(perturbed_pressures, flow_fronts, my_darcy, my_inverse_mesh, true_RTMflow)
 
 %% Perform EKI
-my_eki = EKI(my_inverse,my_darcy,1000);
-my_eki = my_eki.run_t(5);
+my_eki500 = EKI(my_inverse,my_darcy,500);
+my_eki500 = my_eki500.run_t(5);
 
-plot_LMAP_vs_EKI(true_RTMflow,my_forward_mesh,my_inverse_mesh,my_darcy,my_lmap,my_eki)
+my_eki1000 = EKI(my_inverse,my_darcy,1000);
+my_eki1000 = my_eki1000.run_t(5);
+
+my_eki5000 = EKI(my_inverse,my_darcy,5000);
+my_eki5000 = my_eki5000.run_t(5);
+
+plot_LMAP_vs_EKI(true_RTMflow,my_forward_mesh,my_inverse_mesh,my_darcy, ...
+    lmap_mean,lmap_var, ...
+    eki_mean500,eki_var500, ...
+    eki_mean1000,eki_var1000, ...
+    eki_mean5000,eki_var5000)
 
 %% Perform MCMC
 pool = gcp();
