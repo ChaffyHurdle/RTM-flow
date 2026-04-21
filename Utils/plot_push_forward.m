@@ -5,6 +5,8 @@ function p = plot_push_forward(pressures, flow_fronts, physics_class, mesh_class
 sensor_locs_inds = [1,7,13,19,25];
 figure(9)
 
+%% Plot pressures
+
 for i=1:5
     subplot(2,5,i)
     s = sensor_locs_inds(i);
@@ -18,35 +20,8 @@ for i=1:5
     title(sprintf('$p(%.1f, %.1f)+\\eta$', physics_class.sensor_locs(s,1), physics_class.sensor_locs(s,2)), 'Interpreter', 'latex')
 end
 
-% subplot(2,5,[1,2,3,4,5])
-% 
-% [nObs, ~] = size(pressures);
-% M = physics_class.nobservations;
-% N = physics_class.nsensors;
-% 
-% % Flatten to vector for plotting
-% data_vector = pressures(:);
-% 
-% % Group IDs: 1 to M repeated N times for each column group
-% group_ids = repelem(1:N, M);
-% group_ids = repmat(group_ids, nObs, 1);
-% group_ids = group_ids(:);
-% 
-% % Within-group position (1–N)
-% within_group_pos = repmat(1:M, 1, N);
-% within_group_pos = repmat(within_group_pos, nObs, 1);
-% within_group_pos = within_group_pos(:);
-% 
-% % Plot with boxchart
-% boxchart(categorical(group_ids), data_vector, 'GroupByColor', within_group_pos,'MarkerStyle','none');
-% hold on
-% scatter(0.6:0.2:25.4,reshape(transpose(true_RTMflow.pressure_data),[],1),'r')
-% hold off
-% xlabel('Sensor');
-% ylabel('Pressure');
-% legend('t_1','t_2','t_3','t_4','t_5');
-% 
 
+%% Plot front locations
 for i=1:5
     t_index = find(true_RTMflow.times > physics_class.observation_times(i),1)-1;
     subplot(2,5,5+i)

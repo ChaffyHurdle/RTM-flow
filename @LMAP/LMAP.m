@@ -48,20 +48,19 @@ classdef LMAP
 
     methods
 
-        function obj = LMAP(inverse_class,physics_class,alpha0,scale,tolU,tolJ,polar)
+        function obj = LMAP(inverse_class,physics_class,alpha0,scale,tolU,tolJ)
             
-            % Forward simulation
+            % Initial forward simulation
             obj.inverse_class = inverse_class;
             obj.mesh_class = inverse_class.inv_mesh;
             obj.physics_class = physics_class;
             obj.physics_class.permeability = exp(inverse_class.u0)';
             obj.pressure_class = Pressure(obj.mesh_class,obj.physics_class);
-            RTMflow_class = RTMFlow(obj.mesh_class,obj.physics_class,obj.pressure_class,polar);
+            RTMflow_class = RTMFlow(obj.mesh_class,obj.physics_class,obj.pressure_class,1);
             RTMflow_class = RTMflow_class.run(inf);
             obj.RTMflow_class = RTMflow_class;
             
             % Dirac delta
-            obj.sigma_delta_t = 0.0018/1000;
             obj.delta_t = @(t_i,t,delt_t) exp(-abs(t-t_i).^2/(2*delt_t))/sqrt(2*pi*delt_t);
            
             % LMAP

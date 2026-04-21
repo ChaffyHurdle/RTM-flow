@@ -6,16 +6,14 @@ num_nodes = obj.mesh_class.num_nodes;
 num_times = length(obj.RTMflow_class.times);
 nobs = t;
 nsensors = obj.physics_class.nsensors;
+obj_data = obj;
 
 % Initialise outputs
 lambda_mat = zeros(num_nodes,num_times, nobs * nsensors);
 R_mat = zeros(num_elems, nobs * nsensors);
 Q_mat = zeros(num_elems, nobs * nsensors);
 
-% Send data to all workers
-obj_data = obj;
-
-% Find all non-trivial indices
+% Find all non-trivial indices (source term activates in saturated region)
 active_sensors = zeros(1,nobs*nsensors);
 for k = 1:nobs*nsensors
     i = obj_data.i_vec(k);
@@ -26,6 +24,9 @@ for k = 1:nobs*nsensors
     active_sensors(k) = ismember(x_i_sensor_elem,find(obj_data.RTMflow_class.all_active_elements(:,time_index)));
 end
 
+% Manual CPU scheduler. Matlab's parfor otherwise distributes jobs
+% unequally to each core (e.g., one core may get lots of t_5 adjoint solves,
+% while others get lots of time t_1 adjoint solves and sit idly once complete).
 active_inds = find(active_sensors);
 active_times = obj_data.j_vec(active_inds);
 [~,sorted_active_times_inds] = sort(active_times,'descend');
@@ -33,19 +34,17 @@ sorted_inds = active_inds(sorted_active_times_inds);
 num_taken = cpu_scheduler(obj_data,active_sensors);
 cum_sum_num_taken = cumsum(num_taken);
 
-% Creat sub-matrices of active indices
+% Create sub-matrices of active indices
 active_lambda_mat = zeros(num_nodes,num_times, length(active_inds));
 active_R_mat = zeros(num_elems, length(active_inds));
 active_Q_mat = zeros(num_elems, length(active_inds));
 
 for i = 1:length(num_taken)-1
-    disp("Starting parfor " + num2str(i))
     parfor k = cum_sum_num_taken(i)+1 : min(cum_sum_num_taken(i+1),length(sorted_inds))
         idx = sorted_inds(k);
         i = obj_data.i_vec(idx);
         j = obj_data.j_vec(idx);
         [lambda_ij,grad_lambda_ij] = compute_lambda_ij(i,j,obj_data);
-        disp([i,j,anynan(lambda_ij)])
         active_lambda_mat(:,:,k) = lambda_ij;
         Q_ij = compute_representer_ij(grad_lambda_ij,obj_data);
         R_ij = obj_data.inverse_class.C0_inv * (Q_ij' .* obj_data.mesh_class.element_areas);
@@ -53,7 +52,6 @@ for i = 1:length(num_taken)-1
         active_R_mat(:,k) = R_ij;
     end
 end
-disp("Finished parfor")
 
 % Add nonzero sub-matrix parts to overall matrix
 for k = 1 : length(sorted_inds)

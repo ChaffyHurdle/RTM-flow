@@ -1,15 +1,14 @@
 function obj = run_t(obj,t)
 
-% Initialise quantities
+% Various shorthands
 converged = 0;
 iterate = 1;
-do_over = 0;
 u = obj.u0;
 physics_class = obj.physics_class;
 mesh_class = obj.mesh_class;
 C = obj.inverse_class.C0_inv;
 Sigma = diag(reshape(obj.inverse_class.Sigma(:,1:t),[],1));
-Sigma_minus_half = diag(1./sqrt(reshape(obj.inverse_class.Sigma(:,1:t),[],1)));
+n_fwds = 5;
 
 % Storage vectors
 u_iterations = zeros(obj.mesh_class.num_elements,obj.max_iterations);
@@ -17,7 +16,6 @@ J_iterations = zeros(1,obj.max_iterations);
 data_misfit_iterations = zeros(1,obj.max_iterations);
 execution_times = zeros(1,obj.max_iterations);
 best_alpha = obj.alpha;
-polar = obj.RTMflow_class.polar;
 
 % Evaluate posterior cost function at u0
 [J,scaled_misfit_J] = obj.evaluate_cost_function_t(u,obj.RTMflow_class,t);
@@ -25,39 +23,31 @@ u_iterations(:,1) = u;
 J_iterations(1) = J;
 data_misfit_iterations(1) = scaled_misfit_J;
 execution_times(1) = 0;
+start_time = tic;
 
 % Start loop
 while ~converged & iterate < obj.max_iterations
 
-    % Break through discrepancy principle
-    dscrpncy = norm( (Sigma_minus_half * (reshape(obj.inverse_class.data(:,1:t),[],1) - reshape(obj.RTMflow_class.pressure_data(:,1:t),[],1))) )^2;
-    disp([dscrpncy,chi2inv(0.1,numel(obj.inverse_class.Sigma(:,1:t)))])
-    if dscrpncy < chi2inv(0.1,numel(obj.inverse_class.Sigma(:,1:t)))
-        disp("Converged through discrepancy")
-        break
-    end
-
     % Solve adjoint equations, compute representers
-    start_time = tic;
-    obj = obj.parallel_computations_t(t); % Compute \lambda, \mathbb{R}, \mathcal{R}, d
+    obj = obj.parallel_computations_t(t); % Computes \lambda, \mathbb{R}, \mathcal{R}, d
 
     % Update u_{k} -> u_{k+1}
-    h = obj.compute_h_t(t);
-    h_accepted = zeros(1,5);
-    RTM_candidates = cell(1,5);
-    pressure_candidates = cell(1,5);
-    physics_candidates = cell(1,5);
-    J_candidates = zeros(1,5);
-    scaled_misfit_candidates = zeros(1,5);
+    h = obj.compute_h_t(t,n_fwds);
+    h_accepted = zeros(1,n_fwds);
+    RTM_candidates = cell(1,n_fwds);
+    pressure_candidates = cell(1,n_fwds);
+    physics_candidates = cell(1,n_fwds);
+    J_candidates = zeros(1,n_fwds);
+    scaled_misfit_candidates = zeros(1,n_fwds);
 
-    parfor i = 1:5
+    parfor i = 1:n_fwds
         candidate_u = u + h(:,i)';
     
         % Run simulation and check if cost function improved
         candidate_physics = physics_class;
         candidate_physics.permeability = exp(candidate_u');
         candidate_pressure = Pressure(mesh_class,candidate_physics);
-        candidate_RTM = RTMFlow(mesh_class,candidate_physics,candidate_pressure,polar);
+        candidate_RTM = RTMFlow(mesh_class,candidate_physics,candidate_pressure,1);
         candidate_RTM = candidate_RTM.run(physics_class.observation_times(t));
         [candidate_J,scaled_data_misfit] = obj.evaluate_cost_function_t(candidate_u,candidate_RTM,t);
 
@@ -71,10 +61,15 @@ while ~converged & iterate < obj.max_iterations
     end
 
     if sum(h_accepted) == 0
-        disp("Converged through patience (failed to improve).")
+        time_elapsed = toc(start_time);
+        execution_times(iterate+1) = time_elapsed;
+        disp("Converged through patience.")
         break
     end
+
+    % Choose step
     firstaccepted = find(h_accepted, 1, 'first');
+    %[~,firstaccepted] = min(J_candidates);
     h = h(:,firstaccepted)';
     candidate_u = u + h;
     candidate_RTM = RTM_candidates{firstaccepted};
@@ -84,34 +79,9 @@ while ~converged & iterate < obj.max_iterations
     scaled_data_misfit = scaled_misfit_candidates(firstaccepted);
     obj.alpha = obj.alpha*obj.scale^(firstaccepted-1);
 
-    % figure(3)
-    % for j = round(5*length(candidate_RTM.edge_data)/10):length(candidate_RTM.edge_data)
-    %     plot(0,0)
-    %     hold on
-    %     for k = 1:length(candidate_RTM.edge_data{j})
-    %         plot([candidate_RTM.Delaunay_mesh_class.nodes(candidate_RTM.edge_data{j}(k,2),1), ...
-    %             candidate_RTM.Delaunay_mesh_class.nodes(candidate_RTM.edge_data{j}(k,3),1)],...
-    %             [candidate_RTM.Delaunay_mesh_class.nodes(candidate_RTM.edge_data{j}(k,2),2), ...
-    %             candidate_RTM.Delaunay_mesh_class.nodes(candidate_RTM.edge_data{j}(k,3),2)],'k-')
-    %         plot([(candidate_RTM.Delaunay_mesh_class.nodes(candidate_RTM.edge_data{j}(k,2),1) + candidate_RTM.Delaunay_mesh_class.nodes(candidate_RTM.edge_data{j}(k,3),1))/2, ...
-    %               (candidate_RTM.Delaunay_mesh_class.nodes(candidate_RTM.edge_data{j}(k,2),1) + candidate_RTM.Delaunay_mesh_class.nodes(candidate_RTM.edge_data{j}(k,3),1))/2 + candidate_RTM.edge_data{j}(k,4)/20], ...
-    %              [(candidate_RTM.Delaunay_mesh_class.nodes(candidate_RTM.edge_data{j}(k,2),2) + candidate_RTM.Delaunay_mesh_class.nodes(candidate_RTM.edge_data{j}(k,3),2))/2, ...
-    %               (candidate_RTM.Delaunay_mesh_class.nodes(candidate_RTM.edge_data{j}(k,2),2) + candidate_RTM.Delaunay_mesh_class.nodes(candidate_RTM.edge_data{j}(k,3),2))/2 + candidate_RTM.edge_data{j}(k,5)/20],'k-')
-    %     end
-    %     scatter(candidate_RTM.Delaunay_mesh_class.nodes(candidate_RTM.edge_data{j}(:,2),1),...
-    %             candidate_RTM.Delaunay_mesh_class.nodes(candidate_RTM.edge_data{j}(:,2),2),'b*')
-    %     scatter(candidate_RTM.Delaunay_mesh_class.nodes(candidate_RTM.moving_boundary(:,j),1),...
-    %             candidate_RTM.Delaunay_mesh_class.nodes(candidate_RTM.moving_boundary(:,j),2),'bo')
-    %     %plot(cos(0:pi/50:2*pi), sin(0:pi/50:2*pi),'r-');
-    %     xlim([0,1])
-    %     ylim([0,1])
-    %     hold off
-    %     drawnow
-    % end
-
     disp("Iterate: " + num2str(iterate) + ", Best J: " + num2str(J) + ", Current J: " + num2str(candidate_J) + ", J change: " + num2str(round(100*((candidate_J-J)/J),1)) + "%, Alpha: " + num2str(obj.alpha))
     
-    if (abs(candidate_J - J)/abs(J) <= obj.tol1 || max((u - candidate_u)./max(u)) <= obj.tol2) && iterate > 5
+    if (abs(candidate_J - J)/abs(J) <= obj.tol2 || max((u - candidate_u)./max(u)) <= obj.tol1) && iterate > 5
         disp("Converged through stopping criterion.")
         converged = 1;
     end
@@ -132,7 +102,7 @@ while ~converged & iterate < obj.max_iterations
     obj.physics_class = candidate_physics;
     obj.pressure_class = candidate_pressure;
     obj.RTMflow_class = candidate_RTM;
-    C_post = C - obj.R*inv(obj.tildePmat + (1+obj.alpha)*Sigma)*obj.R';
+    C_post = C - obj.R*((obj.tildePmat + (1+obj.alpha)*Sigma)\obj.R');
 
     obj.alpha = obj.alpha/obj.scale;
     iterate = iterate + 1;
@@ -142,10 +112,11 @@ while ~converged & iterate < obj.max_iterations
         
 end
 
+% Save data 
 obj.u_map = u;
-obj.C_map = C - obj.R*inv(obj.tildePmat + Sigma)*obj.R';
+obj.C_map = C - obj.R*((obj.tildePmat + Sigma)\obj.R');
 obj.u_iterations = u_iterations(:,1:iterate);
 obj.J_iterations = J_iterations(1:iterate);
 obj.scaled_data_misfit = data_misfit_iterations(1:iterate);
-obj.execution_times = execution_times(1:iterate);
+obj.execution_times = [0,execution_times(execution_times>0)];
 obj.best_alpha = best_alpha;

@@ -2,7 +2,6 @@ function obj = run(obj,t)
 
 mesh = obj.Delaunay_mesh_class;
 observation_times = obj.physics_class.observation_times;
-sensor_inds_mesh = obj.sensor_inds_on_mesh;
 t_index = 1;
 p_old = obj.pressure_class.pressure;
 p_old_at_sensors = interpolate_pressures(p_old,obj,mesh);
@@ -49,25 +48,27 @@ while ~obj.is_fully_saturated() && obj.time <= min(obj.physics_class.T,1.1*t)
     %% Save data to object (each time)
     p_new = obj.pressure_class.pressure;
     p_new_at_sensors = interpolate_pressures(p_new,obj,mesh);
-    Q_new = obj.volume_rates_of_flow;
-    filling_facs_new = obj.volume_fill_percentage;
-    p_gradients_new = obj.pressure_class.pressure_gradient;
-    stiffness = obj.pressure_class.stiffness_matrix;
-    Dirichlets = obj.pressure_class.is_Dirichlet;
-    active_nodes = obj.pressure_class.is_node_active;
-    active_elements = obj.active_elements;
-    new_active_elements = obj.pressure_class.new_active_elements;
-    new_filled_volume = obj.new_filled_volume;
-    if it > 4
-        edge_data = obj.extract_edge_data();
-    else
-        edge_data = 0;
+
+    if obj.adjoint
+        Q_new = obj.volume_rates_of_flow;
+        filling_facs_new = obj.volume_fill_percentage;
+        p_gradients_new = obj.pressure_class.pressure_gradient;
+        stiffness = obj.pressure_class.stiffness_matrix;
+        Dirichlets = obj.pressure_class.is_Dirichlet;
+        active_nodes = obj.pressure_class.is_node_active;
+        active_elements = obj.active_elements;
+        new_active_elements = obj.pressure_class.new_active_elements;
+        new_filled_volume = obj.new_filled_volume;
+        if it >= 5 % avoids bug where normals are attempted before elements active
+            edge_data = obj.extract_edge_data();
+        else
+            edge_data = 0;
+        end
+    
+        obj = obj.add_data_all_times(it,t_new,p_new,...
+            p_gradients_new,Q_new,filling_facs_new,...
+            stiffness,active_nodes,Dirichlets,active_elements,new_active_elements,new_filled_volume,edge_data);
     end
-
-    obj = obj.add_data_all_times(it,t_new,p_new,...
-        p_gradients_new,Q_new,filling_facs_new,...
-        stiffness,active_nodes,Dirichlets,active_elements,new_active_elements,new_filled_volume,edge_data);
-
     %% Update domain
     obj = obj.update_computational_domain();
 
@@ -76,40 +77,31 @@ while ~obj.is_fully_saturated() && obj.time <= min(obj.physics_class.T,1.1*t)
     if t_index <= length(observation_times)
         if (observation_times(t_index) > t_old) && (observation_times(t_index) < t_new)
             observation_time = observation_times(t_index);
-            %disp([t_old,observation_time,t_new])
             obj.pressure_data(:,t_index) ...
                 = p_old_at_sensors + ...
                 ((observation_time - t_old)/dt)*(p_new_at_sensors - p_old_at_sensors);
             t_index = t_index + 1;
             %obj.visualise_class.plot(obj);
         end
-
-    %else
-    %    break
     end
     
-    p_old = p_new;
     p_old_at_sensors = p_new_at_sensors;
     t_old = t_new;
 end
 
 obj.wall_time = toc;
-%disp("Wall-time elapsed: " + num2str(obj.wall_time) + ' s')
 
-% if t_index <= length(observation_times)
-%     obj.pressure_data(:,t_index:end) = p_new(sensor_inds_mesh);
-% end
-
-obj.times = obj.times(1:it);
-obj.pressures = obj.pressures(:,1:it);
-obj.flow_rates = obj.flow_rates(:,1:it);
-obj.filling_factors = obj.filling_factors(:,1:it);
-obj.active_nodes = obj.active_nodes(:,1:it);
-obj.Dirichlet_nodes = obj.Dirichlet_nodes(:,1:it) ;
-obj.all_active_elements = obj.all_active_elements(:,1:it);
-obj.all_new_active_elements = obj.all_new_active_elements(:,1:it);
-obj.moving_boundary = obj.active_nodes & obj.Dirichlet_nodes & ~obj.pressure_class.is_inlet;
-
+if obj.adjoint
+    obj.times = obj.times(1:it);
+    obj.pressures = obj.pressures(:,1:it);
+    obj.flow_rates = obj.flow_rates(:,1:it);
+    obj.filling_factors = obj.filling_factors(:,1:it);
+    obj.active_nodes = obj.active_nodes(:,1:it);
+    obj.Dirichlet_nodes = obj.Dirichlet_nodes(:,1:it) ;
+    obj.all_active_elements = obj.all_active_elements(:,1:it);
+    obj.all_new_active_elements = obj.all_new_active_elements(:,1:it);
+    obj.moving_boundary = obj.active_nodes & obj.Dirichlet_nodes & ~obj.pressure_class.is_inlet;
+end
 end
 
 %% The following functions are designed to interpolate pressure at sensor locations

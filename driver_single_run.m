@@ -7,9 +7,9 @@ parpool('Threads');
 addpath('Utils')
 
 %% Set case study number and load meshes and sensor locs
-case_study = 1;
+case_study = 1; % 1: square, 2: fork, 3: annulus
 
-% Add all relevant meshes and sensor locations
+% Add all relevant meshes and sensor locations as variables
 folder_path = strcat('Case',num2str(case_study));
 mesh_sensor_path = strcat(folder_path,'/meshes_sensors');
 files = dir(fullfile(mesh_sensor_path, '*.mat'));
@@ -21,9 +21,8 @@ for k = 1:length(files)
     assignin('base', name, tmp.(var_names{1}));
 end
 
-% Load inlet/outlet function.
-% polar = true for radial flow patterns (curvature computed differently)
-[inlet_func,vent_func,polar] = load_inlets_vents(case_study);
+% Load inlet/outlet functions
+[inlet_func,vent_func] = load_inlets_vents(case_study);
 
 %% Mesh set up (avoiding inverse crimes)
 my_forward_mesh = DelaunayMesh(p_fwd,e_fwd,t_fwd);
@@ -32,26 +31,27 @@ my_inverse_mesh = DelaunayMesh(p_inv,e_inv,t_inv);
 %% Load parameters (prior and Darcy flow). These can also be set manually.
 [matern_args,mu,phi,thickness,p_I,p_0,observation_times,T] = load_parameters(case_study);
 
-%% Inverse problem set up (~20 secs)
+%% Inverse problem set up (~10 secs)
 my_inverse = Inversion(my_forward_mesh,my_inverse_mesh,matern_args);
 
-%% Generate new true permeability, if wanted
+%% Generate new true permeability, or preload example
 
-% Pull previous example:
-K_mat = load("Case1/Comparison/Example1/K_true.mat");
+% Preload example
+K_mat = load(strcat(folder_path,'/Example1/K_true.mat'));
 my_inverse.u_true = log(K_mat.K_true);
+my_inverse.plot_u_true();
 
-% Generate new permeability
-while true
-    my_inverse = my_inverse.generate_u();
-    my_inverse.plot_u_true();
-    key_input = input("Confirm ('y') or sample again (any other key)");
-    if key_input == 'y'
-        break
-    end
-end
+% % Generate new permeability
+% while true
+%     my_inverse = my_inverse.generate_u();
+%     my_inverse.plot_u_true();
+%     key_input = input("Confirm ('y') or sample again (any other key)");
+%     if key_input == 'y'
+%         break
+%     end
+% end
 
-%% Physics and pressure set up
+%% Instantiate physics and pressure classes
 sensor_locs = sensor_locs_25; % set to personal preference
 K_true = exp(my_inverse.u_true);
 my_darcy = Physics(mu, phi, thickness, ...
@@ -59,7 +59,7 @@ my_darcy = Physics(mu, phi, thickness, ...
     K_true, sensor_locs, observation_times,T);
 my_pressure = Pressure(my_forward_mesh,my_darcy);
 
-% Plot experimental setup
+%% Plot experimental setup
 figure(1)
 my_inverse.plot_u_true()
 hold on
@@ -69,34 +69,41 @@ ylim([min(my_forward_mesh.nodes(:,2)),max(my_forward_mesh.nodes(:,2))])
 hold off
 
 %% RTM true simulation (on fine forward mesh)
-true_RTMflow = RTMFlow(my_forward_mesh,my_darcy,my_pressure,polar);
+adjoint = 1; % Set to 1 if using LMAP, 0 if using EKI/MCMC
+true_RTMflow = RTMFlow(my_forward_mesh,my_darcy,my_pressure,adjoint);
 true_RTMflow = true_RTMflow.run(inf);
 
-if T > true_RTMflow.time
-    disp('T greater than tau')
-end
-
-t_ind = find(true_RTMflow.times > my_darcy.observation_times(5),1,'first');
-plot(1,1)
-hold on
-plot_front(true_RTMflow,t_ind)
-hold off
-xlim([0,1])
-ylim([0,1])
 %% Generate random data for inverse problem
-my_inverse = my_inverse.generate_data(true_RTMflow.pressure_data,0.005);
+noise_level = 0.005;
+my_inverse = my_inverse.generate_data(true_RTMflow.pressure_data,noise_level);
 
 %% Perform LMAP (all times)
-my_lmap = LMAP(my_inverse,my_darcy,1e3,10,0.03,0.03,polar);
-my_lmap = my_lmap.run();
+alpha0 = 1e3; scale = 5; tol_U = 0.025; tol_J = 0.025;
+my_lmap = LMAP(my_inverse,my_darcy,alpha0,scale,tol_U,tol_J);
+my_lmap = my_lmap.run_t(5);
 
-%u_true = log(K_true);
-%save(strcat(folder_path,'/Comparison/u1.mat'), 'u_true')
-plot_LMAP_seq(my_forward_mesh, my_inverse_mesh, my_darcy, ...
-    true_RTMflow,my_lmap)
+plot_LMAP_seq(my_forward_mesh, my_inverse_mesh, my_darcy, true_RTMflow, my_lmap)
+
+%% Save data
+lmap_means = my_lmap.umap_seq;
+lmap_vars = zeros(size(lmap_means));
+lmap_times = my_lmap.timer_seq;
+for j = 1:5
+    lmap_vars(:,j) = diag(my_lmap.Cmap_seq(:,:,j));
+end
+for j = 1:5
+    t_index = find(true_RTMflow.times > my_darcy.observation_times(j),1)-1;
+    edge_data_t = true_RTMflow.edge_data{t_index};
+    nodes_t = edge_data_t(:,2:3);
+    save(strcat(folder_path,'/Example2/front',num2str(j),'.mat'),"nodes_t")
+end
+save(strcat(folder_path,"/Example2/K_true.mat"),'K_true')
+save(strcat(folder_path,"/Example2/lmap_means.mat"),'lmap_means')
+save(strcat(folder_path,"/Example2/lmap_vars.mat"),'lmap_vars')
+save(strcat(folder_path,"/Example2/lmap_times.mat"),'lmap_times')
 
 %% Plot push forward example
-u_samples = mvnrnd(my_lmap.umap_seq(:,end),my_lmap.Cmap_seq(:,:,end),1000);
+u_samples = mvnrnd(my_lmap.umap_seq(:,end),my_lmap.Cmap_seq(:,:,end),500);
 [pressures,flow_fronts] = push_forward(u_samples, my_darcy, my_inverse_mesh);
 perturbed_pressures = pressures + normrnd(0,1,size(pressures)).*sqrt(my_inverse.Sigma(:)');
 plot_push_forward(perturbed_pressures, flow_fronts, my_darcy, my_inverse_mesh, true_RTMflow)
@@ -122,32 +129,3 @@ pool = gcp();
 numWorkers = pool.NumWorkers;
 my_mcmc = MCMC(my_inverse,my_darcy,100,numWorkers);
 my_mcmc = my_mcmc.run_t(5);
-
-%%
-% figure(3)
-% for j = round(14*length(true_RTMflow.edge_data)/15):length(true_RTMflow.edge_data)
-%     plot(0,0)
-%     hold on
-%     for k = 1:length(true_RTMflow.edge_data{j})
-%         plot([true_RTMflow.Delaunay_mesh_class.nodes(true_RTMflow.edge_data{j}(k,2),1), ...
-%             true_RTMflow.Delaunay_mesh_class.nodes(true_RTMflow.edge_data{j}(k,3),1)],...
-%             [true_RTMflow.Delaunay_mesh_class.nodes(true_RTMflow.edge_data{j}(k,2),2), ...
-%             true_RTMflow.Delaunay_mesh_class.nodes(true_RTMflow.edge_data{j}(k,3),2)],'k-')
-%         % plot([(true_RTMflow.Delaunay_mesh_class.nodes(true_RTMflow.edge_data{j}(k,2),1) + true_RTMflow.Delaunay_mesh_class.nodes(true_RTMflow.edge_data{j}(k,3),1))/2, ...
-%         %       (true_RTMflow.Delaunay_mesh_class.nodes(true_RTMflow.edge_data{j}(k,2),1) + true_RTMflow.Delaunay_mesh_class.nodes(true_RTMflow.edge_data{j}(k,3),1))/2 + true_RTMflow.edge_data{j}(k,4)/20], ...
-%         %      [(true_RTMflow.Delaunay_mesh_class.nodes(true_RTMflow.edge_data{j}(k,2),2) + true_RTMflow.Delaunay_mesh_class.nodes(true_RTMflow.edge_data{j}(k,3),2))/2, ...
-%         %       (true_RTMflow.Delaunay_mesh_class.nodes(true_RTMflow.edge_data{j}(k,2),2) + true_RTMflow.Delaunay_mesh_class.nodes(true_RTMflow.edge_data{j}(k,3),2))/2 + true_RTMflow.edge_data{j}(k,5)/20],'k-')
-%     end
-%     scatter(true_RTMflow.Delaunay_mesh_class.nodes(true_RTMflow.edge_data{j}(:,2),1),...
-%             true_RTMflow.Delaunay_mesh_class.nodes(true_RTMflow.edge_data{j}(:,2),2),'b*')
-%     % scatter(candidate_RTM.Delaunay_mesh_class.nodes(candidate_RTM.moving_boundary(:,j),1),...
-%     %         candidate_RTM.Delaunay_mesh_class.nodes(candidate_RTM.moving_boundary(:,j),2),'bo')
-%     tester = (boolean(true_RTMflow.active_nodes(:,j)) & boolean(true_RTMflow.Dirichlet_nodes(:,j))) | boolean(true_RTMflow.pressure_class.is_vent);
-%     scatter(true_RTMflow.Delaunay_mesh_class.nodes(tester,1),...
-%             true_RTMflow.Delaunay_mesh_class.nodes(tester,2),'bo')
-%     plot(cos(0:pi/50:2*pi), sin(0:pi/50:2*pi),'r-');
-%     xlim([-1.1,1.1])
-%     ylim([-1.1,1.1])
-%     hold off
-%     drawnow
-% end

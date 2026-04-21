@@ -22,8 +22,7 @@ for k = 1:length(files)
 end
 
 % Load inlet/outlet function.
-% polar = true for radial flow patterns (curvature computed differently)
-[inlet_func,vent_func,polar] = load_inlets_vents(case_study);
+[inlet_func,vent_func] = load_inlets_vents(case_study);
 
 %% Mesh set up (avoiding inverse crimes)
 my_forward_mesh = DelaunayMesh(p_fwd,e_fwd,t_fwd);
@@ -40,6 +39,7 @@ my_inverse = Inversion(my_forward_mesh,my_inverse_mesh,matern_args);
 % Pull previous example:
 % u_mat = load("path_to_your_log_permeability_file.mat");
 % my_inverse.u_true = u_mat.u;
+% my_inverse.plot_u_true();
 
 % Generate new permeability
 while true
@@ -73,15 +73,12 @@ for sqrtN = sensor_list
     p_I, p_0, inlet_func, vent_func, ...
     K_true, sensor_locs, observation_times,T);
     my_pressure = Pressure(my_forward_mesh,my_darcy);
-    true_RTMflow = RTMFlow(my_forward_mesh,my_darcy,my_pressure,polar);
+    true_RTMflow = RTMFlow(my_forward_mesh,my_darcy,my_pressure,1);
     true_RTMflow = true_RTMflow.run(inf);
-    if T > true_RTMflow.time
-        disp('T greater than tau')
-    end
 
     % Inverse problem
     my_inverse = my_inverse.generate_data(true_RTMflow.pressure_data,0.005);
-    my_lmap = LMAP(my_inverse,my_darcy,1e3,2,0.03,0.03,polar);
+    my_lmap = LMAP(my_inverse,my_darcy,1e3,5,0.025,0.025);
     my_lmap = my_lmap.run();
     my_lmap_list{it+1} = my_lmap;
 
@@ -91,10 +88,10 @@ end
 
 %% Save
 for i = 1:length(sensor_list)
-    mean_file_name = strcat('Case1/SensorDensity/Example2/means',num2str(sensor_list(i)^2),'.mat');
-    var_file_name = strcat('Case1/SensorDensity/Example2/vars',num2str(sensor_list(i)^2),'.mat');
-    timer_file_name = strcat('Case1/SensorDensity/Example2/timers',num2str(sensor_list(i)^2),'.mat');
-    my_lmap = my_lmap_list{it};
+    mean_file_name = strcat(folder_path,'/SensorDensity/Example3/means',num2str(sensor_list(i)^2),'.mat');
+    var_file_name = strcat(folder_path,'/SensorDensity/Example3/vars',num2str(sensor_list(i)^2),'.mat');
+    timer_file_name = strcat(folder_path,'/SensorDensity/Example3/timers',num2str(sensor_list(i)^2),'.mat');
+    my_lmap = my_lmap_list{i};
     means = my_lmap.umap_seq;
     timers = my_lmap.timer_seq;
     vars = zeros(size(means));
@@ -104,6 +101,15 @@ for i = 1:length(sensor_list)
     save(mean_file_name,"means")
     save(var_file_name,"vars")
     save(timer_file_name,"timers")
+end
+
+front_file_name = strcat(folder_path,'/SensorDensity/Example3/front.mat');
+
+for j = 1:5
+    t_index = find(true_RTMflow.times > my_darcy.observation_times(j),1)-1;
+    edge_data_t = true_RTMflow.edge_data{t_index};
+    nodes_t = edge_data_t(:,2:3);
+    save(strcat(folder_path,'/SensorDensity/Example3/front',num2str(j),'.mat'),"nodes_t")
 end
 
 %% Plot 

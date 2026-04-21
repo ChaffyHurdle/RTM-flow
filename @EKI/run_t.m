@@ -1,31 +1,32 @@
 function obj = run_t(obj,t)
 
-C_minus_half = obj.inverse_class.C0_minushalf;
+%% Runs EKI up to time t \in [1,2,3,4,5]
+
+% Various shorthands
 u = obj.inverse_class.u0;
-u_list = u;
 N_En = obj.J;
 U = mvnrnd(u,obj.inverse_class.C0_inv,N_En)';
 physics_class = obj.physics_class;
 mesh_class = obj.mesh_class;
-plotting = 1;
 
 Sigma = reshape(obj.inverse_class.Sigma(:,1:t),[],1);
 Sigma_minus_half = diag(1./sqrt(Sigma));
-Sigma = diag(Sigma);
 d = reshape(obj.inverse_class.data(:,1:t),[],1);
 
-M=length(d);
-U_mean=mean(U,2);
+M = length(d);
+U_mean = mean(U,2);
 
-t_vec(1)=0;
-Cond=1;
-MAX=obj.max_iterations;
-iter=0;
+t_vec(1) = 0;
+Cond = 1;
+MAX = obj.max_iterations;
+iter = 0;
 tic;
+
+% Start EKI
 while (Cond==1)&&(iter<MAX)
     iter=iter+1;
-    Z=zeros(M,N_En);
-    parfor en=1:N_En
+    Z = zeros(M,N_En);
+    parfor en = 1:N_En
         disp(en)
         K_true = exp(U(:,en));
         physics_class_en = physics_class;
@@ -55,24 +56,26 @@ while (Cond==1)&&(iter<MAX)
     U=U-C_RN*(C_tilde\W);
     U_mean=mean(U,2);
     t_vec(iter+1)=t_vec(iter)+1/alpha;
-    if plotting
-        figure(1)
-        subplot(1,3,1)
-        pdeplot(obj.inverse_class.fwd_mesh.nodes',obj.inverse_class.fwd_mesh.elements',XYData=obj.inverse_class.u_true, ...
-            XYStyle='interp',ColorMap="turbo",Mesh="off")
-        clim([-1.5,1.5])
-        subplot(1,3,2)
-        pdeplot(mesh_class.nodes',mesh_class.elements',XYData=U_mean, ...
-            XYStyle='interp',ColorMap="turbo",Mesh="off")
-        clim([-1.5,1.5])
-        subplot(1,3,3)
-        pdeplot(mesh_class.nodes',mesh_class.elements',XYData=var(U,0,2), ...
-            XYStyle='interp',ColorMap="turbo",Mesh="off")
-        clim([0,0.25])
-        drawnow
-    end
+    
+    % Plot iterate
+    figure(1)
+    subplot(1,3,1)
+    pdeplot(obj.inverse_class.fwd_mesh.nodes',obj.inverse_class.fwd_mesh.elements',XYData=obj.inverse_class.u_true, ...
+        XYStyle='interp',ColorMap="turbo",Mesh="off")
+    clim([-1.5,1.5])
+    subplot(1,3,2)
+    pdeplot(mesh_class.nodes',mesh_class.elements',XYData=U_mean, ...
+        XYStyle='interp',ColorMap="turbo",Mesh="off")
+    clim([-1.5,1.5])
+    subplot(1,3,3)
+    pdeplot(mesh_class.nodes',mesh_class.elements',XYData=var(U,0,2), ...
+        XYStyle='interp',ColorMap="turbo",Mesh="off")
+    clim([0,0.25])
+    drawnow
     
 end
+
+% Save data
 obj.F_evals = iter*N_En;
 timer = toc
 obj.timer = timer;

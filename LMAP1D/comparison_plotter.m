@@ -1,7 +1,5 @@
 function pl = comparison_plotter(u_map,C_map,U_EKI,U_RML,U_MCMC,params,experiment)
 
-fontsize = 20;
-title_fontsize = 25;
 hex = "#d3d3d3";
 
 figure(5)
@@ -119,25 +117,5 @@ xlim([0,1])
 ylim([0,1])
 legend("LMAP","EKI","RML","pcn-MCMC")
 title("Stds")
-
-lmap_mean = u_map';
-lmap_std = sqrt(diag(C_map)); 
-
-eki_mean = mean(U_EKI,2);
-eki_std = sqrt(var(U_EKI,0,2));
-
-rml_mean = mean(U_RML,2);
-rml_std = sqrt(var(U_RML,0,2));
-
-mcmc_mean = mean(U_MCMC,2);
-mcmc_std = sqrt(var(U_MCMC,0,2));
-
-disp( sqrt(params.dx*sum( (mcmc_mean - lmap_mean).^2 ))/sqrt(params.dx*sum( (mcmc_mean).^2 )) )
-disp( sqrt(params.dx*sum( (mcmc_mean - eki_mean).^2 ))/sqrt(params.dx*sum( (mcmc_mean).^2 )) )
-disp( sqrt(params.dx*sum( (mcmc_mean - rml_mean).^2 ))/sqrt(params.dx*sum( (mcmc_mean).^2 )) )
-
-disp( sqrt(params.dx*sum( (mcmc_std - lmap_std).^2 ))/sqrt(params.dx*sum( (mcmc_std).^2 )) )
-disp( sqrt(params.dx*sum( (mcmc_std - eki_std).^2 ))/sqrt(params.dx*sum( (mcmc_std).^2 )) )
-disp( sqrt(params.dx*sum( (mcmc_std - rml_std).^2 ))/sqrt(params.dx*sum( (mcmc_std).^2 )) )
 
 end

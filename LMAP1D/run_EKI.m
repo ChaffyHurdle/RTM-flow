@@ -1,16 +1,11 @@
 function [U,timer,iter] = run_EKI(u0,C,params,experiment,N_En,plotting)
 
-C_minus_half = inv(sqrtm(C));
-u_list = u0;
 U = mvnrnd(u0,C,N_En)';
 
 Sigma = reshape(experiment.Sigma,[],1);
 Sigma_minus_half = diag(1./sqrt(Sigma));
-Sigma = diag(Sigma);
 d = reshape(experiment.d,[],1);
-
 M=length(d);
-
 
 delete(gcp('nocreate'))
 i=10;

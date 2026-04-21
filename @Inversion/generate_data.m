@@ -1,5 +1,7 @@
 function obj = generate_data(obj,pressure_data,sigma0)
 
+% Generates noise-corrupted data from noise-free data
+
 obj.pressure_noiseless = pressure_data;
 
 pressure_transformed = pressure_data - min(pressure_data);

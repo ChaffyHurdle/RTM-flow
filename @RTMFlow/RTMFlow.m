@@ -40,8 +40,7 @@ classdef RTMFlow
         all_new_active_elements;
         new_filled_volumes;
         edge_data;
-        polar;
-        curvatures;
+        adjoint;
 
         %% Tracking
         volume_fill_percentage;
@@ -55,7 +54,7 @@ classdef RTMFlow
     methods
     %% CVFEM class methods
 
-    function obj = RTMFlow(Delaunay_mesh_class,physics_class,pressure_class,polar)
+    function obj = RTMFlow(Delaunay_mesh_class,physics_class,pressure_class,adjoint)
             
             %% Store other classes
             obj.Delaunay_mesh_class = Delaunay_mesh_class;
@@ -72,21 +71,22 @@ classdef RTMFlow
             obj.pressure_data = zeros(physics_class.nsensors, physics_class.nobservations);
 
             %% All data (used for LMAP)
-            max_times = 10000;
-            obj.times = zeros(1,max_times);
-            obj.pressures = zeros(Delaunay_mesh_class.num_nodes,max_times);
-            obj.pressure_gradients = cell(1);
-            obj.flow_rates = zeros(Delaunay_mesh_class.num_nodes,max_times);
-            obj.filling_factors = zeros(Delaunay_mesh_class.num_nodes,max_times);
-            obj.stiffness_matrices = cell(1);
-            obj.active_nodes = zeros(Delaunay_mesh_class.num_nodes,max_times);
-            obj.Dirichlet_nodes = zeros(Delaunay_mesh_class.num_nodes,max_times);
-            obj.all_active_elements = zeros(Delaunay_mesh_class.num_elements,max_times);
-            obj.all_new_active_elements = zeros(Delaunay_mesh_class.num_elements,max_times);
-            obj.new_filled_volumes = [];
-            obj.edge_data = cell(1);
-            obj.polar = polar;
-            obj.curvatures = cell(1);
+            max_times = 20000;
+            if adjoint
+                obj.adjoint = adjoint;
+                obj.times = zeros(1,max_times);
+                obj.pressures = zeros(Delaunay_mesh_class.num_nodes,max_times);
+                obj.pressure_gradients = cell(1);
+                obj.flow_rates = zeros(Delaunay_mesh_class.num_nodes,max_times);
+                obj.filling_factors = zeros(Delaunay_mesh_class.num_nodes,max_times);
+                obj.stiffness_matrices = cell(1);
+                obj.active_nodes = zeros(Delaunay_mesh_class.num_nodes,max_times);
+                obj.Dirichlet_nodes = zeros(Delaunay_mesh_class.num_nodes,max_times);
+                obj.all_active_elements = zeros(Delaunay_mesh_class.num_elements,max_times);
+                obj.all_new_active_elements = zeros(Delaunay_mesh_class.num_elements,max_times);
+                obj.new_filled_volumes = [];
+                obj.edge_data = cell(1);
+            end
 
             %% Setting up time and time stepping
             obj.time = 0.0;

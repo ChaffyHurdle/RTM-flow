@@ -1,5 +1,7 @@
 function obj = run_t(obj,t)
 
+% Performs MCMC
+
 mesh_class = obj.mesh_class;
 physics_class = obj.physics_class;
 inverse_class = obj.inverse_class;
@@ -34,7 +36,7 @@ parfor c = 1:nchains
     physics = physics_class;
     physics.permeability = exp(currentSample)';
     pressure = Pressure(mesh_class,physics);
-    RTMflow = RTMFlow(mesh_class,physics,pressure);
+    RTMflow = RTMFlow(mesh_class,physics,pressure,0);
     RTMflow = RTMflow.run(physics.observation_times(t));
 
     currentJ = 0.5*norm(Sigma_minus_half*(data - reshape(RTMflow.pressure_data(:,1:t),[],1)))^2;

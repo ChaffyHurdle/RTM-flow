@@ -1,5 +1,7 @@
 function obj = run(obj)
 
+% Runs LMAP.run_t(t) for t = t_1, ..., t_N
+
 start_permeability = obj.physics_class.permeability;
 start_pressure_class = obj.pressure_class;
 start_flow_class = obj.RTMflow_class;
@@ -22,7 +24,7 @@ for t = 1:n
     
     umap_seq(:,t) = obj.u_map;
     Cmap_seq(:,:,t) = obj.C_map;
-    timer_seq(t) = sum(obj.execution_times);
+    timer_seq(t) = obj.execution_times(end);
 
 end
 obj.umap_seq = umap_seq;

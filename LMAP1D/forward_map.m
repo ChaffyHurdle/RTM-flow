@@ -2,8 +2,8 @@ function [p,ups] = forward_map(u,params)
 
 options = optimset('Display','off');
 upsilon_vec = zeros(1,params.Nt);
-pressure_mat = ones(params.Nt,params.Nx)*params.p_0;
-p = ones(params.nsensors,params.nobtimes)*params.p_0;
+pressure_mat = ones(params.Nt,params.Nx)*params.p_0; % entire pressure field
+p = ones(params.nsensors,params.nobtimes)*params.p_0; % pressure observations
 ups = zeros(1,params.nobtimes);
 pressure_mat(:,1) = params.p_I;
 dt = params.dt;

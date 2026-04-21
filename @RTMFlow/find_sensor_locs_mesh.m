@@ -17,6 +17,8 @@ end
 obj.sensor_element_inds = sensor_element_inds;
 
 
+
+
 function elementIndex = findElementContainingPoint(mesh, point)
     
     nodes = mesh.nodes;

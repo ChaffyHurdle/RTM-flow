@@ -1,8 +1,8 @@
-function [u_maps,std_maps,iteration_vec,timer_vec] = run_LMAP_sequential(u0,C,params,experiment,plotting)
+function [u_maps,std_maps,iteration_vec,timer_vec] = run_LMAP_sequential(u0,C,params,Experiment,LevenbergMarquardt,plotting)
 
 C_minus_half = inv(sqrtm(C));
-tol_J = 0.01;
-tol_U = 0.01;
+tol_J = LevenbergMarquardt.tol_J;
+tol_U = LevenbergMarquardt.tol_U;
 u_maps = zeros(params.Nx,params.nobtimes);
 std_maps = zeros(params.Nx,params.nobtimes);
 iteration_vec = zeros(1,params.nobtimes);
@@ -10,15 +10,15 @@ timer_vec = zeros(1,params.nobtimes);
 hex = "#d3d3d3";
 
 for t = 1:params.nobtimes
-    alpha = 1e4;
+    alpha = LevenbergMarquardt.alpha0;
     breaker1 = 0;
     breaker2 = 0;
     breaker3 = 0;
     iterations = 0;
     patience = 0;
 
-    Sigma_t = reshape(experiment.Sigma(:,1:t),[],1);
-    d_t = reshape(experiment.d(:,1:t),[],1);
+    Sigma_t = reshape(Experiment.Sigma(:,1:t),[],1);
+    d_t = reshape(Experiment.d(:,1:t),[],1);
     Sigma_minus_half = diag(1./sqrt(Sigma_t));
     Sigma_t = diag(Sigma_t);
 
@@ -29,7 +29,7 @@ for t = 1:params.nobtimes
     J = data_misfit + distance_from_u0;
 
     tic;
-    for k = 1:100
+    for k = 1:LevenbergMarquardt.N_iter
         [boldR,curlyR,c] = compute_representers(u,ups,C,params,t);
     
         h = (u0-u)/(1+alpha) + (boldR * ((curlyR + (1+alpha)*Sigma_t)\(d_t - reshape(p(:,1:t),[],1) - c/(1+alpha))))';
@@ -49,10 +49,10 @@ for t = 1:params.nobtimes
             ups = ups_cand;
             p = p_cand;
             iterations = iterations + 1;
-            alpha = alpha/2;
+            alpha = alpha/LevenbergMarquardt.scaling;
             patience = 0;
         else
-            alpha = alpha*2;
+            alpha = alpha*LevenbergMarquardt.scaling;
             patience = patience + 1;
             breaker3 = (patience == 5);
         end
@@ -85,7 +85,7 @@ if plotting
     plot(params.x_locations,u0,"k--")
     plot(params.x_locations,upper95,"k")
     plot(params.x_locations,lower95,"k")
-    plot(experiment.params_fwd.x_locations,experiment.u_true,"r")
+    plot(Experiment.params_fwd.x_locations,Experiment.u_true,"r")
     hold off
     xlim([0,1])
     ylim([-2,2])
@@ -104,8 +104,8 @@ if plotting
         plot(params.x_locations,u_maps(:,i),"k--")
         plot(params.x_locations,upper95,"k")
         plot(params.x_locations,lower95,"k")
-        plot(experiment.params_fwd.x_locations,experiment.u_true,"r")
-        xline(experiment.ups_true(i),"r--")
+        plot(Experiment.params_fwd.x_locations,Experiment.u_true,"r")
+        xline(Experiment.ups_true(i),"r--")
         hold off
         xlim([0,1])
         ylim([-2,2])

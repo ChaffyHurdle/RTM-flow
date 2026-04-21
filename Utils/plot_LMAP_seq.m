@@ -59,7 +59,7 @@ for i = 2:6
     axis off;
     title(sprintf('diag$(\\mathcal{C}_{MAP}^{(%d)})$', i-1), 'Interpreter', 'latex');
     colormap('turbo');
-    clim([0 0.25]);
+    clim([0 my_lmap.inverse_class.matern_var]);
 end
 colormap(ax(2,6),'turbo');
 pos = get(ax(2,6),'Position');

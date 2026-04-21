@@ -1,5 +1,7 @@
 function [lambda_ij,grad_lambda_ij] = compute_lambda_ij(i,j,obj_data)
 
+% Computes the full set of adjoint variable
+
 % Locate (x_i,t_j)
 t_j = obj_data.physics_class.observation_times(j);
 x_i = obj_data.physics_class.sensor_locs(i,:);
@@ -23,14 +25,16 @@ lambda_ij = zeros(num_nodes,length(times));
 grad_lambda_ij = zeros(num_elems,2,length(times));
 kappa_elem_tplus1 = zeros(1,length(elements));
 grad_lambda = zeros(length(elements),2);
+
+% Compute nearest time in time discretisation to t_j and compute dirac std
 [~,closest_time] = sort(abs(obj_data.RTMflow_class.times-t_j));
 closest_time = closest_time(1);
 del_t = max(obj_data.RTMflow_class.times(closest_time+2) - obj_data.RTMflow_class.times(closest_time),...
             obj_data.RTMflow_class.times(closest_time) - obj_data.RTMflow_class.times(closest_time-2));
 del_t = del_t^2;
-start_index = min(closest_time+100,length(times)-1);
+start_index = min(closest_time+100,length(times)-1); % when to start backward solve
 
-% Compute aspect of load vector from \delta(x_i-x) contribution.
+% Compute aspect of load vector from \delta(x_i-x) contribution, i.e. \phi_j(x_i) for hat functions.
 nodes_surrounding_xi = nodes(elements(x_i_sensor_elem,:),:);
 [lambda1, lambda2, lambda3] = compute_barycentric_coords(nodes_surrounding_xi, x_i);
 load_vector_x = zeros(num_nodes,1);
@@ -55,8 +59,7 @@ for t = start_index:-1:1
     load_vector_t = obj_data.delta_t(t_j,times(t),del_t);
     load_vector = load_vector_t*load_vector_x;
 
-    b_free = load_vector(free) - ...
-                      stiffness_matrix_t(free,fixed)*lambda(fixed);
+    b_free = load_vector(free) - stiffness_matrix_t(free,fixed)*lambda(fixed);
     A_free = stiffness_matrix_t(free,free);
     
     % solve matrix equation for lambda_ij

@@ -1,4 +1,4 @@
-function [U,timer,total_iterations] = run_RML(ubar,C,params,experiment,samples,plotting)
+function [U,timer,total_iterations] = run_RML(ubar,C,params,experiment,LevenbergMarquardt,samples,plotting)
 
 prior_samples = mvnrnd(ubar,C,samples);
 U = zeros(params.Nx,samples);
@@ -26,16 +26,16 @@ parfor i = 1:samples
     data_misfit = norm(Sigma_minus_half * (d - reshape(p,[],1)))^2;
     distance_from_ui = norm(C_minus_half * (u - u0)')^2;
     J = data_misfit + distance_from_ui;
-    alpha = 1e4;
-    tol_J = 0.01;
-    tol_U = 0.01;
+    alpha = LevenbergMarquardt.alpha0;
+    tol_J = LevenbergMarquardt.tol_J;
+    tol_U = LevenbergMarquardt.tol_U;
     breaker1 = 0;
     breaker2 = 0;
     breaker3 = 0;
     iteration_count = 0;
     patience = 0;
 
-    for j = 1:40
+    for j = 1:LevenbergMarquardt.N_iter
         [boldR,curlyR,c] = compute_representers(u,ups,C,params,5);
         h = (u0-u)/(1+alpha) + (boldR * ((curlyR + (1+alpha)*Sigma)\(d - reshape(p,[],1) - c/(1+alpha))))';
     
@@ -54,10 +54,10 @@ parfor i = 1:samples
             J = J_cand;
             ups = ups_cand;
             p = p_cand;
-            alpha = alpha/2;
+            alpha = alpha/LevenbergMarquardt.scaling;
             patience = 0;
         else
-            alpha = alpha*2;
+            alpha = alpha*LevenbergMarquardt.scaling;
             patience = patience + 1;
             breaker3 = (patience == 5);
         end

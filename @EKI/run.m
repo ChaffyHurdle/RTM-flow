@@ -1,8 +1,6 @@
 function obj = run(obj)
 
-start_permeability = obj.physics_class.permeability;
-start_pressure_class = obj.pressure_class;
-start_flow_class = obj.RTMflow_class;
+% Runs EKI.run_t(t) method for each time.
 
 n = obj.physics_class.nobservations;
 ueki_seq = zeros(obj.mesh_class.num_elements,n);
@@ -17,6 +15,8 @@ for t = 1:n
     timer_seq(t) = obj.timer;
 
 end
+
+% Save data
 obj.ueki_seq = ueki_seq;
 obj.Ceki_seq = Ceki_seq;
 obj.timer_seq = timer_seq;

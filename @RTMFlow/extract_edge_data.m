@@ -1,6 +1,8 @@
 function edgedata = extract_edge_data(obj)
 
-active_nodes = obj.pressure_class.is_node_active; % nodes in D(t)
+% Extracts elements on boundary, their connectivity, and their unit normals
+
+active_nodes = obj.pressure_class.is_node_active;
 Dirichlet_nodes = obj.pressure_class.is_Dirichlet;
 is_moving_boundary = active_nodes & Dirichlet_nodes & ~obj.pressure_class.is_inlet;
 moving_boundary_inds = find(is_moving_boundary);
@@ -36,10 +38,11 @@ for i = 1:length(moving_boundary_inds)
         
     end
 end
+
 % Remove duplicate rows 
 edgedata = unique(edgedata,'rows');
 
-% Compute unit normals 
+% Compute unit normals
 edges = mesh_class.nodes(edgedata(:,2),:) - mesh_class.nodes(edgedata(:,3),:);
 normals = [-edges(:,2), edges(:,1)];
 normals = normals./vecnorm(normals')';
@@ -48,8 +51,6 @@ normals = normals./vecnorm(normals')';
 edge_centres = obj.Delaunay_mesh_class.centroids(edgedata(:,1),:);
 edge_centres_to_midpoints = (obj.Delaunay_mesh_class.nodes(edgedata(:,2),:) + obj.Delaunay_mesh_class.nodes(edgedata(:,3),:))/2 - edge_centres;
 misaligned_inds = dot(edge_centres_to_midpoints,normals,2) < 0;
-
-%neg_rows = normals(:, 1) < 0;
 normals(misaligned_inds, :) = -normals(misaligned_inds, :);
 edgedata = [edgedata normals];
 

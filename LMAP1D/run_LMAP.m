@@ -1,9 +1,9 @@
-function [u_map,C_map,timer,iterations] = run_LMAP(u0,C,params,experiment,plotting)
+function [u_map,C_map,timer,iterations] = run_LMAP(u0,C,params,experiment,LevenbergMarquardt,plotting)
 
 C_minus_half = inv(sqrtm(C));
-alpha = 1e4;
-tol_J = 0.01;
-tol_U = 0.01;
+alpha = LevenbergMarquardt.alpha0;
+tol_J = LevenbergMarquardt.tol_J;
+tol_U = LevenbergMarquardt.tol_U;
 breaker1 = 0;
 breaker2 = 0;
 breaker3 = 0;
@@ -23,7 +23,7 @@ J = data_misfit + distance_from_u0;
 
 tic;
 
-for k = 1:100
+for k = 1:LevenbergMarquardt.N_iter
 
     [boldR,curlyR,c] = compute_representers(u,ups,C,params,params.nobtimes);
 
@@ -67,10 +67,10 @@ for k = 1:100
             ylim([min(min(lower95),-2),max(max(upper95),2)])
             drawnow
         end
-        alpha = alpha/2;
+        alpha = alpha/LevenbergMarquardt.scaling;
         patience = 0;
     else
-        alpha = alpha*2;
+        alpha = alpha*LevenbergMarquardt.scaling;
         patience = patience + 1;
         breaker3 = (patience == 5);
     end

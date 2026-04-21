@@ -29,7 +29,6 @@ while total_taken ~= length(sorted_inds)
         temp_sorted_inds = temp_sorted_inds(num_to_take+1:end);
     end
     if count > 100
-        disp("Count loop forever")
         break
     end
 end
