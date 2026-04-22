@@ -103,7 +103,7 @@ save(strcat(folder_path,"/Example2/lmap_vars.mat"),'lmap_vars')
 save(strcat(folder_path,"/Example2/lmap_times.mat"),'lmap_times')
 
 %% Plot push forward example
-u_samples = mvnrnd(my_lmap.umap_seq(:,end),my_lmap.Cmap_seq(:,:,end),500);
+u_samples = mvnrnd(my_lmap.umap_seq(:,end),my_lmap.Cmap_seq(:,:,end),1000);
 [pressures,flow_fronts] = push_forward(u_samples, my_darcy, my_inverse_mesh);
 perturbed_pressures = pressures + normrnd(0,1,size(pressures)).*sqrt(my_inverse.Sigma(:)');
 plot_push_forward(perturbed_pressures, flow_fronts, my_darcy, my_inverse_mesh, true_RTMflow)
