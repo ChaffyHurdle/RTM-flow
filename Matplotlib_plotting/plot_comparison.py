@@ -96,6 +96,6 @@ if __name__ == '__main__':
     fig.colorbar(im1, ax=axes[0,4],fraction=1)
     fig.colorbar(im10, ax=axes[1,4],fraction=1)
 
-    # plt.savefig('../Case1/Comparison/Example1/LMAP_vs_EKI.eps', format='eps', bbox_inches='tight')
-    # plt.savefig('../Case1/Comparison/Example1/LMAP_vs_EKI.jpg', format='jpg', bbox_inches='tight',dpi=400)
+    # plt.savefig(folder_path + 'LMAP_vs_EKI.eps', format='eps', bbox_inches='tight')
+    # plt.savefig(folder_path + 'LMAP_vs_EKI.jpg', format='jpg', bbox_inches='tight',dpi=400)
     plt.show()
