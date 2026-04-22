@@ -80,7 +80,7 @@ my_inverse = my_inverse.generate_data(true_RTMflow.pressure_data,noise_level);
 %% Perform LMAP (all times)
 alpha0 = 1e3; scale = 5; tol_U = 0.025; tol_J = 0.025;
 my_lmap = LMAP(my_inverse,my_darcy,alpha0,scale,tol_U,tol_J);
-my_lmap = my_lmap.run_t(5);
+my_lmap = my_lmap.run();
 
 plot_LMAP_seq(my_forward_mesh, my_inverse_mesh, my_darcy, true_RTMflow, my_lmap)
 
