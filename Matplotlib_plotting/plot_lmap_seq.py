@@ -6,7 +6,7 @@ from scipy.io import loadmat
 CASE = 1 # [1: square, 2: fork, 3: torus]
 EXAMPLE = 1
 x_ticks = [[0,0.5,1],[0,0.5,1],[-1,0,1]]
-SENSORS = 100
+SENSORS = 25
 
 folder_path = '../Case' + str(CASE) + '/Example' + str(EXAMPLE) + '/'
 sensor_path = '../Case' + str(CASE) + '/meshes_sensors/'
@@ -32,12 +32,6 @@ if __name__ == '__main__':
 
     lmap_means = loadmat(folder_path + 'lmap_means.mat')['lmap_means']
     lmap_vars = loadmat(folder_path + 'lmap_vars.mat')['lmap_vars']
-    # lmap_times= loadmat(folder_path + 'lmap_times.mat')['lmap_times']
-    # matern_args = loadmat(folder_path + 'matern_args.mat')['matern_args']
-    # exp_args= loadmat(folder_path + 'exp_args.mat')['exp_args']
-    # print(lmap_times)
-    # print(matern_args)
-    # print(exp_args)
 
 
     # Load true front inds
