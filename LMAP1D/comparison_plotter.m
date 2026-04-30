@@ -27,10 +27,10 @@ title('LMAP','interpreter','latex')
 % EKI plot
 subplot(2,2,2)
 U_mean=mean(U_EKI,2);
-upper50 = u_map + 0.674*sqrt(var(U_EKI,0,2))';
-lower50 = u_map - 0.674*sqrt(var(U_EKI,0,2))';
-upper95 = u_map + 1.96*sqrt(var(U_EKI,0,2))';
-lower95 = u_map - 1.96*sqrt(var(U_EKI,0,2))';
+upper50 = U_mean' + 0.674*sqrt(var(U_EKI,0,2))';
+lower50 = U_mean' - 0.674*sqrt(var(U_EKI,0,2))';
+upper95 = U_mean' + 1.96*sqrt(var(U_EKI,0,2))';
+lower95 = U_mean' - 1.96*sqrt(var(U_EKI,0,2))';
 fill([params.x_locations,fliplr(params.x_locations)], [lower50,fliplr(upper50)], hex2rgb(hex), 'EdgeColor','none');
 hold on
 plot(params.x_locations,U_mean,'k--')
@@ -50,10 +50,10 @@ title('EKI','interpreter','latex')
 % RML plot
 subplot(2,2,3)
 U_mean=mean(U_RML,2);
-upper50 = u_map + 0.674*sqrt(var(U_RML,0,2))';
-lower50 = u_map - 0.674*sqrt(var(U_RML,0,2))';
-upper95 = u_map + 1.96*sqrt(var(U_RML,0,2))';
-lower95 = u_map - 1.96*sqrt(var(U_RML,0,2))';
+upper50 = U_mean' + 0.674*sqrt(var(U_RML,0,2))';
+lower50 = U_mean' - 0.674*sqrt(var(U_RML,0,2))';
+upper95 = U_mean' + 1.96*sqrt(var(U_RML,0,2))';
+lower95 = U_mean' - 1.96*sqrt(var(U_RML,0,2))';
 fill([params.x_locations,fliplr(params.x_locations)], [lower50,fliplr(upper50)], hex2rgb(hex), 'EdgeColor','none');
 hold on
 plot(params.x_locations,U_mean,'k--')
@@ -72,10 +72,10 @@ title('RML','interpreter','latex')
 % MCMC plot
 subplot(2,2,4)
 U_mean=mean(U_MCMC,2);
-upper50 = u_map + 0.674*sqrt(var(U_MCMC,0,2))';
-lower50 = u_map - 0.674*sqrt(var(U_MCMC,0,2))';
-upper95 = u_map + 1.96*sqrt(var(U_MCMC,0,2))';
-lower95 = u_map - 1.96*sqrt(var(U_MCMC,0,2))';
+upper50 = U_mean' + 0.674*sqrt(var(U_MCMC,0,2))';
+lower50 = U_mean' - 0.674*sqrt(var(U_MCMC,0,2))';
+upper95 = U_mean' + 1.96*sqrt(var(U_MCMC,0,2))';
+lower95 = U_mean' - 1.96*sqrt(var(U_MCMC,0,2))';
 fill([params.x_locations,fliplr(params.x_locations)], [lower50,fliplr(upper50)], hex2rgb(hex), 'EdgeColor','none');
 hold on
 plot(params.x_locations,U_mean,'k--')

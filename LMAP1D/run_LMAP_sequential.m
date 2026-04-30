@@ -40,6 +40,8 @@ for t = 1:params.nobtimes
         data_misfit = norm(Sigma_minus_half * (d_t - reshape(p_cand(:,1:t),[],1)))^2;
         distance_from_u0 = norm(C_minus_half * (u_cand - u0)')^2;
         J_cand = data_misfit + distance_from_u0;
+
+        iterations = iterations + 1;
     
         if J_cand < J
             breaker1 = (max(abs(u-u_cand)./abs(u)) < tol_U);
@@ -48,7 +50,6 @@ for t = 1:params.nobtimes
             J = J_cand;
             ups = ups_cand;
             p = p_cand;
-            iterations = iterations + 1;
             alpha = alpha/LevenbergMarquardt.scaling;
             patience = 0;
         else

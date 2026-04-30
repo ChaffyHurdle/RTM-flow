@@ -51,7 +51,7 @@ Experiment.ups_true = ups_true;
 LevenbergMarquardt.tol_J = 0.01;
 LevenbergMarquardt.tol_U = 0.01;
 LevenbergMarquardt.N_iter = 100;
-LevenbergMarquardt.scaling = 2;
+LevenbergMarquardt.scaling = 5;
 LevenbergMarquardt.alpha0 = 1e4;
 
 % Perform sequential LMAP
@@ -96,3 +96,5 @@ rel_error_std.EKI500 = sqrt(params_inv.dx*sum( (sqrt(var(U_MCMC,0,2)) - sqrt(var
 rel_error_std.EKI1000 = sqrt(params_inv.dx*sum( (sqrt(var(U_MCMC,0,2)) - sqrt(var(U_EKI1000,0,2))).^2 ))/sqrt(params_inv.dx*sum( (sqrt(var(U_MCMC,0,2))).^2 ));
 rel_error_std.EKI5000 = sqrt(params_inv.dx*sum( (sqrt(var(U_MCMC,0,2)) - sqrt(var(U_EKI5000,0,2))).^2 ))/sqrt(params_inv.dx*sum( (sqrt(var(U_MCMC,0,2))).^2 ));
 rel_error_std.RML = sqrt(params_inv.dx*sum( (sqrt(var(U_MCMC,0,2)) - sqrt(var(U_RML1000,0,2))).^2 ))/sqrt(params_inv.dx*sum( (sqrt(var(U_MCMC,0,2))).^2 ));
+
+save('data1D/relative_errors', 'rel_error_mean', 'rel_error_std')
