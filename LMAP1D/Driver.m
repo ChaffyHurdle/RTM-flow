@@ -33,17 +33,18 @@ u_bar = zeros(1,params_inv.Nx);
 params_inv.C = C;
 params_inv.u_bar = u_bar;
 
-% Generate experimental data
-[p_true,ups_true] = forward_map(u_true,params_fwd);
-[d,Sigma] = set_data(p_true,0.00,0.01,params_fwd);
-Experiment.d = d;
-Experiment.Sigma = Sigma;
-Experiment.u_true = u_true;
-Experiment.params_fwd = params_fwd;
-Experiment.ups_true = ups_true;
+% % Generate experimental data
+% [p_true,ups_true] = forward_map(u_true,params_fwd);
+% [d,Sigma] = set_data(p_true,0.00,0.01,params_fwd);
+% Experiment.d = d;
+% Experiment.Sigma = Sigma;
+% Experiment.u_true = u_true;
+% Experiment.params_fwd = params_fwd;
+% Experiment.ups_true = ups_true;
 
 % or load previous data
-% Experiment = load("data1D/Experiment.mat");
+Experiment = load("data1D/1D_experiment.mat");
+Experiment = Experiment.Experiment;
 
 %% Sequential LMAP plot
 
@@ -56,9 +57,9 @@ LevenbergMarquardt.alpha0 = 1e4;
 
 % Perform sequential LMAP
 [u_LMAPs,std_LMAPs,iterations_LMAPs,timer_LMAPs] = run_LMAP_sequential(u_bar, C, params_inv, Experiment, LevenbergMarquardt, 1);
-exportgraphics(gcf,'plots1D\sequentialLMAP1D.eps')
-exportgraphics(gcf,'plots1D\sequentialLMAP1D.png')
-save('data1D/LMAP_seq_data','u_LMAPs','std_LMAPs','iterations_LMAPs','timer_LMAPs')
+% exportgraphics(gcf,'plots1D\sequentialLMAP1D.eps')
+% exportgraphics(gcf,'plots1D\sequentialLMAP1D.png')
+% save('data1D/LMAP_seq_data','u_LMAPs','std_LMAPs','iterations_LMAPs','timer_LMAPs')
 
 %% Perform LMAP
 [u_map,C_map,timer_LMAP,iterations_LMAP] = run_LMAP(u_bar,C,params_inv,Experiment,LevenbergMarquardt,0);
@@ -67,25 +68,25 @@ save('data1D/LMAP_seq_data','u_LMAPs','std_LMAPs','iterations_LMAPs','timer_LMAP
 [U_EKI500,timer_EKI500,iterations_EKI500] = run_EKI(u_bar,C,params_inv,Experiment,500,1);
 [U_EKI1000,timer_EKI1000,iterations_EKI1000] = run_EKI(u_bar,C,params_inv,Experiment,1000,1);
 [U_EKI5000,timer_EKI5000,iterations_EKI5000] = run_EKI(u_bar,C,params_inv,Experiment,5000,1);
-save('data1D/EKI_data', 'U_EKI500','timer_EKI500','iterations_EKI500', ...
-                        'U_EKI1000','timer_EKI1000','iterations_EKI1000', ...
-                        'U_EKI5000','timer_EKI5000','iterations_EKI5000')
+% save('data1D/EKI_data', 'U_EKI500','timer_EKI500','iterations_EKI500', ...
+%                         'U_EKI1000','timer_EKI1000','iterations_EKI1000', ...
+%                         'U_EKI5000','timer_EKI5000','iterations_EKI5000')
 
 %% Perform RML
 [U_RML1000,timer_RML1000,iterations_RML1000] = run_RML(u_bar,C,params_inv,Experiment,LevenbergMarquardt,1000,1);
-save('data1D/RML_data', 'U_RML1000', 'timer_RML1000', 'iterations_RML1000')
+% save('data1D/RML_data', 'U_RML1000', 'timer_RML1000', 'iterations_RML1000')
 
 %% Perform MCMC
 [U_MCMC,timer_MCMC,iterations_MCMC] = run_MCMC(u_bar,C,params_inv,Experiment,1);
-save('data1D/MCMC_data', 'U_MCMC', 'timer_MCMC', 'iterations_MCMC')
+% save('data1D/MCMC_data', 'U_MCMC', 'timer_MCMC', 'iterations_MCMC')
 
 %% Comparison plot
 comparison_plotter(u_map,C_map,U_EKI5000,U_RML1000,U_MCMC,params_inv,Experiment)
-exportgraphics(gcf,'plots1D/comparison1D.eps')
-exportgraphics(gcf,'plots1D/comparison1D.png')
+% exportgraphics(gcf,'plots1D/comparison1D.eps')
+% exportgraphics(gcf,'plots1D/comparison1D.png')
 
 %% Compute relative errors
-rel_error_mean.LMAP = sqrt(params_inv.dx*sum( (mean(U_MCMC,2) - u_map).^2 ))/sqrt(params_inv.dx*sum( (mean(U_MCMC,2)).^2 ));
+rel_error_mean.LMAP = sqrt(params_inv.dx*sum( (mean(U_MCMC,2) - u_map').^2 ))/sqrt(params_inv.dx*sum( (mean(U_MCMC,2)).^2 ));
 rel_error_mean.EKI500 = sqrt(params_inv.dx*sum( (mean(U_MCMC,2) - mean(U_EKI500,2)).^2 ))/sqrt(params_inv.dx*sum( (mean(U_MCMC,2)).^2 ));
 rel_error_mean.EKI1000 = sqrt(params_inv.dx*sum( (mean(U_MCMC,2) - mean(U_EKI1000,2)).^2 ))/sqrt(params_inv.dx*sum( (mean(U_MCMC,2)).^2 ));
 rel_error_mean.EKI5000 = sqrt(params_inv.dx*sum( (mean(U_MCMC,2) - mean(U_EKI5000,2)).^2 ))/sqrt(params_inv.dx*sum( (mean(U_MCMC,2)).^2 ));
